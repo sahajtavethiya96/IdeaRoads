@@ -4,6 +4,7 @@ import {
   ArchiveIcon,
   EyeIcon,
   EyeSlashIcon,
+  LockSimpleIcon,
   MapTrifoldIcon,
   PencilIcon,
   PlusIcon,
@@ -32,6 +33,7 @@ interface WorkspaceStatus {
   id: string;
   isArchived: boolean;
   isDefault: boolean;
+  isSystem: boolean;
   name: string;
   showOnPublicFeed: boolean;
   showOnRoadmap: boolean;
@@ -40,12 +42,14 @@ interface WorkspaceStatus {
 
 interface StatusListProps {
   canManage: boolean;
+  postCounts: Record<string, number>;
   statuses: WorkspaceStatus[];
   workspaceId: string;
 }
 
 interface FormState {
   color: string;
+  isSystem?: boolean;
   mode: "create" | "edit";
   name: string;
   statusId?: string;
@@ -61,6 +65,7 @@ export function StatusList({
   statuses,
   workspaceId,
   canManage,
+  postCounts,
 }: StatusListProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -84,7 +89,13 @@ export function StatusList({
   }
 
   function openEdit(s: WorkspaceStatus) {
-    setForm({ mode: "edit", statusId: s.id, name: s.name, color: s.color });
+    setForm({
+      mode: "edit",
+      statusId: s.id,
+      name: s.name,
+      color: s.color,
+      isSystem: s.isSystem,
+    });
     setError(null);
     markClean({ name: s.name, color: s.color });
   }
@@ -270,6 +281,7 @@ export function StatusList({
                   Name <span className="text-ir-danger">*</span>
                 </label>
                 <Input
+                  disabled={form.isSystem}
                   id="status-name"
                   maxLength={48}
                   onChange={(e) =>
@@ -279,6 +291,11 @@ export function StatusList({
                   type="text"
                   value={form.name}
                 />
+                {form.isSystem && (
+                  <p className="mt-1 text-xs text-ir-muted">
+                    Draft is a system status and can't be renamed.
+                  </p>
+                )}
               </div>
 
               <div>
@@ -365,6 +382,16 @@ export function StatusList({
                     </span>
                   )}
 
+                  {s.isSystem && (
+                    <span
+                      className="flex items-center gap-1 rounded-ir-sm border border-ir-border px-1.5 py-0.5 text-2xs font-medium text-ir-muted"
+                      title="A protected system status. Posts land here when their status is deleted — it can't be renamed, archived, or deleted."
+                    >
+                      <LockSimpleIcon className="size-2.5" />
+                      System
+                    </span>
+                  )}
+
                   {canManage && (
                     <div className="ml-auto flex items-center gap-1.5">
                       <button
@@ -433,16 +460,18 @@ export function StatusList({
                       >
                         <PencilIcon className="size-3.5" />
                       </button>
-                      <button
-                        aria-label={`Archive ${s.name}`}
-                        className="cursor-pointer rounded-ir-xs p-1.5 text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-                        onClick={() => setArchiveTarget(s)}
-                        title="Archive"
-                        type="button"
-                      >
-                        <ArchiveIcon className="size-3.5" />
-                      </button>
-                      {!s.isDefault && (
+                      {!s.isSystem && (
+                        <button
+                          aria-label={`Archive ${s.name}`}
+                          className="cursor-pointer rounded-ir-xs p-1.5 text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                          onClick={() => setArchiveTarget(s)}
+                          title="Archive"
+                          type="button"
+                        >
+                          <ArchiveIcon className="size-3.5" />
+                        </button>
+                      )}
+                      {!s.isDefault && !s.isSystem && (
                         <button
                           aria-label={`Delete ${s.name}`}
                           className="cursor-pointer rounded-ir-xs p-1.5 text-ir-danger transition-opacity duration-150 ease-ir-standard hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
@@ -515,7 +544,13 @@ export function StatusList({
         {/* Confirm delete */}
         <ConfirmDialog
           confirmLabel="Delete"
-          description={`Delete "${deleteTarget?.name}"? Posts with this status will keep their status slug but it won't appear in selections. This action cannot be undone.`}
+          description={
+            deleteTarget && (postCounts[deleteTarget.id] ?? 0) > 0
+              ? `Delete "${deleteTarget.name}"? ${postCounts[deleteTarget.id]} post${
+                  postCounts[deleteTarget.id] === 1 ? "" : "s"
+                } using this status will move to Draft. This action cannot be undone.`
+              : `Delete "${deleteTarget?.name}"? This action cannot be undone.`
+          }
           isPending={isPending}
           onConfirm={handleDelete}
           onOpenChange={(open) => !open && setDeleteTarget(null)}

@@ -23,6 +23,7 @@ interface WorkspaceStatus {
   color: string;
   id: string;
   isArchived: boolean;
+  isSystem: boolean;
   name: string;
   slug: string;
 }

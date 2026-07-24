@@ -38,6 +38,7 @@ interface WorkspaceStatus {
   color: string;
   id: string;
   isArchived: boolean;
+  isSystem: boolean;
   name: string;
   slug: string;
 }
@@ -127,14 +128,14 @@ export function PostDetailContent({
   const statusMap = new Map(workspaceStatuses.map((s) => [s.slug, s.name]));
 
   return (
-    <div className="mx-auto flex max-w-7xl flex-col">
+    <div className="mx-auto flex max-w-3xl flex-col">
       {/* Back nav — hidden in embed mode (no navigation chrome). Sticky so it
         stays reachable while scrolling the post; offset below the public
         portal's own sticky header when this renders there. */}
       {!isEmbed && (
         <div
-          className={`sticky z-10 border-b border-ir-border px-4 py-4 sm:px-8 ${
-            isPublicPortal ? "top-16 bg-ir-background" : "top-0"
+          className={`sticky z-10 border-b border-ir-border bg-ir-background px-4 py-4 sm:px-8 ${
+            isPublicPortal ? "top-16" : "top-0"
           }`}
         >
           <Link

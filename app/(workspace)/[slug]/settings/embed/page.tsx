@@ -6,7 +6,11 @@ import { ContentContainer } from "@/components/ui/page";
 import { WORKSPACE_MEMBER } from "@/config/platform";
 import { requireSession } from "@/lib/authz";
 import { listBoardsForWorkspace } from "@/lib/boards/queries";
-import { DEFAULT_EMBED_CONFIG, getEmbedConfig } from "@/lib/embed/queries";
+import {
+  DEFAULT_EMBED_CONFIG,
+  getEmbedConfig,
+  resolveEmbeddableBoardId,
+} from "@/lib/embed/queries";
 import { portalBaseUrl } from "@/lib/urls";
 import {
   getWorkspaceBySlug,
@@ -47,12 +51,10 @@ export default async function EmbedPage({ params }: Props) {
   // to, so a board is required for the snippet to point at anything real.
   const embeddableBoards = allBoards.filter((b) => b.isPublic && !b.isArchived);
 
-  const configuredBoardId = config?.boardId ?? null;
-  const defaultBoardId =
-    (configuredBoardId &&
-    embeddableBoards.some((b) => b.id === configuredBoardId)
-      ? configuredBoardId
-      : embeddableBoards[0]?.id) ?? null;
+  const defaultBoardId = resolveEmbeddableBoardId(
+    embeddableBoards,
+    config?.boardId ?? null
+  );
 
   return (
     <ContentContainer>
@@ -65,12 +67,38 @@ export default async function EmbedPage({ params }: Props) {
         }))}
         initialConfig={{
           boardId: defaultBoardId,
-          mode: config?.mode ?? DEFAULT_EMBED_CONFIG.mode,
-          position: config?.position ?? DEFAULT_EMBED_CONFIG.position,
+          buttonType: config?.buttonType ?? DEFAULT_EMBED_CONFIG.buttonType,
           theme: config?.theme ?? DEFAULT_EMBED_CONFIG.theme,
           width: config?.width ?? DEFAULT_EMBED_CONFIG.width,
           height: config?.height ?? DEFAULT_EMBED_CONFIG.height,
           accentColor: config?.accentColor ?? DEFAULT_EMBED_CONFIG.accentColor,
+          floatingPosition:
+            config?.floatingPosition ?? DEFAULT_EMBED_CONFIG.floatingPosition,
+          floatingIconType:
+            config?.floatingIconType ?? DEFAULT_EMBED_CONFIG.floatingIconType,
+          floatingIconUrl:
+            config?.floatingIconUrl ?? DEFAULT_EMBED_CONFIG.floatingIconUrl,
+          stickyButtonText:
+            config?.stickyButtonText ?? DEFAULT_EMBED_CONFIG.stickyButtonText,
+          stickyButtonColor:
+            config?.stickyButtonColor ?? DEFAULT_EMBED_CONFIG.stickyButtonColor,
+          stickyTextColor:
+            config?.stickyTextColor ?? DEFAULT_EMBED_CONFIG.stickyTextColor,
+          stickyPosition:
+            config?.stickyPosition ?? DEFAULT_EMBED_CONFIG.stickyPosition,
+          deviceVisibility:
+            config?.deviceVisibility ?? DEFAULT_EMBED_CONFIG.deviceVisibility,
+          showRoadmap: config?.showRoadmap ?? DEFAULT_EMBED_CONFIG.showRoadmap,
+          showChangelog:
+            config?.showChangelog ?? DEFAULT_EMBED_CONFIG.showChangelog,
+          showSubmitFormImmediately:
+            config?.showSubmitFormImmediately ??
+            DEFAULT_EMBED_CONFIG.showSubmitFormImmediately,
+          showSimilarPosts:
+            config?.showSimilarPosts ?? DEFAULT_EMBED_CONFIG.showSimilarPosts,
+          showViewOtherFeedbackButton:
+            config?.showViewOtherFeedbackButton ??
+            DEFAULT_EMBED_CONFIG.showViewOtherFeedbackButton,
         }}
         workspaceId={workspace.id}
         workspaceSlug={slug}

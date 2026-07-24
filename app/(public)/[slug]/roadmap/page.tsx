@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EmbedNav } from "@/components/embed/embed-nav";
 import { EmbedResizeReporter } from "@/components/embed/resize-reporter";
+import { EmbedModalHeader } from "@/components/embed/widget/embed-modal-header";
 import { PoweredByBadge } from "@/components/portal/powered-by-badge";
 import {
   type BoardStatus,
@@ -39,6 +40,7 @@ interface Props {
     board?: string;
     category?: string;
     embed?: string;
+    layout?: string;
     q?: string;
     sort?: string;
     theme?: string;
@@ -59,10 +61,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function RoadmapPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const { category, q, sort, embed, theme, accentColor, board } =
+  const { category, q, sort, embed, layout, theme, accentColor, board } =
     await searchParams;
-  const embedParams = parseEmbedParams({ embed, theme, accentColor, board });
-  const { isEmbed } = embedParams;
+  const embedParams = parseEmbedParams({
+    accentColor,
+    board,
+    embed,
+    layout,
+    theme,
+  });
+  const { isEmbed, isPanel } = embedParams;
   const embedQuery = buildEmbedQuery(embedParams);
   const embedWrapper = embedWrapperProps(embedParams);
 
@@ -152,6 +160,12 @@ export default async function RoadmapPage({ params, searchParams }: Props) {
       ? `/${slug}/b/${feedbackBoard.slug}/new${embedQuery}`
       : `/signin?next=${encodeURIComponent(`/${slug}/b/${feedbackBoard.slug}/new${embedQuery}`)}`
     : null;
+  // Inside the widget's modal (panel mode), "new post" isn't a separate page
+  // at all — it's the Categories/Form/Success shell living on the board
+  // route itself, so "+ Feedback" from here goes there instead of /new.
+  const panelFeedbackHref = feedbackBoard
+    ? `/${slug}/b/${feedbackBoard.slug}${embedQuery}`
+    : null;
 
   return (
     <EmbedPersonalizationProvider
@@ -160,11 +174,19 @@ export default async function RoadmapPage({ params, searchParams }: Props) {
       workspaceId={workspace.id}
     >
       <div
-        className={`min-h-screen bg-ir-background ${embedWrapper.className}`}
+        className={`${
+          isPanel ? "flex h-dvh flex-col overflow-hidden" : "min-h-screen"
+        } bg-ir-background ${embedWrapper.className}`}
         style={embedWrapper.style}
       >
-        {isEmbed && <EmbedResizeReporter />}
-        {isEmbed && (
+        {isEmbed && !isPanel && <EmbedResizeReporter />}
+        {isEmbed && isPanel && feedbackBoard && (
+          <EmbedModalHeader
+            backHref={`/${slug}/b/${feedbackBoard.slug}${embedQuery}`}
+            title="Roadmap"
+          />
+        )}
+        {isEmbed && !isPanel && (
           <EmbedNav
             active="roadmap"
             boards={publicBoards}
@@ -195,59 +217,89 @@ export default async function RoadmapPage({ params, searchParams }: Props) {
         )}
         {!isEmbed && <PoweredByBadge />}
 
-        <main className="mx-auto flex max-w-5xl flex-col" id="main-content">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-ir-border px-4 py-6 sm:px-8">
-            <div>
-              <h1 className="text-xl font-semibold text-ir-heading">Roadmap</h1>
-              <p className="mt-1 text-sm text-ir-muted">
-                {totalPosts === 0
-                  ? "No items on the roadmap yet."
-                  : `${totalPosts} item${totalPosts === 1 ? "" : "s"} across all columns`}
-              </p>
+        <main
+          className={
+            isPanel
+              ? "mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col overflow-hidden"
+              : "mx-auto flex max-w-5xl flex-col"
+          }
+          id="main-content"
+        >
+          {!isPanel && (
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-ir-border px-4 py-6 sm:px-8">
+              <div>
+                <h1 className="text-xl font-semibold text-ir-heading">
+                  Roadmap
+                </h1>
+                <p className="mt-1 text-sm text-ir-muted">
+                  {totalPosts === 0
+                    ? "No items on the roadmap yet."
+                    : `${totalPosts} item${totalPosts === 1 ? "" : "s"} across all columns`}
+                </p>
+              </div>
+              {feedbackHref && (
+                <Button asChild>
+                  <Link href={feedbackHref}>
+                    <PlusIcon data-icon="inline-start" />
+                    Feedback
+                  </Link>
+                </Button>
+              )}
             </div>
-            {feedbackHref && (
-              <Button asChild>
-                <Link href={feedbackHref}>
+          )}
+
+          <div
+            className={
+              isPanel
+                ? "flex min-h-0 flex-1 flex-col overflow-y-auto"
+                : "contents"
+            }
+          >
+            {syncEnabled ? (
+              <>
+                <RoadmapFilters
+                  activeCategoryId={validCategoryId}
+                  activeSearch={searchQuery}
+                  activeSort={validSort}
+                  categories={categories}
+                />
+                <div className="flex-1">
+                  <RoadmapBoard
+                    columns={derivedColumns}
+                    embedQuery={embedQuery}
+                    isFiltering={!!(validCategoryId || searchQuery)}
+                    isSignedIn={isSignedIn}
+                    workspaceSlug={slug}
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="flex-1">
+                {/* Manual roadmap is read-only on the public portal. The board
+                still reads its (unused, since canManage is false) manage/add
+                controls from this context internally, so it needs a provider
+                here too even though the public page never renders the
+                search/manage/add trigger buttons that normally supply it. */}
+                <ManualRoadmapProvider>
+                  <ManualRoadmapBoard
+                    canManage={false}
+                    items={manualItems}
+                    statuses={manualStatuses}
+                    workspaceId={workspace.id}
+                  />
+                </ManualRoadmapProvider>
+              </div>
+            )}
+          </div>
+
+          {isPanel && panelFeedbackHref && (
+            <div className="shrink-0 border-t border-ir-border bg-ir-surface px-4 py-3 sm:px-8">
+              <Button asChild className="w-full">
+                <Link href={panelFeedbackHref}>
                   <PlusIcon data-icon="inline-start" />
                   Feedback
                 </Link>
               </Button>
-            )}
-          </div>
-
-          {syncEnabled ? (
-            <>
-              <RoadmapFilters
-                activeCategoryId={validCategoryId}
-                activeSearch={searchQuery}
-                activeSort={validSort}
-                categories={categories}
-              />
-              <div className="flex-1">
-                <RoadmapBoard
-                  columns={derivedColumns}
-                  embedQuery={embedQuery}
-                  isFiltering={!!(validCategoryId || searchQuery)}
-                  isSignedIn={isSignedIn}
-                  workspaceSlug={slug}
-                />
-              </div>
-            </>
-          ) : (
-            <div className="flex-1">
-              {/* Manual roadmap is read-only on the public portal. The board
-              still reads its (unused, since canManage is false) manage/add
-              controls from this context internally, so it needs a provider
-              here too even though the public page never renders the
-              search/manage/add trigger buttons that normally supply it. */}
-              <ManualRoadmapProvider>
-                <ManualRoadmapBoard
-                  canManage={false}
-                  items={manualItems}
-                  statuses={manualStatuses}
-                  workspaceId={workspace.id}
-                />
-              </ManualRoadmapProvider>
             </div>
           )}
         </main>

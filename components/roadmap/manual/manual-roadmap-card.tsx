@@ -8,6 +8,7 @@ import {
   TrashIcon,
 } from "@phosphor-icons/react";
 import { format } from "date-fns";
+import type { DragControls } from "framer-motion";
 
 export interface BoardItem {
   commentCount: number;
@@ -23,6 +24,7 @@ export interface BoardItem {
 
 interface ManualRoadmapCardProps {
   canManage: boolean;
+  dragControls?: DragControls;
   dragging?: boolean;
   item: BoardItem;
   onDelete?: (item: BoardItem) => void;
@@ -59,6 +61,7 @@ export function ManualRoadmapCard({
   onDelete,
   onView,
   dragging,
+  dragControls,
 }: ManualRoadmapCardProps) {
   const launch = formatLaunch(item.launchDate);
   const descPreview = item.description ? htmlToText(item.description) : "";
@@ -66,7 +69,7 @@ export function ManualRoadmapCard({
   return (
     <div
       className={`group relative rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs transition-all duration-150 ease-ir-standard hover:border-ir-primary/30 hover:shadow-ir-sm ${
-        dragging ? "opacity-50 ring-2 ring-ir-primary" : ""
+        dragging ? "opacity-95 shadow-ir-lg" : ""
       }`}
     >
       {item.coverImage && (
@@ -83,9 +86,14 @@ export function ManualRoadmapCard({
       <div className="p-3.5">
         <div className="flex items-start gap-2">
           {canManage && (
+            // relative z-10: the title button just below has its own
+            // after:inset-0 stretched-click overlay covering the whole
+            // card; without this the icon sits underneath it in paint
+            // order and never receives the pointerdown.
             <DotsSixVerticalIcon
               aria-hidden
-              className="mt-0.5 size-4 shrink-0 cursor-grab text-ir-muted/50 group-hover:text-ir-muted"
+              className="relative z-10 mt-0.5 size-4 shrink-0 cursor-grab text-ir-muted/50 group-hover:text-ir-muted active:cursor-grabbing"
+              onPointerDown={(e) => dragControls?.start(e)}
             />
           )}
           <div className="min-w-0 flex-1">

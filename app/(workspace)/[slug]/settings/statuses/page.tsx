@@ -3,7 +3,10 @@ import { notFound } from "next/navigation";
 import { StatusList } from "@/components/workspace-statuses/status-list";
 import { WORKSPACE_MEMBER } from "@/config/platform";
 import { requireSession } from "@/lib/authz";
-import { getWorkspaceStatuses } from "@/lib/workspace-statuses/queries";
+import {
+  countPostsInStatus,
+  getWorkspaceStatuses,
+} from "@/lib/workspace-statuses/queries";
 import {
   getWorkspaceBySlug,
   getWorkspaceMember,
@@ -36,9 +39,18 @@ export default async function StatusesPage({ params }: Props) {
   const statuses = await getWorkspaceStatuses(workspace.id);
   const canManage = true;
 
+  const postCountEntries = await Promise.all(
+    statuses.map(
+      async (s) =>
+        [s.id, await countPostsInStatus(workspace.id, s.slug)] as const
+    )
+  );
+  const postCounts = Object.fromEntries(postCountEntries);
+
   return (
     <StatusList
       canManage={canManage}
+      postCounts={postCounts}
       statuses={statuses}
       workspaceId={workspace.id}
     />

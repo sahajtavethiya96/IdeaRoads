@@ -7,6 +7,7 @@ import { ChangelogReactions } from "@/components/changelog/changelog-reactions";
 import { ChangelogShareButton } from "@/components/changelog/changelog-share-button";
 import { EmbedNav } from "@/components/embed/embed-nav";
 import { EmbedResizeReporter } from "@/components/embed/resize-reporter";
+import { EmbedModalHeader } from "@/components/embed/widget/embed-modal-header";
 import { PoweredByBadge } from "@/components/portal/powered-by-badge";
 import { PortalHeader } from "@/components/workspace/portal-header";
 import { getCurrentSession } from "@/lib/authz";
@@ -36,6 +37,7 @@ interface Props {
     board?: string;
     embed?: string;
     label?: string;
+    layout?: string;
     q?: string;
     theme?: string;
   }>;
@@ -64,9 +66,16 @@ export default async function PublicChangelogIndexPage({
   searchParams,
 }: Props) {
   const { slug } = await params;
-  const { label, q, embed, theme, accentColor, board } = await searchParams;
-  const embedParams = parseEmbedParams({ embed, theme, accentColor, board });
-  const { isEmbed } = embedParams;
+  const { label, q, embed, layout, theme, accentColor, board } =
+    await searchParams;
+  const embedParams = parseEmbedParams({
+    accentColor,
+    board,
+    embed,
+    layout,
+    theme,
+  });
+  const { isEmbed, isPanel } = embedParams;
   const embedQuery = buildEmbedQuery(embedParams);
   const embedWrapper = embedWrapperProps(embedParams);
 
@@ -99,6 +108,12 @@ export default async function PublicChangelogIndexPage({
     session ? getNotificationPreferences(session.user.id) : null,
   ]);
   const publicBoards = allBoards.filter((b) => b.isPublic && !b.isArchived);
+  // Prefer the board this embed instance is configured for (same
+  // resolution as the roadmap page) so the panel header's back button
+  // returns to the widget's own board, not an arbitrary one.
+  const activeBoards = allBoards.filter((b) => !b.isArchived);
+  const feedbackBoard =
+    activeBoards.find((b) => b.slug === embedParams.board) ?? activeBoards[0];
   const reactionsByEntry = await getReactionsForEntries(
     entries.map((e) => e.id),
     session?.user.id ?? null
@@ -114,11 +129,19 @@ export default async function PublicChangelogIndexPage({
       isEmbed={isEmbed}
     >
       <div
-        className={`min-h-screen bg-ir-background ${embedWrapper.className}`}
+        className={`${
+          isPanel ? "flex h-dvh flex-col overflow-hidden" : "min-h-screen"
+        } bg-ir-background ${embedWrapper.className}`}
         style={embedWrapper.style}
       >
-        {isEmbed && <EmbedResizeReporter />}
-        {isEmbed && (
+        {isEmbed && !isPanel && <EmbedResizeReporter />}
+        {isEmbed && isPanel && feedbackBoard && (
+          <EmbedModalHeader
+            backHref={`/${slug}/b/${feedbackBoard.slug}${embedQuery}`}
+            title="Changelog"
+          />
+        )}
+        {isEmbed && !isPanel && (
           <EmbedNav
             active="changelog"
             boards={publicBoards}
@@ -152,15 +175,31 @@ export default async function PublicChangelogIndexPage({
 
         {/* Content */}
         <main
-          className="mx-auto max-w-3xl px-4 pt-10 pb-20 sm:px-8"
+          className={
+            isPanel
+              ? "mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col overflow-y-auto px-4 py-4"
+              : "mx-auto max-w-3xl px-4 pt-10 pb-20 sm:px-8"
+          }
           id="main-content"
         >
-          <h1 className="text-xl font-semibold text-ir-heading">Changelog</h1>
-          <p className="mt-1 text-sm text-ir-muted">
-            The latest updates and improvements to {workspace.name}.
-          </p>
+          {!isPanel && (
+            <>
+              <h1 className="text-xl font-semibold text-ir-heading">
+                Changelog
+              </h1>
+              <p className="mt-1 text-sm text-ir-muted">
+                The latest updates and improvements to {workspace.name}.
+              </p>
+            </>
+          )}
 
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+          <div
+            className={
+              isPanel
+                ? "flex flex-wrap items-center justify-between gap-3"
+                : "mt-6 flex flex-wrap items-center justify-between gap-3"
+            }
+          >
             <ChangelogFilters
               activeLabel={activeLabel}
               activeSearch={searchQuery}

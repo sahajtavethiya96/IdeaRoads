@@ -1,6 +1,18 @@
+"use client";
+
+import { useSearchParams } from "next/navigation";
+import { PanelLoadingSkeleton } from "@/components/embed/widget/panel-loading-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function BoardLoading() {
+  const searchParams = useSearchParams();
+  const isPanel =
+    searchParams.get("embed") === "1" && searchParams.get("layout") === "panel";
+
+  if (isPanel) {
+    return <PanelLoadingSkeleton title="Share your feedback" />;
+  }
+
   return (
     <div className="min-h-screen bg-ir-background">
       {/* Portal header */}

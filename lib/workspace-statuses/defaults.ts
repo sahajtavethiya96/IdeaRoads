@@ -18,6 +18,7 @@ export const DEFAULT_WORKSPACE_STATUSES = [
     displayOrder: 0,
     showOnRoadmap: false,
     showOnPublicFeed: true,
+    isSystem: false,
   },
   {
     name: "Under Review",
@@ -27,6 +28,7 @@ export const DEFAULT_WORKSPACE_STATUSES = [
     displayOrder: 1,
     showOnRoadmap: false,
     showOnPublicFeed: true,
+    isSystem: false,
   },
   {
     name: "Planned",
@@ -36,6 +38,7 @@ export const DEFAULT_WORKSPACE_STATUSES = [
     displayOrder: 2,
     showOnRoadmap: true,
     showOnPublicFeed: true,
+    isSystem: false,
   },
   {
     name: "In Progress",
@@ -45,6 +48,7 @@ export const DEFAULT_WORKSPACE_STATUSES = [
     displayOrder: 3,
     showOnRoadmap: true,
     showOnPublicFeed: true,
+    isSystem: false,
   },
   {
     name: "Completed",
@@ -54,6 +58,7 @@ export const DEFAULT_WORKSPACE_STATUSES = [
     displayOrder: 4,
     showOnRoadmap: true,
     showOnPublicFeed: false,
+    isSystem: false,
   },
   {
     name: "Closed",
@@ -63,5 +68,16 @@ export const DEFAULT_WORKSPACE_STATUSES = [
     displayOrder: 5,
     showOnRoadmap: false,
     showOnPublicFeed: true,
+    isSystem: false,
+  },
+  {
+    name: "Draft",
+    slug: "draft",
+    color: "#6b7280",
+    isDefault: false,
+    displayOrder: -1,
+    showOnRoadmap: false,
+    showOnPublicFeed: false,
+    isSystem: true,
   },
 ] as const;

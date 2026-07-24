@@ -147,15 +147,20 @@ export async function updateWorkspaceStatusAction(input: {
     return { success: false, error: "Status not found." };
   }
 
-  await updateWorkspaceStatus(parsed.data.statusId, {
-    name: parsed.data.name,
-    color: parsed.data.color,
-    isArchived: parsed.data.isArchived,
-    showOnRoadmap: parsed.data.showOnRoadmap,
-    showOnPublicFeed: parsed.data.showOnPublicFeed,
-  });
+  try {
+    await updateWorkspaceStatus(parsed.data.statusId, {
+      name: parsed.data.name,
+      color: parsed.data.color,
+      isArchived: parsed.data.isArchived,
+      showOnRoadmap: parsed.data.showOnRoadmap,
+      showOnPublicFeed: parsed.data.showOnPublicFeed,
+    });
 
-  return { success: true, data: undefined };
+    return { success: true, data: undefined };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Failed to update status.";
+    return { success: false, error: msg };
+  }
 }
 
 // ─── Set Default Status ───────────────────────────────────────────────────────
@@ -205,7 +210,10 @@ export async function deleteWorkspaceStatusAction(input: {
   }
 
   try {
-    await deleteWorkspaceStatus(input.statusId);
+    await deleteWorkspaceStatus(input.statusId, {
+      id: session.user.id,
+      name: session.user.name,
+    });
 
     audit({
       action: "workspace_status.deleted",

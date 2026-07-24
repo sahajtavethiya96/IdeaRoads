@@ -25,6 +25,12 @@ export const workspaceStatuses = pgTable(
     displayOrder: integer("display_order").notNull().default(0),
     isDefault: boolean("is_default").notNull().default(false),
     isArchived: boolean("is_archived").notNull().default(false),
+    // Built-in, protected status (currently just "Draft") — cannot be
+    // deleted, archived, or renamed. Always present as the fallback a post
+    // is moved to when its actual status is deleted. Distinct from
+    // isDefault, which just means "new posts start here" and is freely
+    // reassignable.
+    isSystem: boolean("is_system").notNull().default(false),
     // Explicit roadmap-visibility flag (Sync-ON mode). ONLY statuses with this
     // set to true become roadmap columns. Intake/internal statuses (Open, Under
     // Review, Closed, Draft…) stay false so they never appear on the roadmap.
