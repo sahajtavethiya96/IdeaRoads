@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { updatePostStatusAction } from "@/app/actions/posts";
 import type { RoadmapPost, RoadmapStatusColumn } from "@/lib/roadmap/queries";
 import { RoadmapColumn } from "./roadmap-column";
+import { useKanbanDrag } from "./use-kanban-drag";
 
 interface RoadmapBoardProps {
   // Only the admin-shelled /settings/roadmap page passes this — dragging a
@@ -54,10 +55,14 @@ export function RoadmapBoard({
 }: RoadmapBoardProps) {
   const router = useRouter();
   const [cols, setCols] = useState<Cols>(() => buildCols(columns));
-  const [drag, setDrag] = useState<{ colId: string; post: RoadmapPost } | null>(
-    null
-  );
-  const [dropTarget, setDropTarget] = useState<string | null>(null);
+  const {
+    draggingId,
+    dropPosition,
+    handleDrag,
+    handleDragEnd,
+    handleDragStart,
+    registerColumn,
+  } = useKanbanDrag();
 
   // Re-seed local state whenever the server sends fresh data (after a refresh
   // or a search/filter change).
@@ -66,7 +71,7 @@ export function RoadmapBoard({
   }, [columns]);
 
   function performMove(sourceColId: string, targetCol: RoadmapStatusColumn) {
-    const post = cols[sourceColId]?.find((p) => p.id === drag?.post.id);
+    const post = cols[sourceColId]?.find((p) => p.id === draggingId);
     if (!post || !workspaceId || sourceColId === targetCol.id) {
       return;
     }
@@ -120,27 +125,24 @@ export function RoadmapBoard({
             <RoadmapColumn
               canManage={canManage}
               color={col.color}
-              draggingId={drag?.post.id ?? null}
+              columnRef={registerColumn(col.id)}
+              draggingId={draggingId}
               embedQuery={embedQuery}
-              isDropTarget={dropTarget === col.id}
+              isDropTarget={dropPosition?.columnId === col.id}
               isFiltering={isFiltering}
               isSignedIn={isSignedIn}
               key={col.id}
               name={col.name}
-              onDragEnd={() => {
-                setDrag(null);
-                setDropTarget(null);
-              }}
-              onDragLeaveColumn={() => setDropTarget(null)}
-              onDragOverColumn={() => drag && setDropTarget(col.id)}
-              onDragStartPost={(post) => setDrag({ colId: col.id, post })}
-              onDropColumn={() => {
-                if (drag) {
-                  performMove(drag.colId, col);
-                }
-                setDrag(null);
-                setDropTarget(null);
-              }}
+              onDrag={handleDrag}
+              onDragEndPost={() =>
+                handleDragEnd((pos) => {
+                  const targetCol = columns.find((c) => c.id === pos.columnId);
+                  if (targetCol) {
+                    performMove(col.id, targetCol);
+                  }
+                })
+              }
+              onDragStartPost={(post) => handleDragStart(post.id)}
               posts={cols[col.id] ?? []}
               useWorkspaceLinks={useWorkspaceLinks}
               workspaceSlug={workspaceSlug}

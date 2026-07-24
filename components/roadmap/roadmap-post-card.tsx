@@ -3,6 +3,7 @@ import {
   DotsSixVerticalIcon,
   PushPinIcon,
 } from "@phosphor-icons/react/dist/ssr";
+import type { DragControls } from "framer-motion";
 import Link from "next/link";
 import { CategoryChip } from "@/components/categories/category-chip";
 import VoteButton from "@/components/voting/vote-button";
@@ -12,10 +13,12 @@ interface RoadmapPostCardProps {
   // Shows the drag handle — only the admin-shelled board passes this (see
   // RoadmapBoard/RoadmapColumn), matching the manual roadmap card's same prop.
   canManage?: boolean;
+  dragControls?: DragControls;
   // Carries embed=1/theme/accentColor into the post-detail navigation so
   // opening an item from the embedded roadmap doesn't fall back to the full
   // Public Portal chrome — see RoadmapPage. Empty outside the embed.
   embedQuery?: string;
+  isDragging?: boolean;
   isSignedIn: boolean;
   post: RoadmapPost;
   useWorkspaceLinks?: boolean;
@@ -28,6 +31,8 @@ export function RoadmapPostCard({
   isSignedIn,
   useWorkspaceLinks,
   canManage,
+  dragControls,
+  isDragging,
   embedQuery = "",
 }: RoadmapPostCardProps) {
   // Carry the roadmap as the navigation origin so the detail page's Back button
@@ -51,12 +56,22 @@ export function RoadmapPostCard({
 
   return (
     // `relative` anchors the title's stretched-link overlay to the whole card.
-    <div className="group relative rounded-ir-card border border-ir-border bg-ir-surface p-4 shadow-ir-xs transition-all duration-150 ease-ir-standard hover:border-ir-primary/30 hover:shadow-ir-sm">
+    <div
+      className={`group relative rounded-ir-card border border-ir-border bg-ir-surface p-4 shadow-ir-xs transition-all duration-150 ease-ir-standard hover:border-ir-primary/30 hover:shadow-ir-sm ${
+        isDragging ? "opacity-95 shadow-ir-lg" : ""
+      }`}
+    >
       <div className="flex items-start gap-3">
         {canManage && (
+          // relative z-10: without this, the title Link's after:inset-0
+          // overlay (below) stretches over the whole card and sits above
+          // this icon in paint order, silently swallowing the pointerdown
+          // before it ever reaches onPointerDown — same reason VoteButton
+          // needs the same treatment just below.
           <DotsSixVerticalIcon
             aria-hidden
-            className="mt-1.5 size-4 shrink-0 cursor-grab text-ir-muted/50 group-hover:text-ir-muted"
+            className="relative z-10 mt-1.5 size-4 shrink-0 cursor-grab text-ir-muted/50 group-hover:text-ir-muted active:cursor-grabbing"
+            onPointerDown={(e) => dragControls?.start(e)}
           />
         )}
 

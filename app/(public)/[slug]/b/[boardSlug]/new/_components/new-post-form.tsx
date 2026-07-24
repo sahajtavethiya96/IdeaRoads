@@ -2,6 +2,7 @@
 
 import {
   ArrowLeftIcon,
+  CameraIcon,
   CheckCircleIcon,
   ImageIcon,
   XIcon,
@@ -45,6 +46,13 @@ interface Category {
   name: string;
 }
 
+interface SimilarPost {
+  id: string;
+  slug: string;
+  title: string;
+  upvotes: number;
+}
+
 interface Props {
   boardId: string;
   boardName: string;
@@ -52,7 +60,22 @@ interface Props {
   categories: Category[];
   embedQuery?: string;
   isEmbed?: boolean;
+  // Widget-modal mode (EmbedWidgetShell): category was already chosen on the
+  // preceding Categories screen (undefined only when a workspace has none to
+  // choose from), Back/Cancel return to that screen instead of navigating to
+  // the board, and the success screen shows "Post More Feedback"/"View Other
+  // Feedback" instead of the standalone page's own success actions. Every
+  // panel-mode prop is optional and unused by the standalone `/new` page, so
+  // its behavior is untouched when they're absent.
+  isPanel?: boolean;
   isSignedIn: boolean;
+  onBack?: () => void;
+  onPostAnother?: () => void;
+  panelCategory?: Category;
+  // Both widget-only, mirroring isPanel — undefined/absent on the
+  // standalone `/new` page, which has no use for either.
+  showSimilarPosts?: boolean;
+  showViewOtherFeedbackButton?: boolean;
   workspaceId: string;
   workspaceSlug: string;
 }
@@ -107,13 +130,22 @@ export default function NewPostForm({
   boardName,
   categories,
   isEmbed = false,
+  isPanel = false,
   embedQuery = "",
   isSignedIn,
+  onBack,
+  onPostAnother,
+  panelCategory,
+  showSimilarPosts = false,
+  showViewOtherFeedbackButton = false,
 }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const defaultCategoryId =
-    categories.find((c) => c.isDefault)?.id ?? categories[0]?.id ?? "";
+    panelCategory?.id ??
+    categories.find((c) => c.isDefault)?.id ??
+    categories[0]?.id ??
+    "";
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [categoryId, setCategoryId] = useState(defaultCategoryId);
@@ -126,9 +158,16 @@ export default function NewPostForm({
   const [signedIn, setSignedIn] = useEmbedSignedIn(isEmbed, isSignedIn);
   const [authOpen, setAuthOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [similarPosts, setSimilarPosts] = useState<SimilarPost[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const boardHref = `/${workspaceSlug}/b/${boardSlug}${embedQuery}`;
+  // Deliberately WITHOUT embedQuery — used only for links that open a new
+  // browser tab (View Other Feedback, similar-post suggestions). Carrying
+  // embed=1&layout=panel into a real, standalone browser tab would render
+  // that tab in the narrow widget-panel chrome instead of the full Public
+  // Portal it's supposed to be.
+  const publicBoardHref = `/${workspaceSlug}/b/${boardSlug}`;
 
   // Recover a draft left behind by an actual reload — the auth-modal
   // interruption never unmounts this component in the first place, so it
@@ -149,6 +188,40 @@ export default function NewPostForm({
       writeDraft(boardId, { title, body, categoryId });
     }
   }, [boardId, title, body, categoryId, defaultCategoryId]);
+
+  // "Similar posts while typing" — a duplicate-detection nudge, gated by the
+  // workspace's Widget Settings toggle. Searches the same public board
+  // listing an anonymous visitor could already browse directly, so this
+  // hits an unauthenticated endpoint.
+  useEffect(() => {
+    if (!isPanel || !showSimilarPosts) {
+      return;
+    }
+    const trimmed = title.trim();
+    if (countCharacters(trimmed) < 3) {
+      setSimilarPosts([]);
+      return;
+    }
+    let cancelled = false;
+    const handle = setTimeout(async () => {
+      try {
+        const res = await embedFetch(
+          `/api/embed/posts/search?boardId=${encodeURIComponent(boardId)}&q=${encodeURIComponent(trimmed)}`
+        );
+        if (cancelled || !res.ok) {
+          return;
+        }
+        const data = await res.json();
+        setSimilarPosts(data.posts ?? []);
+      } catch {
+        // Best-effort suggestion — a failed lookup just shows nothing.
+      }
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
+  }, [boardId, isPanel, showSimilarPosts, title]);
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -332,20 +405,48 @@ export default function NewPostForm({
         <div className="flex size-12 items-center justify-center rounded-ir-full bg-ir-success/10">
           <CheckCircleIcon className="size-6 text-ir-success" weight="fill" />
         </div>
-        <div>
-          <h1 className="text-lg font-semibold text-ir-heading">
-            Feedback submitted
-          </h1>
-          <p className="mt-1 text-sm text-ir-muted">
-            Thanks — your idea is on its way to the team.
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Button onClick={() => router.push(boardHref)} variant="outline">
-            Back to Feedback
-          </Button>
-          <Button onClick={handleSubmitAnother}>Submit another</Button>
-        </div>
+        {isPanel ? (
+          <>
+            <div>
+              <h1 className="text-lg font-semibold text-ir-heading">
+                Feedback successfully created
+              </h1>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <Button onClick={onPostAnother ?? handleSubmitAnother}>
+                Post More Feedback
+              </Button>
+              {showViewOtherFeedbackButton && (
+                <Button asChild variant="ghost">
+                  <a
+                    href={publicBoardHref}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    View Other Feedback
+                  </a>
+                </Button>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <div>
+              <h1 className="text-lg font-semibold text-ir-heading">
+                Feedback submitted
+              </h1>
+              <p className="mt-1 text-sm text-ir-muted">
+                Thanks — your idea is on its way to the team.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Button onClick={() => router.push(boardHref)} variant="outline">
+                Back to Feedback
+              </Button>
+              <Button onClick={handleSubmitAnother}>Submit another</Button>
+            </div>
+          </>
+        )}
       </div>
     );
   }
@@ -365,10 +466,12 @@ export default function NewPostForm({
         </div>
       )}
 
-      <div className="px-8 py-8">
-        <h1 className="mb-6 text-xl font-semibold text-ir-heading">
-          Submit feedback
-        </h1>
+      <div className={isPanel ? "px-4 py-4" : "px-8 py-8"}>
+        {!isPanel && (
+          <h1 className="mb-6 text-xl font-semibold text-ir-heading">
+            Submit feedback
+          </h1>
+        )}
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           {/* Title */}
@@ -408,6 +511,33 @@ export default function NewPostForm({
                 {countCharacters(title)}/150
               </span>
             </div>
+
+            {/* Similar posts while typing — opens in a new tab rather than
+                navigating the widget itself, since the widget is a
+                creation-only surface, never a browsing one. */}
+            {isPanel && similarPosts.length > 0 && (
+              <div className="mt-2 space-y-1.5 rounded-ir-md border border-ir-border bg-ir-muted-surface p-2">
+                <p className="px-1 text-2xs font-medium tracking-wide text-ir-muted uppercase">
+                  Similar feedback already exists
+                </p>
+                {similarPosts.map((post) => (
+                  <a
+                    className="flex items-center gap-2 rounded-ir-sm px-1.5 py-1 text-xs text-ir-body transition-colors duration-150 ease-ir-standard hover:bg-ir-surface hover:text-ir-primary"
+                    href={`${publicBoardHref}/p/${post.slug}`}
+                    key={post.id}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    <span className="shrink-0 text-ir-muted">
+                      ↑ {post.upvotes}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate">
+                      {post.title}
+                    </span>
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Body */}
@@ -428,8 +558,9 @@ export default function NewPostForm({
             />
           </div>
 
-          {/* Category */}
-          {categories.length > 0 && (
+          {/* Category — chosen on the preceding Categories screen in panel
+              mode, so there's nothing left to pick here. */}
+          {!isPanel && categories.length > 0 && (
             <div>
               <label
                 className="mb-1.5 block text-sm font-medium text-ir-heading"
@@ -493,22 +624,35 @@ export default function NewPostForm({
                 </button>
               </div>
             ) : (
-              <label
-                className={`flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-ir-input border border-dashed border-ir-border px-3 py-4 text-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:border-ir-primary/40 hover:text-ir-heading ${
-                  isPending ? "pointer-events-none opacity-50" : ""
-                }`}
-              >
-                <ImageIcon className="size-4" />
-                Add an image
-                <input
-                  accept="image/png,image/jpeg,image/webp,image/gif"
-                  className="sr-only"
-                  disabled={isPending}
-                  onChange={handleImageChange}
-                  ref={fileInputRef}
-                  type="file"
-                />
-              </label>
+              <div className={isPanel ? "flex gap-2.5" : ""}>
+                <label
+                  className={`flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-ir-input border border-dashed border-ir-border px-3 py-4 text-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:border-ir-primary/40 hover:text-ir-heading ${
+                    isPending ? "pointer-events-none opacity-50" : ""
+                  }`}
+                >
+                  <ImageIcon className="size-4" />
+                  Add an image
+                  <input
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    className="sr-only"
+                    disabled={isPending}
+                    onChange={handleImageChange}
+                    ref={fileInputRef}
+                    type="file"
+                  />
+                </label>
+                {isPanel && (
+                  <button
+                    className="flex w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-ir-input border border-dashed border-ir-border px-3 py-4 text-sm text-ir-muted opacity-60"
+                    disabled
+                    title="Coming soon"
+                    type="button"
+                  >
+                    <CameraIcon className="size-4" />
+                    Take a screenshot
+                  </button>
+                )}
+              </div>
             )}
             {imageError && (
               <p className="mt-1 text-xs text-ir-danger">{imageError}</p>
@@ -521,12 +665,22 @@ export default function NewPostForm({
 
           {/* Actions — pinned to the bottom-right of the form */}
           <div className="flex items-center justify-end gap-3 border-t border-ir-border pt-5">
-            <Link
-              className="rounded-ir-sm px-3 py-2.5 text-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-              href={boardHref}
-            >
-              Cancel
-            </Link>
+            {onBack ? (
+              <button
+                className="rounded-ir-sm px-3 py-2.5 text-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                onClick={onBack}
+                type="button"
+              >
+                Cancel
+              </button>
+            ) : (
+              <Link
+                className="rounded-ir-sm px-3 py-2.5 text-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                href={boardHref}
+              >
+                Cancel
+              </Link>
+            )}
             <Button
               disabled={isPending || countCharacters(title) < 3}
               type="submit"

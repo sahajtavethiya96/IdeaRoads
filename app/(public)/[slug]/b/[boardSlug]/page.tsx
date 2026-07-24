@@ -10,6 +10,7 @@ import { notFound } from "next/navigation";
 import { CategoryChip } from "@/components/categories/category-chip";
 import { EmbedNav } from "@/components/embed/embed-nav";
 import { EmbedResizeReporter } from "@/components/embed/resize-reporter";
+import { EmbedWidgetShell } from "@/components/embed/widget/embed-widget-shell";
 import { CategorySidebar } from "@/components/portal/category-sidebar";
 import { PoweredByBadge } from "@/components/portal/powered-by-badge";
 import { PostStatusBadge } from "@/components/posts/post-status-badge";
@@ -22,6 +23,7 @@ import { getBoardBySlug, listBoardsForWorkspace } from "@/lib/boards/queries";
 import { getActiveCategoriesForWorkspace } from "@/lib/categories/queries";
 import { truncateHtmlToText } from "@/lib/changelog/html";
 import { EmbedPersonalizationProvider } from "@/lib/embed/personalization-context";
+import { DEFAULT_EMBED_CONFIG, getEmbedConfig } from "@/lib/embed/queries";
 import {
   buildEmbedQuery,
   embedWrapperProps,
@@ -126,6 +128,52 @@ export default async function BoardPage({ params, searchParams }: Props) {
     getActiveCategoriesForWorkspace(workspace.id),
     listBoardsForWorkspace(workspace.id),
   ]);
+
+  // Panel mode (the widget's Floating/Sticky button) never shows the board's
+  // feedback list — it's a creation-only modal (Categories -> Form ->
+  // Success). Returning here also skips the post-listing queries below,
+  // which this view has no use for.
+  if (isPanel) {
+    // Widget-level behavior settings — never travel through widget.js or
+    // the iframe query string, just read straight from the DB inside this
+    // same request, same as embedWrapper's theme/accent above are not (see
+    // lib/embed/queries.ts's getWidgetHostConfig for the host-chrome half
+    // of this config, which *does* travel to widget.js).
+    const embedConfig = await getEmbedConfig(workspace.id);
+    return (
+      <EmbedWidgetShell
+        boardId={board.id}
+        boardName={board.name}
+        boardSlug={board.slug}
+        categories={categories}
+        embedQuery={embedQuery}
+        isSignedIn={isSignedIn}
+        showChangelog={
+          workspace.changelogPublic &&
+          (embedConfig?.showChangelog ?? DEFAULT_EMBED_CONFIG.showChangelog)
+        }
+        showRoadmap={
+          workspace.roadmapPublic &&
+          (embedConfig?.showRoadmap ?? DEFAULT_EMBED_CONFIG.showRoadmap)
+        }
+        showSimilarPosts={
+          embedConfig?.showSimilarPosts ?? DEFAULT_EMBED_CONFIG.showSimilarPosts
+        }
+        showViewOtherFeedbackButton={
+          embedConfig?.showViewOtherFeedbackButton ??
+          DEFAULT_EMBED_CONFIG.showViewOtherFeedbackButton
+        }
+        submitFormTiming={
+          embedConfig?.showSubmitFormImmediately ??
+          DEFAULT_EMBED_CONFIG.showSubmitFormImmediately
+        }
+        workspaceId={workspace.id}
+        workspaceSlug={slug}
+        wrapperClassName={embedWrapper.className}
+        wrapperStyle={embedWrapper.style}
+      />
+    );
+  }
 
   // Statuses an admin has marked "hidden from public feed" (Completed, by
   // default) are excluded here only — the admin panel's own post lists never

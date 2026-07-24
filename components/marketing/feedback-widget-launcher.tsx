@@ -34,17 +34,13 @@ export function FeedbackWidgetLauncher({
       return;
     }
 
+    // Button type, colors, theme, position, etc. all come from this
+    // workspace's Settings → Embed configuration, fetched live by widget.js
+    // — nothing about the widget's appearance is hardcoded here anymore.
     const script = document.createElement("script");
     script.id = LAUNCHER_SCRIPT_ID;
     script.src = `${appUrl}/widget.js`;
     script.dataset.workspace = "testing-workspace";
-    script.dataset.board = "feature-requests";
-    script.dataset.mode = "button";
-    script.dataset.position = "bottom-right";
-    script.dataset.theme = "light";
-    script.dataset.width = "500";
-    script.dataset.height = "560";
-    script.dataset.accentColor = "#d12323";
     document.body.appendChild(script);
   }, [appUrl]);
 

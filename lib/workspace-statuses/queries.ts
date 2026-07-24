@@ -1,5 +1,5 @@
-import { and, asc, eq } from "drizzle-orm";
-import { workspaceStatuses } from "@/db/schema";
+import { and, asc, count, eq } from "drizzle-orm";
+import { posts, workspaceStatuses } from "@/db/schema";
 import { db } from "@/lib/db";
 
 export async function getWorkspaceStatuses(workspaceId: string) {
@@ -47,4 +47,15 @@ export async function getWorkspaceStatusById(id: string) {
     .where(eq(workspaceStatuses.id, id))
     .limit(1);
   return row ?? null;
+}
+
+export async function countPostsInStatus(
+  workspaceId: string,
+  slug: string
+): Promise<number> {
+  const [{ value }] = await db
+    .select({ value: count() })
+    .from(posts)
+    .where(and(eq(posts.workspaceId, workspaceId), eq(posts.status, slug)));
+  return value;
 }

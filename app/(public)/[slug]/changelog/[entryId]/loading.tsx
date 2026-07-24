@@ -1,6 +1,18 @@
+"use client";
+
+import { useSearchParams } from "next/navigation";
+import { PanelLoadingSkeleton } from "@/components/embed/widget/panel-loading-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ChangelogEntryLoading() {
+  const searchParams = useSearchParams();
+  const isPanel =
+    searchParams.get("embed") === "1" && searchParams.get("layout") === "panel";
+
+  if (isPanel) {
+    return <PanelLoadingSkeleton title="Changelog" />;
+  }
+
   return (
     <div className="min-h-screen bg-ir-background">
       <div className="border-b border-ir-border px-4 py-4 sm:px-8">

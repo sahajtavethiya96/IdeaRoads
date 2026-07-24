@@ -20,6 +20,7 @@ interface WorkspaceStatus {
   color: string;
   id: string;
   isArchived: boolean;
+  isSystem: boolean;
   name: string;
   slug: string;
 }
@@ -50,12 +51,33 @@ export default function StatusSelect({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  const activeStatuses = workspaceStatuses.filter((s) => !s.isArchived);
+  // System statuses (currently just the protected "Draft" fallback) never get
+  // their own picker entry — a post auto-migrated onto one displays as the
+  // same "Draft" sentinel below, so it doesn't show up twice.
+  const activeStatuses = workspaceStatuses.filter(
+    (s) => !s.isArchived && !s.isSystem
+  );
+  const isOnSystemDraftStatus = workspaceStatuses.some(
+    (s) => s.isSystem && s.slug === currentStatus
+  );
+
+  // Reserve width for the longest label this select could ever show, so
+  // switching statuses (e.g. "Open" -> "Under Review") resizes nothing —
+  // every sibling after it in the flex-wrap header row (category, assignee,
+  // byline, dates) would otherwise reflow horizontally on every change. `ch`
+  // scales with font size rather than the viewport, so this stays correct
+  // at any screen size; the +4 covers the pill's own horizontal padding.
+  const longestStatusLabel = Math.max(
+    "Draft".length,
+    ...activeStatuses.map((s) => s.name.length)
+  );
+  const statusTriggerMinWidth = `${longestStatusLabel + 4}ch`;
 
   function handleChange(value: string) {
     if (value === DRAFT_VALUE) {
-      // Already a draft → no unnecessary update (requirement 3).
-      if (isDraft) {
+      // Already draft — either unpublished, or auto-migrated onto the system
+      // Draft status — so no unnecessary update (requirement 3).
+      if (isDraft || isOnSystemDraftStatus) {
         return;
       }
       // Published → revert to draft, reusing the existing publish/draft flow.
@@ -110,12 +132,13 @@ export default function StatusSelect({
     <Select
       disabled={isPending}
       onValueChange={handleChange}
-      value={isDraft ? DRAFT_VALUE : currentStatus}
+      value={isDraft || isOnSystemDraftStatus ? DRAFT_VALUE : currentStatus}
     >
       <SelectTrigger
         className="h-auto gap-1.5 rounded-ir-full border-0 bg-ir-muted-surface px-2.5 py-1 text-xs font-medium text-ir-heading"
         showChevron={false}
         size="sm"
+        style={{ minWidth: statusTriggerMinWidth }}
       >
         <SelectValue />
       </SelectTrigger>

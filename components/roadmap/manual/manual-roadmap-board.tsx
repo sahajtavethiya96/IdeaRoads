@@ -9,9 +9,11 @@ import {
   deleteRoadmapItemAction,
   moveRoadmapItemAction,
 } from "@/app/actions/roadmap";
+import { DraggableCard } from "@/components/roadmap/draggable-card";
 import { useManualRoadmapControls } from "@/components/roadmap/manual/manual-roadmap-search-context";
 import { RoadmapEmptyState } from "@/components/roadmap/roadmap-empty-state";
 import { RoadmapStatusHeader } from "@/components/roadmap/roadmap-status-header";
+import { useKanbanDrag } from "@/components/roadmap/use-kanban-drag";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { AddRoadmapItemDialog } from "./add-roadmap-item-dialog";
 import { ManualItemDetailDialog } from "./manual-item-detail-dialog";
@@ -67,8 +69,14 @@ export function ManualRoadmapBoard({
   const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
   const [cols, setCols] = useState<Cols>(() => buildCols(statuses, items));
-  const [drag, setDrag] = useState<BoardItem | null>(null);
-  const [dropTarget, setDropTarget] = useState<string | null>(null);
+  const {
+    draggingId,
+    dropPosition,
+    handleDrag,
+    handleDragEnd,
+    handleDragStart,
+    registerColumn,
+  } = useKanbanDrag();
 
   const {
     query,
@@ -209,7 +217,7 @@ export function ManualRoadmapBoard({
               // unfiltered `cols`, and dragging is off while filtering, so the
               // filter can never corrupt column ordering.
               const columnItems = (cols[s.id] ?? []).filter(matchesQuery);
-              const isDropTarget = dropTarget === s.id;
+              const isDropTarget = dropPosition?.columnId === s.id;
               return (
                 <div className="flex w-full min-w-0 flex-col" key={s.id}>
                   <RoadmapStatusHeader
@@ -220,32 +228,15 @@ export function ManualRoadmapBoard({
 
                   {/* Drop zone. Keyboard users reorder/move via the item Edit
                       dialog's Column selector and the Manage-columns controls;
-                      drag is a pointer-only enhancement. */}
-                  {/* biome-ignore lint/a11y/noStaticElementInteractions: native drop zone */}
-                  {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: native drop zone */}
+                      drag is a pointer-only enhancement (see DraggableCard —
+                      it can only be started from each card's drag handle). */}
                   <div
-                    className={`flex min-h-24 flex-col gap-2 rounded-ir-md border border-dashed p-1 transition-colors duration-150 ease-ir-standard ${
+                    className={`flex min-h-24 flex-col gap-2 rounded-ir-md p-1 transition-colors duration-150 ease-ir-standard ${
                       isDropTarget && canManage
-                        ? "border-ir-primary/60 bg-ir-primary-light/10"
-                        : "border-transparent"
+                        ? "bg-ir-primary-light/10 ring-1 ring-inset ring-ir-primary/30"
+                        : ""
                     }`}
-                    onDragLeave={() => canManage && setDropTarget(null)}
-                    onDragOver={(e) => {
-                      if (!canManage || !drag) {
-                        return;
-                      }
-                      e.preventDefault();
-                      setDropTarget(s.id);
-                    }}
-                    onDrop={(e) => {
-                      if (!canManage || !drag) {
-                        return;
-                      }
-                      e.preventDefault();
-                      performMove(drag, s.id, columnItems.length);
-                      setDrag(null);
-                      setDropTarget(null);
-                    }}
+                    ref={registerColumn(s.id)}
                   >
                     {columnItems.length === 0 ? (
                       <RoadmapEmptyState
@@ -259,74 +250,47 @@ export function ManualRoadmapBoard({
                       />
                     ) : (
                       <AnimatePresence initial={false}>
-                        {columnItems.map((item, index) => (
-                          // Native HTML5 DnD lives on this plain div — framer's
-                          // motion.div defines its own onDragStart/onDrop event
-                          // types for its pointer-gesture drag system, which
-                          // conflict with the native DragEvent handlers here.
-                          // The animated layout/enter/exit lives on the nested
-                          // motion.div instead, which has no DnD props at all.
-                          // biome-ignore lint/a11y/noStaticElementInteractions: native draggable card
-                          // biome-ignore lint/a11y/noNoninteractiveElementInteractions: native draggable card
-                          <div
-                            draggable={dragEnabled}
+                        {columnItems.map((item) => (
+                          <motion.div
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={
+                              shouldReduceMotion ? undefined : { opacity: 0 }
+                            }
+                            initial={
+                              shouldReduceMotion ? false : { opacity: 0, y: 4 }
+                            }
                             key={item.id}
-                            onDragEnd={() => {
-                              setDrag(null);
-                              setDropTarget(null);
-                            }}
-                            onDragOver={(e) => {
-                              if (!dragEnabled || !drag) {
-                                return;
-                              }
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setDropTarget(s.id);
-                            }}
-                            onDragStart={(e) => {
-                              if (!dragEnabled) {
-                                return;
-                              }
-                              e.dataTransfer.effectAllowed = "move";
-                              setDrag(item);
-                            }}
-                            onDrop={(e) => {
-                              if (!canManage || !drag) {
-                                return;
-                              }
-                              e.preventDefault();
-                              e.stopPropagation();
-                              performMove(drag, s.id, index);
-                              setDrag(null);
-                              setDropTarget(null);
-                            }}
+                            layout={!shouldReduceMotion}
+                            transition={{ duration: 0.15, ease: "easeOut" }}
                           >
-                            <motion.div
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={
-                                shouldReduceMotion ? undefined : { opacity: 0 }
+                            <DraggableCard
+                              dragEnabled={dragEnabled}
+                              isDragging={draggingId === item.id}
+                              itemId={item.id}
+                              onDrag={handleDrag}
+                              onDragEnd={() =>
+                                handleDragEnd((pos) =>
+                                  performMove(item, pos.columnId, pos.index)
+                                )
                               }
-                              initial={
-                                shouldReduceMotion
-                                  ? false
-                                  : { opacity: 0, y: 4 }
-                              }
-                              layout={!shouldReduceMotion}
-                              transition={{ duration: 0.15, ease: "easeOut" }}
+                              onDragStart={() => handleDragStart(item.id)}
                             >
-                              <ManualRoadmapCard
-                                canManage={canManage}
-                                dragging={drag?.id === item.id}
-                                item={item}
-                                onDelete={setDeleteTarget}
-                                onEdit={(it) => {
-                                  setEditItem(it);
-                                  setAddOpen(false);
-                                }}
-                                onView={setViewItem}
-                              />
-                            </motion.div>
-                          </div>
+                              {(dragControls) => (
+                                <ManualRoadmapCard
+                                  canManage={canManage}
+                                  dragControls={dragControls}
+                                  dragging={draggingId === item.id}
+                                  item={item}
+                                  onDelete={setDeleteTarget}
+                                  onEdit={(it) => {
+                                    setEditItem(it);
+                                    setAddOpen(false);
+                                  }}
+                                  onView={setViewItem}
+                                />
+                              )}
+                            </DraggableCard>
+                          </motion.div>
                         ))}
                       </AnimatePresence>
                     )}

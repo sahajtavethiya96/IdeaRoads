@@ -98,17 +98,6 @@ export function WorkspaceSwitcher({
           to the workspace logo — not a hover-reveal, so it's there whether
           or not the pointer is over it (ChatGPT's own sidebar icon is
           likewise a persistent, separate button, never hidden). */}
-      {!collapsed && onCollapse && (
-        <button
-          aria-label="Collapse sidebar"
-          className="flex h-14 w-11 shrink-0 cursor-pointer items-center justify-center text-sidebar-foreground/85 transition-colors duration-150 ease-ir-standard hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-          onClick={onCollapse}
-          title="Collapse sidebar"
-          type="button"
-        >
-          <SidebarSimpleIcon className="size-4" />
-        </button>
-      )}
 
       <DropdownMenu onOpenChange={setOpen} open={open}>
         <DropdownMenuTrigger asChild>
@@ -158,7 +147,9 @@ export function WorkspaceSwitcher({
                 <DropdownMenuItem
                   asChild
                   className={`normal-case tracking-normal ${
-                    isCurrent ? "bg-ir-primary-light/20 text-ir-primary" : ""
+                    isCurrent
+                      ? "bg-ir-primary-light/20 text-ir-primary focus:bg-ir-primary-light/20 focus:text-ir-primary"
+                      : ""
                   }`}
                   key={ws.slug}
                 >
@@ -197,6 +188,17 @@ export function WorkspaceSwitcher({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      {!collapsed && onCollapse && (
+        <button
+          aria-label="Collapse sidebar"
+          className="flex h-14 w-11 shrink-0 cursor-pointer items-center justify-center text-sidebar-foreground/85 transition-colors duration-150 ease-ir-standard hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+          onClick={onCollapse}
+          title="Collapse sidebar"
+          type="button"
+        >
+          <SidebarSimpleIcon className="size-4" />
+        </button>
+      )}
     </div>
   );
 }

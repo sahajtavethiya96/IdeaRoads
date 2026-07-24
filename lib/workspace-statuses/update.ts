@@ -14,6 +14,25 @@ export async function updateWorkspaceStatus(
     showOnPublicFeed?: boolean;
   }
 ) {
+  const [status] = await db
+    .select()
+    .from(workspaceStatuses)
+    .where(eq(workspaceStatuses.id, statusId))
+    .limit(1);
+
+  if (!status) {
+    throw new Error("Status not found.");
+  }
+
+  if (status.isSystem) {
+    if (input.name !== undefined && input.name.trim() !== status.name) {
+      throw new Error("The Draft status cannot be renamed.");
+    }
+    if (input.isArchived) {
+      throw new Error("The Draft status cannot be archived.");
+    }
+  }
+
   await db
     .update(workspaceStatuses)
     .set({

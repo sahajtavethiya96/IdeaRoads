@@ -61,6 +61,16 @@ export default function CategorySelect({
     return <span className="text-xs text-ir-muted">No categories</span>;
   }
 
+  // Reserve width for the longest label this select could ever show (see the
+  // matching comment in StatusSelect) so switching categories never resizes
+  // the pill and reflows the rest of the header row. Every post always has a
+  // category (checked above), so the placeholder isn't part of this — sizing
+  // for it would needlessly widen the common case.
+  const longestCategoryLabel = Math.max(
+    ...categories.map((c) => c.name.length)
+  );
+  const categoryTriggerMinWidth = `${longestCategoryLabel + 4}ch`;
+
   return (
     <Select
       disabled={isPending}
@@ -71,6 +81,7 @@ export default function CategorySelect({
         className="h-auto gap-1.5 rounded-ir-full border-0 bg-ir-muted-surface px-2.5 py-1 text-xs font-medium text-ir-heading"
         showChevron={false}
         size="sm"
+        style={{ minWidth: categoryTriggerMinWidth }}
       >
         <SelectValue placeholder="Select category" />
       </SelectTrigger>

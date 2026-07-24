@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { EmbedNav } from "@/components/embed/embed-nav";
 import { EmbedResizeReporter } from "@/components/embed/resize-reporter";
+import { EmbedModalHeader } from "@/components/embed/widget/embed-modal-header";
 import { PoweredByBadge } from "@/components/portal/powered-by-badge";
 import { PostDetailContent } from "@/components/posts/post-detail-content";
 import { PortalHeader } from "@/components/workspace/portal-header";
@@ -37,6 +38,7 @@ interface Props {
     accentColor?: string;
     from?: string;
     fromLabel?: string;
+    layout?: string;
   }>;
 }
 
@@ -56,13 +58,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PostDetailPage({ params, searchParams }: Props) {
   const { slug, boardSlug, postSlug } = await params;
-  const { embed, theme, accentColor, from, fromLabel } = await searchParams;
-  const embedParams = parseEmbedParams({ embed, theme, accentColor });
+  const { embed, theme, accentColor, from, fromLabel, layout } =
+    await searchParams;
+  const embedParams = parseEmbedParams({ embed, theme, accentColor, layout });
   // This page's own route param is the authoritative "current board" —
   // override whatever (if anything) was in the incoming URL so outgoing
   // links (Roadmap/Changelog nav, etc.) always carry the right one forward.
   embedParams.board = boardSlug;
-  const { isEmbed } = embedParams;
+  const { isEmbed, isPanel } = embedParams;
   const embedQuery = buildEmbedQuery(embedParams);
   const embedWrapper = embedWrapperProps(embedParams);
 
@@ -169,11 +172,16 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
       workspaceId={workspace.id}
     >
       <div
-        className={`min-h-screen bg-ir-background ${embedWrapper.className}`}
+        className={`${
+          isPanel ? "flex h-dvh flex-col overflow-hidden" : "min-h-screen"
+        } bg-ir-background ${embedWrapper.className}`}
         style={embedWrapper.style}
       >
-        {isEmbed && <EmbedResizeReporter />}
-        {isEmbed && (
+        {isEmbed && !isPanel && <EmbedResizeReporter />}
+        {isEmbed && isPanel && (
+          <EmbedModalHeader backHref={back.href} title={post.title} />
+        )}
+        {isEmbed && !isPanel && (
           <EmbedNav
             active="feedback"
             boards={publicBoards}
@@ -203,7 +211,10 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
         )}
         {!isEmbed && <PoweredByBadge />}
 
-        <main id="main-content">
+        <main
+          className={isPanel ? "min-h-0 flex-1 overflow-y-auto" : ""}
+          id="main-content"
+        >
           <PostDetailContent
             assignees={assignees}
             backLabel={back.label}

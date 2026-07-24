@@ -46,7 +46,9 @@ export function AccountMenu({
   const [open, setOpen] = useState(false);
 
   const itemClass = (href: string) =>
-    pathname.startsWith(href) ? "bg-ir-primary-light/20 text-ir-primary" : "";
+    pathname.startsWith(href)
+      ? "bg-ir-primary-light/20 text-ir-primary focus:bg-ir-primary-light/20 focus:text-ir-primary"
+      : "";
 
   return (
     <DropdownMenu onOpenChange={setOpen} open={open}>

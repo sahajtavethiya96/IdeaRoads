@@ -10,6 +10,7 @@ import { ChangelogRenderedBody } from "@/components/changelog/changelog-rendered
 import { ChangelogShareButton } from "@/components/changelog/changelog-share-button";
 import { EmbedNav } from "@/components/embed/embed-nav";
 import { EmbedResizeReporter } from "@/components/embed/resize-reporter";
+import { EmbedModalHeader } from "@/components/embed/widget/embed-modal-header";
 import { PoweredByBadge } from "@/components/portal/powered-by-badge";
 import { ImagePreviewThumbnail } from "@/components/ui/image-preview-thumbnail";
 import VoteButton from "@/components/voting/vote-button";
@@ -38,6 +39,7 @@ interface Props {
     accentColor?: string;
     board?: string;
     embed?: string;
+    layout?: string;
     theme?: string;
   }>;
 }
@@ -73,9 +75,15 @@ export default async function PublicChangelogEntryPage({
   searchParams,
 }: Props) {
   const { slug, entryId } = await params;
-  const { embed, theme, accentColor, board } = await searchParams;
-  const embedParams = parseEmbedParams({ embed, theme, accentColor, board });
-  const { isEmbed } = embedParams;
+  const { embed, theme, accentColor, board, layout } = await searchParams;
+  const embedParams = parseEmbedParams({
+    accentColor,
+    board,
+    embed,
+    layout,
+    theme,
+  });
+  const { isEmbed, isPanel } = embedParams;
   const embedQuery = buildEmbedQuery(embedParams);
   const embedWrapper = embedWrapperProps(embedParams);
 
@@ -123,11 +131,19 @@ export default async function PublicChangelogEntryPage({
       workspaceId={workspace.id}
     >
       <div
-        className={`min-h-screen bg-ir-background ${embedWrapper.className}`}
+        className={`${
+          isPanel ? "flex h-dvh flex-col overflow-hidden" : "min-h-screen"
+        } bg-ir-background ${embedWrapper.className}`}
         style={embedWrapper.style}
       >
-        {isEmbed && <EmbedResizeReporter />}
-        {isEmbed && (
+        {isEmbed && !isPanel && <EmbedResizeReporter />}
+        {isEmbed && isPanel && (
+          <EmbedModalHeader
+            backHref={`/${slug}/changelog${embedQuery}`}
+            title={entry.title}
+          />
+        )}
+        {isEmbed && !isPanel && (
           <EmbedNav
             active="changelog"
             boards={publicBoards}
@@ -161,17 +177,24 @@ export default async function PublicChangelogEntryPage({
 
         {/* Content */}
         <main
-          className="mx-auto max-w-3xl px-4 pt-10 pb-20 sm:px-8"
+          className={
+            isPanel
+              ? "min-h-0 flex-1 overflow-y-auto px-4 py-4"
+              : "mx-auto max-w-3xl px-4 pt-10 pb-20 sm:px-8"
+          }
           id="main-content"
         >
-          {/* Back link */}
-          <Link
-            className="mb-8 inline-flex items-center gap-1.5 rounded-ir-sm text-xs text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-            href={`/${slug}/changelog${embedQuery}`}
-          >
-            <ArrowLeftIcon className="size-3.5" />
-            All updates
-          </Link>
+          {/* Back link — the panel-mode header above already has its own
+              back arrow, so this would otherwise be a second one. */}
+          {!isPanel && (
+            <Link
+              className="mb-8 inline-flex items-center gap-1.5 rounded-ir-sm text-xs text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+              href={`/${slug}/changelog${embedQuery}`}
+            >
+              <ArrowLeftIcon className="size-3.5" />
+              All updates
+            </Link>
+          )}
 
           {/* Entry header */}
           <div className="mb-8">

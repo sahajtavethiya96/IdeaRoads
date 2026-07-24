@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useState } from "react";
 import type { RoadmapPost } from "@/lib/roadmap/queries";
+import { DraggableCard } from "./draggable-card";
 import { RoadmapEmptyState } from "./roadmap-empty-state";
 import { RoadmapPostCard } from "./roadmap-post-card";
 import { RoadmapStatusHeader } from "./roadmap-status-header";
@@ -14,17 +15,18 @@ interface RoadmapColumnProps {
   // board (see RoadmapBoard) — the public roadmap page never passes these.
   canManage?: boolean;
   color: string;
+  // Registers this column's drop-zone element for RoadmapBoard's pointer
+  // hit-testing (see useKanbanDrag). Absent on the public (read-only) board.
+  columnRef?: (el: HTMLDivElement | null) => void;
   draggingId?: string | null;
   embedQuery?: string;
   isDropTarget?: boolean;
   isFiltering?: boolean;
   isSignedIn: boolean;
   name: string;
-  onDragEnd?: () => void;
-  onDragLeaveColumn?: () => void;
-  onDragOverColumn?: () => void;
+  onDrag?: (point: { x: number; y: number }) => void;
+  onDragEndPost?: () => void;
   onDragStartPost?: (post: RoadmapPost) => void;
-  onDropColumn?: () => void;
   posts: RoadmapPost[];
   useWorkspaceLinks?: boolean;
   workspaceSlug: string;
@@ -39,14 +41,13 @@ export function RoadmapColumn({
   useWorkspaceLinks,
   embedQuery,
   canManage = false,
+  columnRef,
   draggingId = null,
   isDropTarget = false,
   isFiltering = false,
-  onDragEnd,
-  onDragLeaveColumn,
-  onDragOverColumn,
+  onDrag,
+  onDragEndPost,
   onDragStartPost,
-  onDropColumn,
 }: RoadmapColumnProps) {
   const shouldReduceMotion = useReducedMotion();
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -59,30 +60,15 @@ export function RoadmapColumn({
 
       {/* Drop zone. Keyboard/non-pointer users change status via the post's own
           status control elsewhere (e.g. All Feedback) — drag here is a
-          pointer-only enhancement, matching the manual roadmap board. */}
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: native drop zone, opt-in via canManage */}
-      {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: native drop zone, opt-in via canManage */}
+          pointer-only enhancement, matching the manual roadmap board (see
+          DraggableCard — it can only be started from each card's drag handle). */}
       <div
         className={`flex min-h-16 flex-col gap-2 rounded-ir-md p-1 transition-colors duration-150 ease-ir-standard ${
           isDropTarget && canManage
-            ? "border border-dashed border-ir-primary/60 bg-ir-primary-light/10"
-            : "border border-dashed border-transparent"
+            ? "bg-ir-primary-light/10 ring-1 ring-inset ring-ir-primary/30"
+            : ""
         }`}
-        onDragLeave={() => canManage && onDragLeaveColumn?.()}
-        onDragOver={(e) => {
-          if (!canManage) {
-            return;
-          }
-          e.preventDefault();
-          onDragOverColumn?.();
-        }}
-        onDrop={(e) => {
-          if (!canManage) {
-            return;
-          }
-          e.preventDefault();
-          onDropColumn?.();
-        }}
+        ref={columnRef}
       >
         {visible.length === 0 ? (
           <div className="rounded-ir-card border border-dashed border-ir-border">
@@ -102,33 +88,27 @@ export function RoadmapColumn({
                   layout={!shouldReduceMotion}
                   transition={{ duration: 0.15, ease: "easeOut" }}
                 >
-                  {/* biome-ignore lint/a11y/noStaticElementInteractions: native draggable card, opt-in via canManage */}
-                  {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: native draggable card, opt-in via canManage */}
-                  <div
-                    className={
-                      canManage && draggingId === post.id
-                        ? "rounded-ir-card opacity-50 ring-2 ring-ir-primary"
-                        : undefined
-                    }
-                    draggable={canManage}
-                    onDragEnd={() => canManage && onDragEnd?.()}
-                    onDragStart={(e) => {
-                      if (!canManage) {
-                        return;
-                      }
-                      e.dataTransfer.effectAllowed = "move";
-                      onDragStartPost?.(post);
-                    }}
+                  <DraggableCard
+                    dragEnabled={canManage}
+                    isDragging={canManage && draggingId === post.id}
+                    itemId={post.id}
+                    onDrag={(point) => onDrag?.(point)}
+                    onDragEnd={() => onDragEndPost?.()}
+                    onDragStart={() => onDragStartPost?.(post)}
                   >
-                    <RoadmapPostCard
-                      canManage={canManage}
-                      embedQuery={embedQuery}
-                      isSignedIn={isSignedIn}
-                      post={post}
-                      useWorkspaceLinks={useWorkspaceLinks}
-                      workspaceSlug={workspaceSlug}
-                    />
-                  </div>
+                    {(dragControls) => (
+                      <RoadmapPostCard
+                        canManage={canManage}
+                        dragControls={dragControls}
+                        embedQuery={embedQuery}
+                        isDragging={canManage && draggingId === post.id}
+                        isSignedIn={isSignedIn}
+                        post={post}
+                        useWorkspaceLinks={useWorkspaceLinks}
+                        workspaceSlug={workspaceSlug}
+                      />
+                    )}
+                  </DraggableCard>
                 </motion.div>
               ))}
             </AnimatePresence>

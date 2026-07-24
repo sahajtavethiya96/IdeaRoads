@@ -12,31 +12,57 @@ type ActionResult<T = undefined> =
   | { success: true; data: T }
   | { success: false; error: string; field?: string };
 
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+const hexColor = z
+  .string()
+  .regex(HEX_COLOR, "Must be a hex color like #2563eb.");
+
 const updateSchema = z.object({
   workspaceId: z.string().min(1),
   // Required: the embed is anonymous/public and there's no "all boards" page
   // to fall back to, so a snippet with no board has nothing valid to embed.
   boardId: z.string().min(1),
-  mode: z.enum(["inline", "button"]),
-  position: z.enum(["bottom-right", "bottom-left", "top-right", "top-left"]),
+  buttonType: z.enum(["floating", "sticky"]),
   theme: z.enum(["light", "dark", "auto"]),
   width: z.number().int().min(240).max(1200),
   height: z.number().int().min(240).max(1200),
-  accentColor: z
-    .string()
-    .regex(/^#[0-9a-fA-F]{6}$/, "Must be a hex color like #2563eb."),
+  accentColor: hexColor,
+  floatingPosition: z.enum([
+    "bottom-right",
+    "bottom-left",
+    "top-right",
+    "top-left",
+  ]),
+  floatingIconType: z.enum(["logo", "custom"]),
+  floatingIconUrl: z.string().url().nullable(),
+  stickyButtonText: z.string().trim().min(1).max(40),
+  stickyButtonColor: hexColor,
+  stickyTextColor: hexColor,
+  stickyPosition: z.enum([
+    "left-top",
+    "left-middle",
+    "left-bottom",
+    "right-top",
+    "right-middle",
+    "right-bottom",
+  ]),
+  deviceVisibility: z.object({
+    desktop: z.boolean(),
+    mobile: z.boolean(),
+    tablet: z.boolean(),
+  }),
+  showRoadmap: z.boolean(),
+  showChangelog: z.boolean(),
+  showSubmitFormImmediately: z.enum(["auto", "always", "never"]),
+  showSimilarPosts: z.boolean(),
+  showViewOtherFeedbackButton: z.boolean(),
 });
 
-export async function updateEmbedConfigAction(input: {
-  workspaceId: string;
-  boardId: string;
-  mode: string;
-  position: string;
-  theme: string;
-  width: number;
-  height: number;
-  accentColor: string;
-}): Promise<ActionResult<undefined>> {
+type UpdateEmbedConfigInput = z.infer<typeof updateSchema>;
+
+export async function updateEmbedConfigAction(
+  input: UpdateEmbedConfigInput
+): Promise<ActionResult<undefined>> {
   const session = await requireSession();
 
   const parsed = updateSchema.safeParse(input);
@@ -72,8 +98,7 @@ export async function updateEmbedConfigAction(input: {
   }
 
   const { workspaceId, ...rest } = parsed.data;
-  const config = { ...rest };
-  await upsertEmbedConfig(workspaceId, config);
+  await upsertEmbedConfig(workspaceId, rest);
 
   audit({
     workspaceId,
@@ -85,7 +110,7 @@ export async function updateEmbedConfigAction(input: {
     entityId: workspaceId,
     entityName: "Embed widget",
     description: "Embed widget configuration updated",
-    metadata: config,
+    metadata: rest,
   });
 
   return { success: true, data: undefined };

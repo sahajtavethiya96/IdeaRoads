@@ -26,9 +26,10 @@ describe("upsertEmbedConfig", () => {
     const ws = await createTestWorkspace(owner.id, owner.email);
 
     const saved = await upsertEmbedConfig(ws.id, {
+      ...DEFAULT_EMBED_CONFIG,
       boardId: null,
-      mode: "button",
-      position: "top-left",
+      buttonType: "sticky",
+      floatingPosition: "top-left",
       theme: "dark",
       width: 420,
       height: 600,
@@ -36,8 +37,8 @@ describe("upsertEmbedConfig", () => {
     });
 
     expect(saved.workspaceId).toBe(ws.id);
-    expect(saved.mode).toBe("button");
-    expect(saved.position).toBe("top-left");
+    expect(saved.buttonType).toBe("sticky");
+    expect(saved.floatingPosition).toBe("top-left");
     expect(saved.theme).toBe("dark");
     expect(saved.width).toBe(420);
     expect(saved.height).toBe(600);
@@ -46,8 +47,8 @@ describe("upsertEmbedConfig", () => {
     const fetched = await getEmbedConfig(ws.id);
     expect(fetched).toMatchObject({
       workspaceId: ws.id,
-      mode: "button",
-      position: "top-left",
+      buttonType: "sticky",
+      floatingPosition: "top-left",
       theme: "dark",
       width: 420,
       height: 600,
@@ -60,18 +61,20 @@ describe("upsertEmbedConfig", () => {
     const ws = await createTestWorkspace(owner.id, owner.email);
 
     await upsertEmbedConfig(ws.id, {
+      ...DEFAULT_EMBED_CONFIG,
       boardId: null,
-      mode: "inline",
-      position: "bottom-right",
+      buttonType: "floating",
+      floatingPosition: "bottom-right",
       theme: "light",
       width: 380,
       height: 560,
       accentColor: "#111111",
     });
     await upsertEmbedConfig(ws.id, {
+      ...DEFAULT_EMBED_CONFIG,
       boardId: null,
-      mode: "button",
-      position: "bottom-left",
+      buttonType: "sticky",
+      floatingPosition: "bottom-left",
       theme: "auto",
       width: 500,
       height: 700,
@@ -80,8 +83,8 @@ describe("upsertEmbedConfig", () => {
 
     const fetched = await getEmbedConfig(ws.id);
     expect(fetched).toMatchObject({
-      mode: "button",
-      position: "bottom-left",
+      buttonType: "sticky",
+      floatingPosition: "bottom-left",
       theme: "auto",
       width: 500,
       height: 700,

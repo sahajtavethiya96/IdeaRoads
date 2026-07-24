@@ -3,6 +3,11 @@
 import { MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { searchPostsForChangelogAction } from "@/app/actions/changelog";
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from "@/components/ui/popover";
 
 interface Post {
   boardName: string;
@@ -30,7 +35,6 @@ export function LinkedPostsSelector({
   const [isOpen, setIsOpen] = useState(false);
   const [, startTransition] = useTransition();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const selectedIds = new Set(selectedPosts.map((p) => p.id));
 
@@ -60,19 +64,6 @@ export function LinkedPostsSelector({
     }
   }, [query, isOpen, search]);
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   function addPost(post: Post) {
     if (selectedPosts.length >= 20) {
       return;
@@ -85,6 +76,12 @@ export function LinkedPostsSelector({
   function removePost(postId: string) {
     onChange(selectedPosts.filter((p) => p.id !== postId));
   }
+
+  // Same visibility rule as before: nothing shows on a bare focus with no
+  // query yet; a query with no matches shows "No posts found."
+  const showDropdown =
+    isOpen &&
+    (results.length > 0 || (query.length > 0 && results.length === 0));
 
   return (
     <div className="space-y-2">
@@ -110,28 +107,40 @@ export function LinkedPostsSelector({
         </div>
       )}
 
-      {/* Search input */}
+      {/* Search input + results — a Popover instead of a hand-positioned
+          absolute box: it's portal-rendered (escapes this form's own layout
+          entirely, so it can never fight with the page's Save/Publish
+          buttons over stacking) and Radix positions it relative to the
+          input with automatic viewport-collision handling (flips above the
+          input if there isn't room below). Outside-click and Escape
+          dismissal are handled by Radix itself now too. */}
       {selectedPosts.length < 20 && (
-        <div className="relative" ref={containerRef}>
-          <div className="relative">
-            <MagnifyingGlassIcon className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-ir-muted" />
-            <input
-              className="w-full rounded-ir-input border border-ir-border bg-ir-surface py-2 pr-3 pl-9 text-sm text-ir-body placeholder:text-ir-muted focus:ring-2 focus:ring-ir-primary/40 focus:outline-none"
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setIsOpen(true);
-              }}
-              onFocus={() => setIsOpen(true)}
-              placeholder="Search posts to link…"
-              type="text"
-              value={query}
-            />
-          </div>
+        <Popover onOpenChange={setIsOpen} open={showDropdown}>
+          <PopoverAnchor asChild>
+            <div className="relative">
+              <MagnifyingGlassIcon className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-ir-muted" />
+              <input
+                className="w-full rounded-ir-input border border-ir-border bg-ir-surface py-2 pr-3 pl-9 text-sm text-ir-body placeholder:text-ir-muted focus:ring-2 focus:ring-ir-primary/40 focus:outline-none"
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setIsOpen(true);
+                }}
+                onFocus={() => setIsOpen(true)}
+                placeholder="Search posts to link…"
+                type="text"
+                value={query}
+              />
+            </div>
+          </PopoverAnchor>
 
-          {/* Dropdown */}
-          {isOpen && results.length > 0 && (
-            <div className="absolute z-20 mt-1 max-h-52 w-full overflow-y-auto rounded-ir-md border border-ir-border bg-ir-surface shadow-ir-lg">
-              {results.map((post) => (
+          <PopoverContent
+            align="start"
+            className="w-(--radix-popover-trigger-width) max-h-52 flex-col gap-0 overflow-y-auto rounded-ir-md border border-ir-border bg-ir-surface p-0 shadow-ir-lg"
+            onCloseAutoFocus={(e) => e.preventDefault()}
+            onOpenAutoFocus={(e) => e.preventDefault()}
+          >
+            {results.length > 0 ? (
+              results.map((post) => (
                 <button
                   className="flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface focus-visible:bg-ir-muted-surface focus-visible:outline-none"
                   key={post.id}
@@ -150,16 +159,12 @@ export function LinkedPostsSelector({
                     ↑ {post.upvotes}
                   </span>
                 </button>
-              ))}
-            </div>
-          )}
-
-          {isOpen && query && results.length === 0 && (
-            <div className="absolute z-20 mt-1 w-full rounded-ir-md border border-ir-border bg-ir-surface shadow-ir-lg">
+              ))
+            ) : (
               <p className="px-3 py-3 text-sm text-ir-muted">No posts found.</p>
-            </div>
-          )}
-        </div>
+            )}
+          </PopoverContent>
+        </Popover>
       )}
 
       {selectedPosts.length >= 20 && (

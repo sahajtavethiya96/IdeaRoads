@@ -712,3 +712,35 @@ export async function searchPostsForMerge(
       .limit(20)
   );
 }
+
+// "Similar posts while typing" (the embed widget's duplicate-detection
+// nudge, shown as someone fills in a title). Unlike searchPostsForMerge —
+// an internal triage action where visibility is intentionally relaxed —
+// this surfaces results to an anonymous public visitor, so it keeps the
+// same public-visibility rules as listBoardPosts: no drafts, no
+// pending/unapproved posts, no already-merged posts.
+export async function searchSimilarPosts(boardId: string, query: string) {
+  const trimmed = query.trim();
+  if (!trimmed) {
+    return [];
+  }
+  return db
+    .select({
+      id: posts.id,
+      slug: posts.slug,
+      title: posts.title,
+      upvotes: posts.upvotes,
+    })
+    .from(posts)
+    .where(
+      and(
+        eq(posts.boardId, boardId),
+        isNull(posts.mergedIntoId),
+        eq(posts.isDraft, false),
+        eq(posts.isApproved, true),
+        ilike(posts.title, `%${trimmed}%`)
+      )
+    )
+    .orderBy(desc(posts.upvotes), desc(posts.createdAt))
+    .limit(5);
+}

@@ -26,6 +26,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { AccountMenu } from "@/components/workspace/account-menu";
+import { GlobalSearch } from "@/components/workspace/global-search";
 import { WorkspaceSwitcher } from "@/components/workspace/workspace-switcher";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -176,6 +177,11 @@ export function WorkspaceSidebar({
         <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto p-2.5">
           {/* Dashboard + Notifications inbox */}
           <div className="space-y-0.5">
+            <GlobalSearch
+              collapsed={effectiveCollapsed}
+              isAdminOrOwner={isAdminOrOwner}
+              workspaceSlug={workspaceSlug}
+            />
             <NavLink
               collapsed={effectiveCollapsed}
               exact

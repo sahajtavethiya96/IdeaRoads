@@ -206,6 +206,37 @@ export default function QuillEditor({
         quill.disable();
       }
 
+      // Quill's own toolbar module only re-syncs its .ql-active button state
+      // on the EDITOR_CHANGE event — but quill.format() (what Ctrl/Cmd+B/I/U
+      // call under the hood) never emits that event when the selection is
+      // collapsed. See quill/core/quill.js: `modify()` only emits when the
+      // resulting change Delta is non-empty, and toggling a format with
+      // nothing selected produces an empty Delta by design — it just marks
+      // the pending format for the next typed character rather than editing
+      // existing text. So placing the cursor and pressing Ctrl+B leaves the
+      // toolbar showing the old state until some unrelated event (typing,
+      // moving the cursor) happens to fire EDITOR_CHANGE for its own reason.
+      // Force a resync right after the shortcut instead of waiting for that.
+      // Harmless (and cheap — a native classList read/write, not a React
+      // re-render) even when the selection wasn't collapsed, where Quill's
+      // own listener already handled it correctly.
+      const onFormatShortcut = (e: KeyboardEvent) => {
+        if (!(e.ctrlKey || e.metaKey)) {
+          return;
+        }
+        if (!["b", "i", "u"].includes(e.key.toLowerCase())) {
+          return;
+        }
+        const toolbar = quill.getModule("toolbar") as {
+          update: (range: { index: number; length: number } | null) => void;
+        } | null;
+        toolbar?.update(quill.getSelection());
+      };
+      quill.root.addEventListener("keyup", onFormatShortcut);
+      cleanups.push(() =>
+        quill.root.removeEventListener("keyup", onFormatShortcut)
+      );
+
       // Enter-to-submit: capture phase so we beat Quill's own newline handler.
       // Shift+Enter (and IME composition) fall through to the default newline.
       // Inside a list, Enter is left alone entirely — Quill's own default
