@@ -69,6 +69,8 @@ interface LinkedPost {
   boardName: string;
   boardSlug: string;
   id: string;
+  mergedIntoId?: string | null;
+  mergedIntoTitle?: string | null;
   slug: string;
   status: string;
   title: string;

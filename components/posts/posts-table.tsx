@@ -14,12 +14,20 @@ export interface PostsTableRow {
   boardSlug: string;
   body: string | null;
   categoryId: string | null;
+  commentCount: number;
   createdAt: Date;
   hasVoted: boolean;
   id: string;
   isApproved: boolean;
   isDraft: boolean;
   isPinned: boolean;
+  // Set when this post was merged into another. mergedIntoTitle/Slug/BoardSlug
+  // are resolved via a join so the row can show a "Merged into" badge/link
+  // without a follow-up query; they're null if the target itself is gone.
+  mergedIntoBoardSlug?: string | null;
+  mergedIntoId?: string | null;
+  mergedIntoSlug?: string | null;
+  mergedIntoTitle?: string | null;
   slug: string;
   status: string;
   title: string;
@@ -50,6 +58,12 @@ interface PostsTableProps {
   isAdminOrOwner: boolean;
   isMember: boolean;
   isSignedIn: boolean;
+  // Builds the link target for a merged row's "Merged into <title>" badge —
+  // same admin-vs-public split as postHref below, applied to the merge
+  // target instead of the row itself. Returns null when there's nowhere
+  // sensible to link (no target info resolved), in which case the badge
+  // still shows but as plain text.
+  mergedIntoHref?: (post: PostsTableRow) => string | null;
   // Builds the link target for a post row — differs between the admin
   // (workspace-shelled) and public post-detail routes, which are genuinely
   // separate pages so members never get redirected out of their admin shell.
@@ -65,6 +79,7 @@ export function PostsTable({
   categories,
   workspaceStatuses,
   postHref,
+  mergedIntoHref,
   isSignedIn,
   isAdminOrOwner,
   isMember,
@@ -128,6 +143,7 @@ export function PostsTable({
               isMember={isMember}
               isSignedIn={isSignedIn}
               key={post.id}
+              mergedIntoHref={mergedIntoHref ? mergedIntoHref(post) : null}
               post={post}
               selectable={selectable}
               showBoardColumn={showBoardColumn}

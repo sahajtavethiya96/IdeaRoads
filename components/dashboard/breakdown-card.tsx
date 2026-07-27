@@ -1,12 +1,15 @@
 import { ChangeIndicator } from "@/components/dashboard/change-indicator";
-import { ParamSelect } from "@/components/dashboard/param-select";
+import { FilterSelect } from "@/components/dashboard/filter-select";
 import type {
   BreakdownMetrics,
   BreakdownPeriod,
 } from "@/lib/dashboard/queries";
+import { cn } from "@/lib/utils";
 
 interface BreakdownCardProps {
+  isPending?: boolean;
   metrics: BreakdownMetrics;
+  onPeriodChange: (period: BreakdownPeriod) => void;
   period: BreakdownPeriod;
 }
 
@@ -16,7 +19,12 @@ const PERIOD_OPTIONS = [
   { label: "All time", value: "all" },
 ];
 
-export function BreakdownCard({ metrics, period }: BreakdownCardProps) {
+export function BreakdownCard({
+  metrics,
+  period,
+  onPeriodChange,
+  isPending,
+}: BreakdownCardProps) {
   const rows: { label: string; value: number; previous: number | null }[] = [
     {
       label: "New feedback",
@@ -41,12 +49,18 @@ export function BreakdownCard({ metrics, period }: BreakdownCardProps) {
   ];
 
   return (
-    <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+    <div
+      className={cn(
+        "rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs transition-opacity duration-150 ease-ir-standard",
+        isPending && "opacity-60"
+      )}
+    >
       <div className="flex items-center justify-between gap-4 border-b border-ir-border px-5 py-4">
         <h2 className="text-sm font-semibold text-ir-heading">Breakdown</h2>
-        <ParamSelect
+        <FilterSelect
+          disabled={isPending}
+          onChange={(value) => onPeriodChange(value as BreakdownPeriod)}
           options={PERIOD_OPTIONS}
-          paramName="period"
           value={period}
         />
       </div>

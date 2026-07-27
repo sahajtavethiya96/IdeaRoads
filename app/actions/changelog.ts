@@ -383,6 +383,8 @@ export async function searchPostsForChangelogAction(input: {
       upvotes: number;
       boardSlug: string;
       boardName: string;
+      mergedIntoId: string | null;
+      mergedIntoTitle: string | null;
     }[]
   >
 > {

@@ -1,4 +1,4 @@
-import { PageShell } from "@/components/ui/page";
+import { SetPageHeader } from "@/components/workspace/topbar";
 
 interface Props {
   children: React.ReactNode;
@@ -6,11 +6,12 @@ interface Props {
 
 export default function AuditLogSettingsLayout({ children }: Props) {
   return (
-    <PageShell
-      description="A record of all actions taken in this workspace."
-      title="Audit Log"
-    >
+    <>
+      <SetPageHeader
+        description="A record of all actions taken in this workspace."
+        title="Audit Log"
+      />
       {children}
-    </PageShell>
+    </>
   );
 }

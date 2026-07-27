@@ -1,4 +1,4 @@
-import { PageHeader } from "@/components/ui/page";
+import { SetPageHeader } from "@/components/workspace/topbar";
 import { SettingsTabs } from "./_components/settings-tabs";
 
 interface Props {
@@ -13,8 +13,8 @@ export default async function MembersSettingsLayout({
   const { slug } = await params;
 
   return (
-    <div className="flex h-full flex-col">
-      <PageHeader
+    <div className="flex min-h-0 flex-1 flex-col">
+      <SetPageHeader
         description="Manage workspace membership and invitations."
         title="Team Members"
       />

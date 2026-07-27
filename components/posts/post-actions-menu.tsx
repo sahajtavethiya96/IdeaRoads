@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowsSplitIcon,
   CopyIcon,
   DotsThreeIcon,
   GitMergeIcon,
@@ -20,6 +21,7 @@ import {
   pinPostAction,
   publishPostAction,
   searchMergeTargetsAction,
+  unmergePostAction,
 } from "@/app/actions/posts";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -44,12 +46,15 @@ interface PostActionsMenuProps {
   detailHref: string;
   isDraft?: boolean;
   isPinned: boolean;
+  mergedIntoId?: string | null;
+  postCommentCount?: number;
   postId: string;
   postTitle: string;
   workspaceId: string;
 }
 
 interface MergeTarget {
+  commentCount: number;
   id: string;
   title: string;
   upvotes: number;
@@ -65,11 +70,14 @@ export function PostActionsMenu({
   isDraft = false,
   isPinned,
   postTitle,
+  postCommentCount = 0,
+  mergedIntoId = null,
 }: PostActionsMenuProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [mergeOpen, setMergeOpen] = useState(false);
+  const [unmergeOpen, setUnmergeOpen] = useState(false);
 
   // Merge dialog state
   const [mergeQuery, setMergeQuery] = useState("");
@@ -181,6 +189,19 @@ export function PostActionsMenu({
     });
   }
 
+  function handleUnmergeConfirm() {
+    startTransition(async () => {
+      const result = await unmergePostAction({ postId, workspaceId });
+      if (result.success) {
+        toast.success("Feedback unmerged");
+        setUnmergeOpen(false);
+        router.refresh();
+      } else {
+        toast.error(result.error ?? "Failed to unmerge feedback.");
+      }
+    });
+  }
+
   function handleDeleteConfirm() {
     startTransition(async () => {
       const result = await deletePostAction({ postId, workspaceId });
@@ -231,10 +252,17 @@ export function PostActionsMenu({
             {isPinned ? <PushPinSlashIcon /> : <PushPinIcon />}
             {isPinned ? "Unpin" : "Pin"}
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={openMerge}>
-            <GitMergeIcon />
-            Merge
-          </DropdownMenuItem>
+          {mergedIntoId ? (
+            <DropdownMenuItem onSelect={() => setUnmergeOpen(true)}>
+              <ArrowsSplitIcon />
+              Unmerge
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem onSelect={openMerge}>
+              <GitMergeIcon />
+              Merge
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onSelect={() => setDeleteOpen(true)}
@@ -256,8 +284,10 @@ export function PostActionsMenu({
             <p className="text-xs text-ir-muted">
               Merge{" "}
               <span className="font-medium text-ir-heading">"{postTitle}"</span>{" "}
-              into another post. Its votes transfer to the target and this post
-              is locked.
+              into another post. Votes transfer to the destination
+              {postCommentCount > 0 &&
+                ` — ${postCommentCount} comment${postCommentCount === 1 ? "" : "s"} stay${postCommentCount === 1 ? "s" : ""} here`}
+              , and this post is locked and marked merged.
             </p>
             <input
               className="w-full rounded-ir-input border border-ir-border bg-ir-surface px-3 py-2 text-sm text-ir-body placeholder:text-ir-muted focus:outline-none focus:ring-2 focus:ring-ir-primary/40"
@@ -280,8 +310,14 @@ export function PostActionsMenu({
                     type="button"
                   >
                     <span className="line-clamp-1">{r.title}</span>
-                    <span className="text-2xs text-ir-muted">
-                      ↑ {r.upvotes}
+                    <span className="mt-0.5 flex items-center gap-2.5 text-2xs text-ir-muted">
+                      <span>↑ {r.upvotes}</span>
+                      {r.commentCount > 0 && (
+                        <span>
+                          {r.commentCount} comment
+                          {r.commentCount === 1 ? "" : "s"}
+                        </span>
+                      )}
                     </span>
                   </button>
                 ))
@@ -291,6 +327,26 @@ export function PostActionsMenu({
                 </p>
               )}
             </div>
+
+            {/* Visual before/after — clearer hierarchy than a single sentence
+              once a target is actually chosen. */}
+            {mergeSelected && (
+              <div className="rounded-ir-md border border-ir-primary/25 bg-ir-primary-light/10 p-3 text-xs">
+                <div className="flex items-center gap-2 text-ir-heading">
+                  <span className="min-w-0 flex-1 truncate font-medium">
+                    {postTitle}
+                  </span>
+                  <span className="shrink-0 text-ir-primary">→</span>
+                  <span className="min-w-0 flex-1 truncate text-right font-medium">
+                    {mergeSelected.title}
+                  </span>
+                </div>
+                <p className="mt-1.5 text-ir-muted">
+                  This post will be locked and shown as merged everywhere it
+                  appears.
+                </p>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button
@@ -309,6 +365,18 @@ export function PostActionsMenu({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Unmerge */}
+      <ConfirmDialog
+        confirmLabel="Unmerge"
+        description={`Unmerge "${postTitle}"? It becomes an independent, active item again — its pre-merge votes are restored, and any votes cast since the merge stay as they are.`}
+        isPending={isPending}
+        onConfirm={handleUnmergeConfirm}
+        onOpenChange={setUnmergeOpen}
+        open={unmergeOpen}
+        title="Unmerge feedback"
+        variant="default"
+      />
 
       {/* Delete */}
       <ConfirmDialog

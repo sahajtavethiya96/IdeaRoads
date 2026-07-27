@@ -1,42 +1,25 @@
-// Default feedback statuses seeded for a new workspace.
+// Default feedback statuses seeded for a new workspace — matches the
+// reference product's (Upvoty) 5-status flow: Draft -> In Review -> In
+// Progress -> Completed/Declined.
 //
-// `showOnRoadmap` is the explicit roadmap-visibility whitelist for Sync-ON mode:
-// only Planned / In Progress / Completed appear on the roadmap by default. Open
-// and Under Review (intake) and Closed (terminal) never create roadmap columns
-// unless a Brand Admin explicitly enables them in Statuses settings.
+// `showOnRoadmap` is the explicit roadmap-visibility whitelist for Sync-ON
+// mode: In Progress, Completed, and Declined create roadmap columns by
+// default (Declined stays visible there for transparency on what was
+// considered and passed on); In Review (intake) and Draft never do, unless a
+// Brand Admin explicitly enables them in Statuses settings.
 //
 // `showOnPublicFeed` is a separate flag controlling the public feedback
-// list/board and direct post URLs. Completed is the one default status seeded
-// with this off — shipped feedback stays off the public feed (it's still
-// visible on the public Roadmap and in the admin panel).
+// list/board and direct post URLs. Completed and Declined are seeded with
+// this off — resolved feedback (shipped or passed on) stays off the public
+// feed (still visible on the public Roadmap and in the admin panel).
 export const DEFAULT_WORKSPACE_STATUSES = [
   {
-    name: "Open",
-    slug: "open",
-    color: "#6b7280",
+    name: "In Review",
+    slug: "in_review",
+    color: "#3b82f6",
     isDefault: true,
     displayOrder: 0,
     showOnRoadmap: false,
-    showOnPublicFeed: true,
-    isSystem: false,
-  },
-  {
-    name: "Under Review",
-    slug: "under_review",
-    color: "#8b5cf6",
-    isDefault: false,
-    displayOrder: 1,
-    showOnRoadmap: false,
-    showOnPublicFeed: true,
-    isSystem: false,
-  },
-  {
-    name: "Planned",
-    slug: "planned",
-    color: "#7c3aed",
-    isDefault: false,
-    displayOrder: 2,
-    showOnRoadmap: true,
     showOnPublicFeed: true,
     isSystem: false,
   },
@@ -45,7 +28,7 @@ export const DEFAULT_WORKSPACE_STATUSES = [
     slug: "in_progress",
     color: "#d97706",
     isDefault: false,
-    displayOrder: 3,
+    displayOrder: 1,
     showOnRoadmap: true,
     showOnPublicFeed: true,
     isSystem: false,
@@ -55,19 +38,19 @@ export const DEFAULT_WORKSPACE_STATUSES = [
     slug: "completed",
     color: "#059669",
     isDefault: false,
-    displayOrder: 4,
+    displayOrder: 2,
     showOnRoadmap: true,
     showOnPublicFeed: false,
     isSystem: false,
   },
   {
-    name: "Closed",
-    slug: "closed",
-    color: "#374151",
+    name: "Declined",
+    slug: "declined",
+    color: "#ef4444",
     isDefault: false,
-    displayOrder: 5,
-    showOnRoadmap: false,
-    showOnPublicFeed: true,
+    displayOrder: 3,
+    showOnRoadmap: true,
+    showOnPublicFeed: false,
     isSystem: false,
   },
   {

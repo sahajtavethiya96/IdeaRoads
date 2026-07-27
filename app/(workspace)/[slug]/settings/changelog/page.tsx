@@ -5,8 +5,8 @@ import { notFound } from "next/navigation";
 import { ChangelogAdminCard } from "@/components/changelog/changelog-admin-card";
 import { ChangelogEntryCard } from "@/components/changelog/changelog-entry-card";
 import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/ui/page";
 import { ListSearch } from "@/components/workspace/list-search";
+import { SetPageHeader } from "@/components/workspace/topbar";
 import { WORKSPACE_MEMBER } from "@/config/platform";
 import { requireSession } from "@/lib/authz";
 import { listChangelogEntries } from "@/lib/changelog/queries";
@@ -66,7 +66,7 @@ export default async function WorkspaceChangelogPage({
 
   return (
     <div className="flex flex-col">
-      <PageHeader
+      <SetPageHeader
         actions={
           isAdmin ? (
             <>

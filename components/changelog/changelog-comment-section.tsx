@@ -83,26 +83,30 @@ export async function ChangelogCommentSection({
     : [];
 
   return (
-    <div>
-      <h2 className="mb-6 flex items-center gap-2 text-sm font-semibold text-ir-heading">
-        <ChatCircleIcon className="size-4 text-ir-muted" />
-        {approvedCount === 0
-          ? "Comments"
-          : `${approvedCount} ${approvedCount === 1 ? "comment" : "comments"}`}
-      </h2>
+    <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+      <div className="border-b border-ir-border px-5 py-4">
+        <h2 className="flex items-center gap-2 text-sm font-semibold text-ir-heading">
+          <ChatCircleIcon className="size-4 text-ir-muted" />
+          {approvedCount === 0
+            ? "Comments"
+            : `${approvedCount} ${approvedCount === 1 ? "comment" : "comments"}`}
+        </h2>
+      </div>
 
-      <CommentThread
-        api={api}
-        canModerate={canModerate}
-        initialComments={allComments}
-        isLocked={false}
-        isSignedIn={isSignedIn}
-        postId={changelogEntryId}
-      />
+      <div className="px-5 py-4">
+        <CommentThread
+          api={api}
+          canModerate={canModerate}
+          initialComments={allComments}
+          isLocked={false}
+          isSignedIn={isSignedIn}
+          postId={changelogEntryId}
+        />
 
-      {canModerate && pending.length > 0 && (
-        <CommentModerationQueue api={api} pending={pending} />
-      )}
+        {canModerate && pending.length > 0 && (
+          <CommentModerationQueue api={api} pending={pending} />
+        )}
+      </div>
     </div>
   );
 }

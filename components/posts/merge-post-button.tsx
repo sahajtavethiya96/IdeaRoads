@@ -8,12 +8,14 @@ import { mergePostAction, searchMergeTargetsAction } from "@/app/actions/posts";
 import { Button } from "@/components/ui/button";
 
 interface MergeTarget {
+  commentCount: number;
   id: string;
   title: string;
   upvotes: number;
 }
 
 interface MergePostButtonProps {
+  postCommentCount?: number;
   postId: string;
   postTitle: string;
   workspaceId: string;
@@ -23,6 +25,7 @@ export default function MergePostButton({
   postId,
   postTitle,
   workspaceId,
+  postCommentCount = 0,
 }: MergePostButtonProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -136,7 +139,15 @@ export default function MergePostButton({
                   type="button"
                 >
                   <span className="line-clamp-1">{r.title}</span>
-                  <span className="text-2xs text-ir-muted">↑ {r.upvotes}</span>
+                  <span className="mt-0.5 flex items-center gap-2.5 text-2xs text-ir-muted">
+                    <span>↑ {r.upvotes}</span>
+                    {r.commentCount > 0 && (
+                      <span>
+                        {r.commentCount} comment
+                        {r.commentCount === 1 ? "" : "s"}
+                      </span>
+                    )}
+                  </span>
                 </button>
               ))
             )}
@@ -144,17 +155,26 @@ export default function MergePostButton({
 
           {selected && (
             <div className="space-y-2 pt-1">
-              <p className="text-xs text-ir-muted">
-                Merge{" "}
-                <span className="font-medium text-ir-heading">
-                  "{postTitle}"
-                </span>{" "}
-                into{" "}
-                <span className="font-medium text-ir-heading">
-                  "{selected.title}"
-                </span>
-                ? Votes transfer to the target and this post is locked.
-              </p>
+              {/* Visual before/after — clearer hierarchy than a single
+                sentence for what's about to happen. */}
+              <div className="rounded-ir-md border border-ir-primary/25 bg-ir-primary-light/10 p-2.5 text-xs">
+                <div className="flex items-center gap-2 text-ir-heading">
+                  <span className="min-w-0 flex-1 truncate font-medium">
+                    {postTitle}
+                  </span>
+                  <span className="shrink-0 text-ir-primary">→</span>
+                  <span className="min-w-0 flex-1 truncate text-right font-medium">
+                    {selected.title}
+                  </span>
+                </div>
+                <p className="mt-1.5 text-ir-muted">
+                  Votes transfer to the destination
+                  {postCommentCount > 0 &&
+                    ` — ${postCommentCount} comment${postCommentCount === 1 ? "" : "s"} stay${postCommentCount === 1 ? "s" : ""} on this post`}
+                  . This post will be locked and shown as merged everywhere it
+                  appears.
+                </p>
+              </div>
               <div className="flex items-center gap-2">
                 <Button disabled={isPending} onClick={handleMerge} size="sm">
                   {isPending ? "Merging…" : "Merge"}

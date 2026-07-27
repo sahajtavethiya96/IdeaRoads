@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PostDetailContent } from "@/components/posts/post-detail-content";
 import { WORKSPACE_MEMBER } from "@/config/platform";
+import { getPostMergeAudit } from "@/lib/audit/queries";
 import { requireSession } from "@/lib/authz";
 import { getBoardById } from "@/lib/boards/queries";
 import { getActiveCategoriesForWorkspace } from "@/lib/categories/queries";
@@ -70,14 +71,27 @@ export default async function AdminPostDetailPage({
     email: m.user.email,
   }));
 
-  // If this post was merged into another, resolve the target's URL for the notice.
-  let mergedTarget: { href: string; title: string } | null = null;
+  // If this post was merged into another, resolve the target's URL plus
+  // who/when the merge happened (from the audit log) for the notice.
+  let mergedTarget: {
+    href: string;
+    mergedAt: Date | null;
+    mergedByEmail: string | null;
+    mergedByName: string | null;
+    title: string;
+  } | null = null;
   if (post.mergedIntoId) {
-    const target = await getPost(post.mergedIntoId);
+    const [target, mergeAudit] = await Promise.all([
+      getPost(post.mergedIntoId),
+      getPostMergeAudit(post.id),
+    ]);
     if (target) {
       mergedTarget = {
         title: target.title,
         href: `/${slug}/feedback/${target.id}`,
+        mergedAt: mergeAudit?.mergedAt ?? null,
+        mergedByName: mergeAudit?.actorName ?? null,
+        mergedByEmail: mergeAudit?.actorEmail ?? null,
       };
     }
   }

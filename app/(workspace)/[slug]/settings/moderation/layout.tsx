@@ -1,4 +1,4 @@
-import { PageShell } from "@/components/ui/page";
+import { SetPageHeader } from "@/components/workspace/topbar";
 
 interface Props {
   children: React.ReactNode;
@@ -6,11 +6,12 @@ interface Props {
 
 export default function ModerationSettingsLayout({ children }: Props) {
   return (
-    <PageShell
-      description="Manage post approval, spam filtering, and blocked users."
-      title="Moderation"
-    >
+    <>
+      <SetPageHeader
+        description="Manage post approval, spam filtering, and blocked users."
+        title="Moderation"
+      />
       {children}
-    </PageShell>
+    </>
   );
 }

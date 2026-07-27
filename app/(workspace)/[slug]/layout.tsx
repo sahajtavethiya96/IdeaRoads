@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { NotificationsProvider } from "@/components/notifications/notifications-context";
 import { PortalHrefProvider } from "@/components/workspace/open-portal-button";
+import { Topbar, TopbarProvider } from "@/components/workspace/topbar";
 import { WorkspaceSidebar } from "@/components/workspace/workspace-sidebar";
 import { WorkspaceSuspendedPage } from "@/components/workspace/workspace-suspended";
 import { ADMIN_ROLE, WORKSPACE_MEMBER } from "@/config/platform";
@@ -88,7 +89,18 @@ export default async function WorkspaceLayout({
           className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[#F7F9FB]"
           id="main-content"
         >
-          <PortalHrefProvider href={portalHref}>{children}</PortalHrefProvider>
+          <PortalHrefProvider href={portalHref}>
+            <TopbarProvider
+              defaultHeader={{
+                title: workspace.name,
+                description: workspace.description,
+              }}
+              key={workspace.id}
+            >
+              <Topbar />
+              {children}
+            </TopbarProvider>
+          </PortalHrefProvider>
         </main>
       </div>
     </NotificationsProvider>

@@ -1,7 +1,6 @@
 "use client";
 
 import { UserCircleIcon } from "@phosphor-icons/react";
-import { formatDistanceToNow } from "date-fns";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { RelativeTime } from "@/components/ui/relative-time";
 
 interface Voter {
   email: string | null;
@@ -128,9 +128,10 @@ export default function VoterListModal({
                   </div>
 
                   <span className="shrink-0 text-xs text-ir-muted">
-                    {formatDistanceToNow(new Date(voter.votedAt), {
-                      addSuffix: true,
-                    })}
+                    <RelativeTime
+                      date={voter.votedAt}
+                      options={{ addSuffix: true }}
+                    />
                   </span>
                 </li>
               ))}

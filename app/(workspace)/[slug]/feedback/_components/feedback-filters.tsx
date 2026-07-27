@@ -56,6 +56,9 @@ export function FeedbackFilters({
   const updateParam = useCallback(
     (updates: Record<string, string | null>) => {
       const params = new URLSearchParams(searchParams.toString());
+      // Any filter/sort/search change resets pagination back to the first
+      // page, so you never land on an out-of-range page of the new result set.
+      params.delete("page");
       for (const [key, value] of Object.entries(updates)) {
         if (value === null || value === "" || value === "newest") {
           params.delete(key);
@@ -152,7 +155,7 @@ export function FeedbackFilters({
           {/* Draft filter */}
           <Select
             onValueChange={(v) =>
-              updateParam({ draft: v === "all" ? null : v, page: null })
+              updateParam({ draft: v === "all" ? null : v })
             }
             value={activeDraft}
           >

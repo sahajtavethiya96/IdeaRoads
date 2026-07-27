@@ -2,14 +2,12 @@ import { count, eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BreakdownCard } from "@/components/dashboard/breakdown-card";
-import { LiveStreamCard } from "@/components/dashboard/live-stream-card";
+import { DashboardMetricsSection } from "@/components/dashboard/dashboard-metrics-section";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { RoadmapPreviewCard } from "@/components/dashboard/roadmap-preview-card";
-import { StatCard } from "@/components/dashboard/stat-card";
 import { WorkspaceOverviewCard } from "@/components/dashboard/workspace-overview-card";
 import { PostsTable } from "@/components/posts/posts-table";
-import { PageHeader } from "@/components/ui/page";
+import { SetPageHeader } from "@/components/workspace/topbar";
 import { WORKSPACE_MEMBER } from "@/config/platform";
 import { workspaceMembers } from "@/db/schema";
 import { requireSession } from "@/lib/authz";
@@ -18,9 +16,9 @@ import { getActiveCategoriesForWorkspace } from "@/lib/categories/queries";
 import type { ActivityType, BreakdownPeriod } from "@/lib/dashboard/queries";
 import {
   getBreakdownMetrics,
+  getFeedbackTrend,
   getPreviousPeriodSnapshot,
   getRecentActivity,
-  PERIOD_LABELS,
 } from "@/lib/dashboard/queries";
 import { db } from "@/lib/db";
 import {
@@ -80,6 +78,7 @@ export default async function WorkspaceDashboardPage({
     statusCounts,
     previousSnapshot,
     breakdown,
+    feedbackTrend,
     recentActivity,
     newestPosts,
     categories,
@@ -93,6 +92,7 @@ export default async function WorkspaceDashboardPage({
     countWorkspacePostsByStatus(workspace.id),
     getPreviousPeriodSnapshot(workspace.id, activePeriod, now),
     getBreakdownMetrics(workspace.id, activePeriod, now),
+    getFeedbackTrend(workspace.id, activePeriod, now, workspace.createdAt),
     getRecentActivity(workspace.id, { limit: 8, type: activeActivityType }),
     listWorkspacePosts(workspace.id, {
       sort: "newest",
@@ -104,47 +104,11 @@ export default async function WorkspaceDashboardPage({
     getActiveWorkspaceStatuses(workspace.id),
   ]);
 
-  const totalPosts = Object.values(statusCounts).reduce((sum, n) => sum + n, 0);
-  const openPosts = statusCounts.open ?? 0;
-  const underReviewPosts = statusCounts.under_review ?? 0;
-  const plannedPosts = statusCounts.planned ?? 0;
-  const inProgressPosts = statusCounts.in_progress ?? 0;
-  const completedPosts = statusCounts.completed ?? 0;
-  const closedPosts = statusCounts.closed ?? 0;
-
-  const periodLabel = PERIOD_LABELS[activePeriod] ?? undefined;
-  const previousMemberCount = previousSnapshot?.memberCount ?? null;
-  const previousTotalPosts = previousSnapshot
-    ? Object.values(previousSnapshot.statusCounts).reduce(
-        (sum, n) => sum + n,
-        0
-      )
-    : null;
-  const previousOpenPosts = previousSnapshot?.statusCounts.open ?? null;
-  const previousUnderReviewPosts =
-    previousSnapshot?.statusCounts.under_review ?? null;
-  const previousPlannedPosts = previousSnapshot?.statusCounts.planned ?? null;
-  const previousInProgressPosts =
-    previousSnapshot?.statusCounts.in_progress ?? null;
-  const previousCompletedPosts =
-    previousSnapshot?.statusCounts.completed ?? null;
-  const previousClosedPosts = previousSnapshot?.statusCounts.closed ?? null;
-
   const addFeedbackHref = board ? `/${slug}/feedback/new` : null;
 
   return (
     <div className="flex flex-col">
-      <PageHeader
-        // actions={
-        //   addFeedbackHref ? (
-        //     <Button asChild>
-        //       <Link href={addFeedbackHref}>
-        //         <Plus data-icon="inline-start" />
-        //         Add Feedback
-        //       </Link>
-        //     </Button>
-        //   ) : undefined
-        // }
+      <SetPageHeader
         description={workspace.description || undefined}
         title={workspace.name}
       />
@@ -166,81 +130,20 @@ export default async function WorkspaceDashboardPage({
           isAdminOrOwner={isAdminOrOwner}
           workspaceSlug={slug}
         />
-
-        {/* Stat cards */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard
-            href={isAdminOrOwner ? `/${slug}/settings/members` : undefined}
-            label="Members"
-            periodLabel={periodLabel}
-            previousValue={previousMemberCount}
-            value={memberCount}
-          />
-          <StatCard
-            href={`/${slug}/feedback`}
-            label="Total posts"
-            periodLabel={periodLabel}
-            previousValue={previousTotalPosts}
-            value={totalPosts}
-          />
-          <StatCard
-            href={`/${slug}/feedback?status=open`}
-            label="Open"
-            periodLabel={periodLabel}
-            previousValue={previousOpenPosts}
-            value={openPosts}
-          />
-          <StatCard
-            href={`/${slug}/feedback?status=under_review`}
-            label="Under Review"
-            periodLabel={periodLabel}
-            previousValue={previousUnderReviewPosts}
-            value={underReviewPosts}
-            valueClassName="text-ir-primary"
-          />
-          <StatCard
-            href={`/${slug}/feedback?status=planned`}
-            label="Planned"
-            periodLabel={periodLabel}
-            previousValue={previousPlannedPosts}
-            value={plannedPosts}
-            valueClassName="text-ir-primary"
-          />
-          <StatCard
-            href={`/${slug}/feedback?status=in_progress`}
-            label="In Progress"
-            periodLabel={periodLabel}
-            previousValue={previousInProgressPosts}
-            value={inProgressPosts}
-            valueClassName="text-ir-warning"
-          />
-          <StatCard
-            href={`/${slug}/feedback?status=completed`}
-            label="Completed"
-            periodLabel={periodLabel}
-            previousValue={previousCompletedPosts}
-            value={completedPosts}
-            valueClassName="text-ir-success"
-          />
-          <StatCard
-            href={`/${slug}/feedback?status=closed`}
-            label="Closed"
-            periodLabel={periodLabel}
-            previousValue={previousClosedPosts}
-            value={closedPosts}
-            valueClassName="text-ir-muted"
-          />
-        </div>
-
-        {/* Breakdown + Live Stream */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <BreakdownCard metrics={breakdown} period={activePeriod} />
-          <LiveStreamCard
-            activity={recentActivity}
-            activityType={activeActivityType}
-            workspaceSlug={slug}
-          />
-        </div>
+        <DashboardMetricsSection
+          initialActivity={recentActivity}
+          initialActivityType={activeActivityType}
+          initialBreakdown={breakdown}
+          initialFeedbackTrend={feedbackTrend}
+          initialPeriod={activePeriod}
+          initialPreviousSnapshot={previousSnapshot}
+          isAdminOrOwner={isAdminOrOwner}
+          memberCount={memberCount}
+          slug={slug}
+          statusCounts={statusCounts}
+          workspaceCreatedAt={workspace.createdAt}
+          workspaceId={workspace.id}
+        />
 
         {/* Roadmap Preview */}
         <RoadmapPreviewCard
@@ -266,6 +169,11 @@ export default async function WorkspaceDashboardPage({
             isAdminOrOwner={isAdminOrOwner}
             isMember={true}
             isSignedIn={true}
+            mergedIntoHref={(post) =>
+              post.mergedIntoId
+                ? `/${slug}/feedback/${post.mergedIntoId}`
+                : null
+            }
             postHref={(post) => `/${slug}/feedback/${post.id}`}
             posts={newestPosts}
             workspaceId={workspace.id}

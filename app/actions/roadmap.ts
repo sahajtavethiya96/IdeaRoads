@@ -321,6 +321,7 @@ export async function updateRoadmapItemAction(input: {
   launchDate?: string | null;
   coverImage?: string | null;
   statusId?: string;
+  feedbackId?: string | null;
 }): Promise<ActionResult> {
   const auth = await requireTeamMember(input.workspaceId);
   if (!auth.ok) {
@@ -355,6 +356,7 @@ export async function updateRoadmapItemAction(input: {
         : parseLaunchDate(input.launchDate),
     coverImage: input.coverImage,
     statusId: input.statusId,
+    feedbackId: input.feedbackId,
   });
   return { success: true, data: undefined };
 }

@@ -49,14 +49,23 @@ function useSectionPortalHref(): string | null {
   return null;
 }
 
-// Opens the workspace's public portal in a new tab. Rendered inside PageHeader,
-// so it shows up automatically on every admin page that uses the shared header.
+// Opens the workspace's public portal in a new tab. Rendered inside Topbar,
+// so it shows up automatically on every admin page that sets a header.
 // Renders nothing when there's no public surface to open. The label collapses
 // to an icon-only control on mobile to stay compact in the header.
-export function OpenPortalButton() {
+export function OpenPortalButton({
+  override,
+}: {
+  // Set by a page (via SetPageHeader's portalHref) that knows better than a
+  // pathname guess ever could — e.g. a specific changelog entry's own public
+  // URL, or `null` while editing a draft that has no public URL yet.
+  // `undefined` (the default, when the prop isn't passed) falls through to
+  // the normal section/workspace resolution below.
+  override?: string | null;
+} = {}) {
   const defaultHref = usePortalHref();
   const sectionHref = useSectionPortalHref();
-  const href = sectionHref ?? defaultHref;
+  const href = override === undefined ? (sectionHref ?? defaultHref) : override;
   if (!href) {
     return null;
   }

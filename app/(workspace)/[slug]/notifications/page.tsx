@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { NotificationList } from "@/components/notifications/notification-list";
+import { ContentContainer } from "@/components/ui/page";
+import { SetPageHeader } from "@/components/workspace/topbar";
 import { requireSession } from "@/lib/authz";
 import { listNotifications } from "@/lib/notifications/queries";
 import {
@@ -35,15 +37,19 @@ export default async function NotificationsPage({ params }: Props) {
   });
 
   return (
-    <div className="flex flex-col min-h-full">
-      <div className="max-w-5xl w-full mx-auto">
+    <>
+      <SetPageHeader
+        description="Updates on the feedback you're following."
+        title="Notifications"
+      />
+      <ContentContainer>
         <NotificationList
           hasMore={hasMore}
           initialItems={items}
           total={total}
           workspaceId={workspace.id}
         />
-      </div>
-    </div>
+      </ContentContainer>
+    </>
   );
 }

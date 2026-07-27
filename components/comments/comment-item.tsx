@@ -5,12 +5,12 @@ import {
   PencilIcon,
   TrashIcon,
 } from "@phosphor-icons/react";
-import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useIsEmbed } from "@/components/embed/use-is-embed";
 import { FeedbackBody } from "@/components/posts/feedback-body";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { RelativeTime } from "@/components/ui/relative-time";
 import { embedFetch } from "@/lib/embed/fetch";
 import {
   useEmbedCommentOwnership,
@@ -155,9 +155,10 @@ export default function CommentItem({
               </span>
             )}
             <span className="text-xs text-ir-muted">
-              {formatDistanceToNow(new Date(comment.createdAt), {
-                addSuffix: true,
-              })}
+              <RelativeTime
+                date={comment.createdAt}
+                options={{ addSuffix: true }}
+              />
             </span>
           </div>
 

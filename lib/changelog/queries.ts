@@ -46,6 +46,12 @@ export type LinkedPost = {
   boardIsArchived: boolean;
   isLocked: boolean;
   hasVoted: boolean;
+  // Resolved via a self-join so a linked-but-merged post can show a "Merged
+  // into <title>" badge instead of just looking like any other locked post.
+  mergedIntoBoardSlug: string | null;
+  mergedIntoId: string | null;
+  mergedIntoSlug: string | null;
+  mergedIntoTitle: string | null;
 };
 
 export type ChangelogEntryWithPosts = ChangelogEntryRow & {
@@ -158,6 +164,7 @@ export async function getLinkedPosts(
   opts: { publicOnly?: boolean; userId?: string | null } = {}
 ): Promise<LinkedPost[]> {
   const { boards } = await import("@/db/schema/boards");
+  const { alias } = await import("drizzle-orm/pg-core");
 
   const conditions = [eq(changelogPosts.changelogEntryId, entryId)];
   // The public changelog entry page must never surface posts from private
@@ -171,6 +178,9 @@ export async function getLinkedPosts(
     );
   }
 
+  const mergeTarget = alias(posts, "changelog_merge_target");
+  const mergeTargetBoard = alias(boards, "changelog_merge_target_board");
+
   const baseColumns = {
     id: posts.id,
     title: posts.title,
@@ -181,6 +191,10 @@ export async function getLinkedPosts(
     boardName: boards.name,
     boardIsArchived: boards.isArchived,
     isLocked: posts.isLocked,
+    mergedIntoId: posts.mergedIntoId,
+    mergedIntoTitle: mergeTarget.title,
+    mergedIntoSlug: mergeTarget.slug,
+    mergedIntoBoardSlug: mergeTargetBoard.slug,
   };
 
   if (opts.userId) {
@@ -199,6 +213,8 @@ export async function getLinkedPosts(
       .innerJoin(posts, eq(changelogPosts.postId, posts.id))
       .innerJoin(boards, eq(posts.boardId, boards.id))
       .leftJoin(userVoteAlias, eq(posts.id, userVoteAlias.postId))
+      .leftJoin(mergeTarget, eq(posts.mergedIntoId, mergeTarget.id))
+      .leftJoin(mergeTargetBoard, eq(mergeTarget.boardId, mergeTargetBoard.id))
       .where(and(...conditions));
   }
 
@@ -207,6 +223,8 @@ export async function getLinkedPosts(
     .from(changelogPosts)
     .innerJoin(posts, eq(changelogPosts.postId, posts.id))
     .innerJoin(boards, eq(posts.boardId, boards.id))
+    .leftJoin(mergeTarget, eq(posts.mergedIntoId, mergeTarget.id))
+    .leftJoin(mergeTargetBoard, eq(mergeTarget.boardId, mergeTargetBoard.id))
     .where(and(...conditions));
 }
 
@@ -216,6 +234,9 @@ export async function searchWorkspacePosts(
   limit = 10
 ) {
   const { boards } = await import("@/db/schema/boards");
+  const { alias } = await import("drizzle-orm/pg-core");
+
+  const mergeTarget = alias(posts, "search_merge_target");
 
   return db
     .select({
@@ -226,9 +247,15 @@ export async function searchWorkspacePosts(
       upvotes: posts.upvotes,
       boardSlug: boards.slug,
       boardName: boards.name,
+      // Merging never blocks a post from being linked (an admin may want to
+      // preserve the link even after the two feedback items were combined) —
+      // surfaced here purely so the picker can flag it before they choose.
+      mergedIntoId: posts.mergedIntoId,
+      mergedIntoTitle: mergeTarget.title,
     })
     .from(posts)
     .innerJoin(boards, eq(posts.boardId, boards.id))
+    .leftJoin(mergeTarget, eq(posts.mergedIntoId, mergeTarget.id))
     .where(
       and(
         eq(posts.workspaceId, workspaceId),

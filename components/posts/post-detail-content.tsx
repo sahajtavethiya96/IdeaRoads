@@ -19,8 +19,11 @@ import {
 } from "@/components/posts/post-inline-edit";
 import PublishDraftButton from "@/components/posts/publish-draft-button";
 import StatusSelect from "@/components/posts/status-select";
+import UnmergePostButton from "@/components/posts/unmerge-post-button";
 import VoterListButton from "@/components/posts/voter-list-button";
+import { Button } from "@/components/ui/button";
 import VoteButton from "@/components/voting/vote-button";
+import { SetPageHeader } from "@/components/workspace/topbar";
 
 interface Category {
   color: string;
@@ -59,6 +62,7 @@ interface PostDetailPost {
   boardId: string;
   body: string | null;
   categoryId: string | null;
+  commentCount: number;
   createdAt: Date;
   id: string;
   imageUrl: string | null;
@@ -90,7 +94,16 @@ interface PostDetailContentProps {
   // top instead.
   isPublicPortal?: boolean;
   isSignedIn: boolean;
-  mergedTarget: { href: string; title: string } | null;
+  mergedTarget: {
+    href: string;
+    // Who/when the merge happened — resolved from the audit log (no
+    // denormalized field on the post itself). Absent if that log entry is
+    // gone; the notice still renders without a date/actor in that case.
+    mergedAt?: Date | null;
+    mergedByEmail?: string | null;
+    mergedByName?: string | null;
+    title: string;
+  } | null;
   post: PostDetailPost;
   statusHistory: StatusHistoryEntry[];
   votedByUser: boolean;
@@ -129,24 +142,24 @@ export function PostDetailContent({
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col">
-      {/* Back nav — hidden in embed mode (no navigation chrome). Sticky so it
-        stays reachable while scrolling the post; offset below the public
-        portal's own sticky header when this renders there. */}
-      {!isEmbed && (
-        <div
-          className={`sticky z-10 border-b border-ir-border bg-ir-background px-4 py-4 sm:px-8 ${
-            isPublicPortal ? "top-16" : "top-0"
-          }`}
-        >
-          <Link
-            className="inline-flex items-center gap-1.5 text-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-            href={boardHref}
-          >
-            <ArrowLeftIcon className="size-4" />
-            {backLabel}
-          </Link>
-        </div>
-      )}
+      {/* Back nav — hidden in embed mode (no navigation chrome). On the public
+        portal this keeps its own sticky bar (offset below the portal's own
+        sticky header); in the admin workspace it's reported to the shared,
+        layout-owned Topbar instead. */}
+      {!isEmbed &&
+        (isPublicPortal ? (
+          <div className="sticky top-16 z-10 border-b border-ir-border bg-ir-background px-4 py-4 sm:px-8">
+            <Link
+              className="inline-flex items-center gap-1.5 text-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+              href={boardHref}
+            >
+              <ArrowLeftIcon className="size-4" />
+              {backLabel}
+            </Link>
+          </div>
+        ) : (
+          <SetPageHeader backHref={boardHref} title={backLabel} />
+        ))}
 
       <div className="px-4 py-8 sm:px-8">
         <PostEditProvider
@@ -243,7 +256,6 @@ export function PostDetailContent({
                 initialCount={post.upvotes}
                 initialHasVoted={votedByUser}
                 isArchived={boardIsArchived}
-                isLocked={post.isLocked}
                 isSignedIn={isSignedIn}
                 postId={post.id}
               />
@@ -253,19 +265,43 @@ export function PostDetailContent({
             </div>
           </div>
 
-          {/* Merged notice */}
+          {/* Merged notice — deliberately prominent (not the muted/gray
+            treatment used elsewhere) so nobody mistakes this for a still-
+            active item. Votes have already moved to the destination and
+            this post is locked (see MergePostButton's confirmation copy). */}
           {mergedTarget && (
-            <div className="mt-4 flex items-center gap-2 rounded-ir-card border border-ir-border bg-ir-muted-surface px-3 py-2 text-sm text-ir-muted">
-              <GitMergeIcon className="size-4 shrink-0" />
-              <span>
-                Merged into{" "}
-                <Link
-                  className="font-medium text-ir-heading hover:underline"
-                  href={mergedTarget.href}
-                >
-                  {mergedTarget.title}
-                </Link>
-              </span>
+            <div className="mt-4 flex flex-col gap-3 rounded-ir-card border border-ir-primary/25 bg-ir-primary-light/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-2.5">
+                <GitMergeIcon className="mt-0.5 size-4 shrink-0 text-ir-primary" />
+                <div>
+                  <p className="text-sm font-medium text-ir-heading">
+                    This feedback has been merged into{" "}
+                    <Link
+                      className="text-ir-primary hover:underline"
+                      href={mergedTarget.href}
+                    >
+                      {mergedTarget.title}
+                    </Link>
+                  </p>
+                  <p className="mt-0.5 text-xs text-ir-muted">
+                    Votes have moved to the destination; this item is locked and
+                    no longer active.
+                    {mergedTarget.mergedAt && (
+                      <>
+                        {" "}
+                        Merged {format(mergedTarget.mergedAt, "MMM d, yyyy")}
+                        {isMember && mergedTarget.mergedByName
+                          ? ` by ${mergedTarget.mergedByName}`
+                          : ""}
+                        .
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <Button asChild className="shrink-0" size="sm" variant="outline">
+                <Link href={mergedTarget.href}>Open destination</Link>
+              </Button>
             </div>
           )}
 
@@ -289,6 +325,14 @@ export function PostDetailContent({
               )}
               {isMember && !post.mergedIntoId && (
                 <MergePostButton
+                  postCommentCount={post.commentCount}
+                  postId={post.id}
+                  postTitle={post.title}
+                  workspaceId={workspaceId}
+                />
+              )}
+              {isMember && post.mergedIntoId && (
+                <UnmergePostButton
                   postId={post.id}
                   postTitle={post.title}
                   workspaceId={workspaceId}
@@ -338,7 +382,7 @@ export function PostDetailContent({
           )}
 
           {/* Comments */}
-          <div className="mt-6 border-t border-ir-border pt-6">
+          <div className="mt-6">
             <CommentSection
               canModerate={isAdminOrOwner}
               currentUserId={currentUserId}

@@ -1,8 +1,7 @@
-import { ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ContentContainer } from "@/components/ui/page";
+import { SetPageHeader } from "@/components/workspace/topbar";
 import { requireSession } from "@/lib/authz";
 import { getWorkspaceBoard } from "@/lib/boards/queries";
 import { getActiveCategoriesForWorkspace } from "@/lib/categories/queries";
@@ -44,18 +43,8 @@ export default async function NewFeedbackPage({ params }: Props) {
   ]);
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center gap-3 border-b border-ir-border px-4 py-4 sm:px-8">
-        <Link
-          aria-label="Back to Feedback"
-          className="flex cursor-pointer items-center justify-center rounded-ir-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-          href={`/${slug}/feedback`}
-          title="Back to Feedback"
-        >
-          <ArrowLeftIcon className="size-4" />
-        </Link>
-        <h2 className="text-sm font-semibold text-ir-heading">New Feedback</h2>
-      </div>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <SetPageHeader backHref={`/${slug}/feedback`} title="New Feedback" />
       <div className="flex-1 overflow-y-auto">
         <ContentContainer>
           <NewFeedbackForm

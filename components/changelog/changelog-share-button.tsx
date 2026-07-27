@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckIcon, LinkIcon, ShareNetworkIcon } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface ChangelogShareButtonProps {
   title: string;
@@ -13,8 +13,16 @@ export function ChangelogShareButton({
   url,
 }: ChangelogShareButtonProps) {
   const [copied, setCopied] = useState(false);
-  const canNativeShare =
-    typeof navigator !== "undefined" && typeof navigator.share === "function";
+  // Starts false to match server-rendered output (there's no `navigator` on
+  // the server) — the real capability is only knowable client-side, so it's
+  // detected in an effect after mount instead of during render. Checking it
+  // inline here would make the very first client render disagree with the
+  // server's on any browser that does support the Web Share API.
+  const [canNativeShare, setCanNativeShare] = useState(false);
+
+  useEffect(() => {
+    setCanNativeShare(typeof navigator.share === "function");
+  }, []);
 
   async function handleClick() {
     if (canNativeShare) {
