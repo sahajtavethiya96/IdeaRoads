@@ -1,20 +1,33 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import {
+  ArrowSquareOutIcon,
+  CaretUpDownIcon,
+  CheckIcon,
+  CircleDashedIcon,
+  FileIcon,
+  MagnifyingGlassIcon,
+  XIcon,
+} from "@phosphor-icons/react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import type { ComponentType } from "react";
+import { useState, useTransition } from "react";
 import {
   publishPostAction,
   unpublishPostAction,
   updatePostStatusAction,
 } from "@/app/actions/posts";
 import { PostStatusBadge } from "@/components/posts/post-status-badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { cn } from "@/lib/utils";
 
 interface WorkspaceStatus {
   color: string;
@@ -36,9 +49,45 @@ interface StatusSelectProps {
   workspaceStatuses: WorkspaceStatus[];
 }
 
-// Sentinel for the Draft publication state in the same dropdown as the workflow
+// Sentinel for the Draft publication state in the same popover as the workflow
 // statuses. Underscored so it can never collide with a real status slug.
 const DRAFT_VALUE = "__draft__";
+
+// Icon per status, matched by slug — no other status UI in the app uses icons
+// yet, so this is intentionally local rather than a shared convention. Only
+// covers the 5 current defaults; any other slug (a custom status, or an
+// existing workspace still on the pre-Upvoty-parity status set) falls back
+// to a plain color dot below rather than breaking.
+const STATUS_ICONS: Record<string, ComponentType<{ className?: string }>> = {
+  [DRAFT_VALUE]: FileIcon,
+  draft: FileIcon,
+  in_review: MagnifyingGlassIcon,
+  in_progress: CircleDashedIcon,
+  completed: CheckIcon,
+  declined: XIcon,
+};
+
+function StatusIcon({
+  className,
+  color,
+  slug,
+}: {
+  className: string;
+  color: string;
+  slug: string;
+}) {
+  const Icon = STATUS_ICONS[slug];
+  if (Icon) {
+    return <Icon className={className} />;
+  }
+  return (
+    <span
+      aria-hidden
+      className={cn("inline-block shrink-0 rounded-full", className)}
+      style={{ backgroundColor: color, transform: "scale(0.45)" }}
+    />
+  );
+}
 
 export default function StatusSelect({
   postId,
@@ -49,7 +98,10 @@ export default function StatusSelect({
   workspaceStatuses,
 }: StatusSelectProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
+  const [open, setOpen] = useState(false);
+  const [notify, setNotify] = useState(false);
 
   // System statuses (currently just the protected "Draft" fallback) never get
   // their own picker entry — a post auto-migrated onto one displays as the
@@ -60,29 +112,74 @@ export default function StatusSelect({
   const isOnSystemDraftStatus = workspaceStatuses.some(
     (s) => s.isSystem && s.slug === currentStatus
   );
+  const currentEffectiveValue =
+    isDraft || isOnSystemDraftStatus ? DRAFT_VALUE : currentStatus;
+  const [pendingValue, setPendingValue] = useState(currentEffectiveValue);
 
-  // Reserve width for the longest label this select could ever show, so
-  // switching statuses (e.g. "Open" -> "Under Review") resizes nothing —
+  // Same deeply-nested-client-component problem useSectionPortalHref solves
+  // in open-portal-button.tsx: derive the workspace slug from the URL
+  // instead of threading a new prop through PostsTable -> PostRow (and
+  // post-detail-content.tsx already has other slug-based links, but this
+  // avoids a prop-signature change on the one call site that doesn't). Both
+  // the admin and public-portal routes that render this component have the
+  // workspace slug as their first path segment.
+  const workspaceSlug = pathname.split("/").filter(Boolean)[0] ?? "";
+
+  // The trigger previously ignored status color entirely (flat
+  // bg-ir-muted-surface for every status) — now it tints like the read-only
+  // PostStatusBadge does. The unpublished-draft sentinel always uses the
+  // warning color (matches its own read-only badge above); any real
+  // workflow status — including the system Draft fallback — uses its own
+  // configured color. color-mix (not a hex+alpha string) so this works
+  // whether the color is a raw hex from the DB or a CSS var() reference.
+  const currentWorkspaceStatus =
+    workspaceStatuses.find((s) => s.slug === currentStatus) ?? null;
+  const triggerColor = isDraft
+    ? "var(--ir-warning)"
+    : (currentWorkspaceStatus?.color ?? "var(--ir-text-heading)");
+  const triggerLabel =
+    isDraft || isOnSystemDraftStatus
+      ? "Draft"
+      : (currentWorkspaceStatus?.name ?? currentStatus);
+  const triggerIconSlug =
+    isDraft || isOnSystemDraftStatus ? DRAFT_VALUE : currentStatus;
+
+  // Reserve width for the longest label this trigger could ever show, so
+  // switching statuses (e.g. "In Review" -> "Completed") resizes nothing —
   // every sibling after it in the flex-wrap header row (category, assignee,
   // byline, dates) would otherwise reflow horizontally on every change. `ch`
-  // scales with font size rather than the viewport, so this stays correct
-  // at any screen size; the +4 covers the pill's own horizontal padding.
+  // scales with font size rather than the viewport; the +8 covers the pill's
+  // own padding plus the leading icon and trailing caret.
   const longestStatusLabel = Math.max(
     "Draft".length,
     ...activeStatuses.map((s) => s.name.length)
   );
-  const statusTriggerMinWidth = `${longestStatusLabel + 4}ch`;
+  const statusTriggerMinWidth = `${longestStatusLabel + 8}ch`;
 
-  function handleChange(value: string) {
+  function handleOpenChange(next: boolean) {
+    if (next) {
+      // Always start from the actual current state, never a stale staged
+      // pick left over from a popover that was closed without saving.
+      setPendingValue(currentEffectiveValue);
+      setNotify(false);
+    }
+    setOpen(next);
+  }
+
+  function handleSave() {
+    const value = pendingValue;
+
     if (value === DRAFT_VALUE) {
       // Already draft — either unpublished, or auto-migrated onto the system
-      // Draft status — so no unnecessary update (requirement 3).
+      // Draft status — so no unnecessary update.
       if (isDraft || isOnSystemDraftStatus) {
+        setOpen(false);
         return;
       }
       // Published → revert to draft, reusing the existing publish/draft flow.
       startTransition(async () => {
         await unpublishPostAction({ postId, workspaceId });
+        setOpen(false);
         router.refresh();
       });
       return;
@@ -94,20 +191,33 @@ export default function StatusSelect({
       // that status. Set the status first (only if it changed), then publish.
       startTransition(async () => {
         if (value !== currentStatus) {
-          await updatePostStatusAction({ postId, workspaceId, status: value });
+          await updatePostStatusAction({
+            postId,
+            workspaceId,
+            status: value,
+            notify,
+          });
         }
         await publishPostAction({ postId, workspaceId });
+        setOpen(false);
         router.refresh();
       });
       return;
     }
 
-    // Published post: plain status change (unchanged existing behavior).
+    // Published post: plain status change.
     if (value === currentStatus) {
+      setOpen(false);
       return;
     }
     startTransition(async () => {
-      await updatePostStatusAction({ postId, workspaceId, status: value });
+      await updatePostStatusAction({
+        postId,
+        workspaceId,
+        status: value,
+        notify,
+      });
+      setOpen(false);
       router.refresh();
     });
   }
@@ -129,28 +239,116 @@ export default function StatusSelect({
   }
 
   return (
-    <Select
-      disabled={isPending}
-      onValueChange={handleChange}
-      value={isDraft || isOnSystemDraftStatus ? DRAFT_VALUE : currentStatus}
-    >
-      <SelectTrigger
-        className="h-auto gap-1.5 rounded-ir-full border-0 bg-ir-muted-surface px-2.5 py-1 text-xs font-medium text-ir-heading"
-        showChevron={false}
-        size="sm"
-        style={{ minWidth: statusTriggerMinWidth }}
+    <Popover onOpenChange={handleOpenChange} open={open}>
+      <PopoverTrigger asChild>
+        <button
+          className="inline-flex h-7 items-center gap-1.5 rounded-ir-md border-0 px-2.5 py-4.5 text-xs font-medium"
+          disabled={isPending}
+          style={{
+            backgroundColor: `color-mix(in oklab, ${triggerColor} 9%, transparent)`,
+            color: triggerColor,
+            minWidth: statusTriggerMinWidth,
+          }}
+          type="button"
+        >
+          <StatusIcon
+            className="size-3.5 shrink-0"
+            color={triggerColor}
+            slug={triggerIconSlug}
+          />
+          <span className="flex-1 truncate text-left">{triggerLabel}</span>
+          <CaretUpDownIcon className="size-3.5 shrink-0 opacity-70" />
+        </button>
+      </PopoverTrigger>
+
+      <PopoverContent
+        align="start"
+        className="w-64 flex-col gap-0 p-0"
+        onCloseAutoFocus={(e) => e.preventDefault()}
+        onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {/* Draft (publication state) first, matching Upvoty. */}
-        <SelectItem value={DRAFT_VALUE}>Draft</SelectItem>
-        {activeStatuses.map((s) => (
-          <SelectItem key={s.slug} value={s.slug}>
-            {s.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+        {/* Status list — staged only, applied on Save */}
+        <RadioGroup
+          className="gap-0.5 p-2"
+          onValueChange={setPendingValue}
+          value={pendingValue}
+        >
+          {/* Draft (publication state) first, matching Upvoty. */}
+          {/* biome-ignore lint/a11y/noLabelWithoutControl: RadioGroupItem is a Radix custom control nested inside the label, which already associates it correctly */}
+          <label
+            className={cn(
+              "flex cursor-pointer items-center gap-2.5 rounded-ir-sm px-3 py-2 text-sm font-medium transition-colors duration-150 ease-ir-standard",
+              pendingValue === DRAFT_VALUE
+                ? "bg-ir-primary-light/20 text-ir-primary"
+                : "text-ir-heading hover:bg-ir-muted-surface"
+            )}
+          >
+            <RadioGroupItem value={DRAFT_VALUE} />
+            <StatusIcon
+              className="size-3.5 shrink-0"
+              color="var(--ir-warning)"
+              slug={DRAFT_VALUE}
+            />
+            Draft
+          </label>
+
+          {activeStatuses.map((s) => {
+            const isSelected = pendingValue === s.slug;
+            return (
+              // biome-ignore lint/a11y/noLabelWithoutControl: RadioGroupItem is a Radix custom control nested inside the label, which already associates it correctly
+              <label
+                className={cn(
+                  "flex cursor-pointer items-center gap-2.5 rounded-ir-sm px-3 py-2 text-sm font-medium transition-colors duration-150 ease-ir-standard",
+                  isSelected
+                    ? "bg-ir-primary-light/20 text-ir-primary"
+                    : "text-ir-heading hover:bg-ir-muted-surface"
+                )}
+                key={s.slug}
+              >
+                <RadioGroupItem value={s.slug} />
+                <StatusIcon
+                  className="size-3.5 shrink-0"
+                  color={s.color}
+                  slug={s.slug}
+                />
+                {s.name}
+              </label>
+            );
+          })}
+        </RadioGroup>
+
+        {/* Notify + Save */}
+        <div className="space-y-3 border-t border-ir-border p-3">
+          {/* biome-ignore lint/a11y/noLabelWithoutControl: Checkbox is a Radix custom control nested inside the label, which already associates it correctly */}
+          <label className="flex cursor-pointer items-center justify-center gap-2 text-xs text-ir-body">
+            <Checkbox
+              checked={notify}
+              onCheckedChange={(checked) => setNotify(checked === true)}
+            />
+            Notify all voters
+          </label>
+          <Button
+            className="w-full"
+            disabled={isPending || pendingValue === currentEffectiveValue}
+            onClick={handleSave}
+            size="sm"
+            type="button"
+          >
+            {isPending ? "Saving…" : "Save Status"}
+          </Button>
+        </div>
+
+        {/* Edit Statuses */}
+        <div className="border-t border-ir-border p-2.5">
+          <Link
+            className="flex items-center justify-center gap-1.5 text-xs font-medium text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading"
+            href={`/${workspaceSlug}/settings/statuses`}
+          >
+            Edit Statuses
+            <ArrowSquareOutIcon className="size-3" />
+          </Link>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

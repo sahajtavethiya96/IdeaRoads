@@ -9,6 +9,7 @@ import {
   notInArray,
   sql,
 } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { boards, postStatusChanges, posts, votes } from "@/db/schema";
 import { db } from "@/lib/db";
 import { POST_STATUSES, type PostStatus } from "@/lib/posts/constants";
@@ -337,10 +338,11 @@ export async function listWorkspacePosts(
     offset = 0,
   } = opts;
 
-  const conditions = [
-    eq(posts.workspaceId, workspaceId),
-    isNull(posts.mergedIntoId),
-  ];
+  // Merged posts are intentionally NOT excluded here (unlike listBoardPosts,
+  // the public board feed) — this cross-board admin/profile view is where
+  // merges need to stay discoverable, so the UI can show a "Merged into"
+  // badge/link instead of the item silently disappearing.
+  const conditions = [eq(posts.workspaceId, workspaceId)];
 
   if (!includeUnapproved) {
     conditions.push(eq(posts.isApproved, true));
@@ -371,6 +373,12 @@ export async function listWorkspacePosts(
       ? [desc(posts.isPinned), desc(posts.upvotes)]
       : [desc(posts.isPinned), desc(posts.createdAt)];
 
+  // Self-join to resolve the merge target's title/slug/board — enough for the
+  // UI to render a "Merged into <title>" badge/link without a follow-up query
+  // per row, in both the admin (id-based) and public profile (slug-based) routes.
+  const mergeTarget = alias(posts, "merge_target");
+  const mergeTargetBoard = alias(boards, "merge_target_board");
+
   const columns = {
     id: posts.id,
     slug: posts.slug,
@@ -390,6 +398,10 @@ export async function listWorkspacePosts(
     boardSlug: boards.slug,
     boardName: boards.name,
     boardIsPublic: boards.isPublic,
+    mergedIntoId: posts.mergedIntoId,
+    mergedIntoTitle: mergeTarget.title,
+    mergedIntoSlug: mergeTarget.slug,
+    mergedIntoBoardSlug: mergeTargetBoard.slug,
   };
 
   if (userId) {
@@ -408,6 +420,8 @@ export async function listWorkspacePosts(
       .from(posts)
       .innerJoin(boards, eq(posts.boardId, boards.id))
       .leftJoin(userVoteAlias, eq(posts.id, userVoteAlias.postId))
+      .leftJoin(mergeTarget, eq(posts.mergedIntoId, mergeTarget.id))
+      .leftJoin(mergeTargetBoard, eq(mergeTarget.boardId, mergeTargetBoard.id))
       .where(and(...conditions))
       .orderBy(...orderByCols)
       .limit(limit)
@@ -418,6 +432,8 @@ export async function listWorkspacePosts(
     .select({ ...columns, hasVoted: sql<boolean>`false` })
     .from(posts)
     .innerJoin(boards, eq(posts.boardId, boards.id))
+    .leftJoin(mergeTarget, eq(posts.mergedIntoId, mergeTarget.id))
+    .leftJoin(mergeTargetBoard, eq(mergeTarget.boardId, mergeTargetBoard.id))
     .where(and(...conditions))
     .orderBy(...orderByCols)
     .limit(limit)
@@ -446,10 +462,9 @@ export async function countWorkspacePostsFiltered(
     drafts = "exclude",
   } = opts;
 
-  const conditions = [
-    eq(posts.workspaceId, workspaceId),
-    isNull(posts.mergedIntoId),
-  ];
+  // Kept in lockstep with listWorkspacePosts: merged posts stay countable here
+  // (see that function for why) so pagination matches what's actually listed.
+  const conditions = [eq(posts.workspaceId, workspaceId)];
   if (!includeUnapproved) {
     conditions.push(eq(posts.isApproved, true));
   }
@@ -703,6 +718,7 @@ export async function searchPostsForMerge(
         id: posts.id,
         title: posts.title,
         upvotes: posts.upvotes,
+        commentCount: posts.commentCount,
       })
       .from(posts)
       .where(and(...conditions))

@@ -119,10 +119,8 @@ export function AddRoadmapItemDialog({
   useEffect(() => {
     import("@/components/comments/quill-editor");
     import("quill");
-    if (!isEdit) {
-      prefetchFeedbackSearch(workspaceId);
-    }
-  }, [isEdit, workspaceId]);
+    prefetchFeedbackSearch(workspaceId);
+  }, [workspaceId]);
 
   // Reset the form whenever the dialog opens (create) or targets a new item (edit).
   useEffect(() => {
@@ -225,7 +223,11 @@ export function AddRoadmapItemDialog({
         coverImage: coverImage.trim() || null,
       };
       const res = isEdit
-        ? await updateRoadmapItemAction({ ...payload, itemId: item!.id })
+        ? await updateRoadmapItemAction({
+            ...payload,
+            itemId: item!.id,
+            feedbackId,
+          })
         : await createRoadmapItemAction({ ...payload, feedbackId });
       if (!res.success) {
         setError(res.error);
@@ -246,7 +248,7 @@ export function AddRoadmapItemDialog({
           </DialogTitle>
           <DialogDescription className="mt-0.5 text-xs text-ir-muted">
             {isEdit
-              ? "Update this roadmap item."
+              ? "Update this roadmap item, optionally filling it from existing feedback."
               : "Create a roadmap item, optionally filling it from existing feedback."}
           </DialogDescription>
         </div>
@@ -378,16 +380,17 @@ export function AddRoadmapItemDialog({
             {error && <p className="text-xs text-ir-danger">{error}</p>}
           </form>
 
-          {/* Right — feedback search. Only this panel scrolls; the modal itself
-              stays fixed-height (the results list has its own overflow). */}
-          {!isEdit && (
-            <div className="flex h-64 min-h-0 flex-col overflow-hidden border-t border-ir-border bg-ir-muted-surface md:h-auto md:border-t-0 md:border-l">
-              <FeedbackSearchPanel
-                onFill={handleFill}
-                workspaceId={workspaceId}
-              />
-            </div>
-          )}
+          {/* Right — feedback search, available for both add and edit (edit
+              lets you re-fill an item, or link one that was created without
+              feedback, from existing feedback). Only this panel scrolls; the
+              modal itself stays fixed-height (the results list has its own
+              overflow). */}
+          <div className="flex h-64 min-h-0 flex-col overflow-hidden border-t border-ir-border bg-ir-muted-surface md:h-auto md:border-t-0 md:border-l">
+            <FeedbackSearchPanel
+              onFill={handleFill}
+              workspaceId={workspaceId}
+            />
+          </div>
         </div>
 
         <div className="flex shrink-0 items-center justify-end gap-2 border-t border-ir-border px-5 py-3">

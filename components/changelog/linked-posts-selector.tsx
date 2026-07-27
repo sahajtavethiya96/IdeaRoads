@@ -13,6 +13,8 @@ interface Post {
   boardName: string;
   boardSlug: string;
   id: string;
+  mergedIntoId?: string | null;
+  mergedIntoTitle?: string | null;
   slug: string;
   status: string;
   title: string;
@@ -90,10 +92,24 @@ export function LinkedPostsSelector({
         <div className="flex flex-wrap gap-1.5">
           {selectedPosts.map((post) => (
             <span
-              className="inline-flex items-center gap-1.5 rounded-ir-sm border border-ir-border bg-ir-muted-surface px-2 py-1 text-xs font-medium text-ir-heading"
+              className={`inline-flex items-center gap-1.5 rounded-ir-sm border px-2 py-1 text-xs font-medium ${
+                post.mergedIntoId
+                  ? "border-ir-border bg-ir-muted-surface/60 text-ir-muted"
+                  : "border-ir-border bg-ir-muted-surface text-ir-heading"
+              }`}
               key={post.id}
+              title={
+                post.mergedIntoId
+                  ? `Merged into ${post.mergedIntoTitle ?? "another post"}`
+                  : undefined
+              }
             >
               <span className="max-w-50 truncate">{post.title}</span>
+              {post.mergedIntoId && (
+                <span className="rounded-ir-full bg-ir-surface px-1.5 py-0.5 text-2xs font-semibold">
+                  Merged
+                </span>
+              )}
               <button
                 aria-label={`Remove ${post.title}`}
                 className="cursor-pointer text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none"
@@ -148,11 +164,26 @@ export function LinkedPostsSelector({
                   type="button"
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium text-ir-heading">
-                      {post.title}
+                    <span className="flex items-center gap-1.5">
+                      <span
+                        className={`block truncate text-sm font-medium ${
+                          post.mergedIntoId
+                            ? "text-ir-muted"
+                            : "text-ir-heading"
+                        }`}
+                      >
+                        {post.title}
+                      </span>
+                      {post.mergedIntoId && (
+                        <span className="shrink-0 rounded-ir-full bg-ir-muted-surface px-1.5 py-0.5 text-2xs font-semibold text-ir-muted">
+                          Merged
+                        </span>
+                      )}
                     </span>
                     <span className="block truncate text-xs text-ir-muted">
-                      {post.boardName}
+                      {post.mergedIntoId
+                        ? `Merged into ${post.mergedIntoTitle ?? "another post"}`
+                        : post.boardName}
                     </span>
                   </span>
                   <span className="shrink-0 text-xs text-ir-muted">

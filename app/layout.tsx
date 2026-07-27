@@ -46,7 +46,7 @@ export default function RootLayout({
         <SkipLink />
         <ImpersonateBanner />
         <TooltipProvider>{children}</TooltipProvider>
-        <Toaster position="top-right" />
+        <Toaster position="bottom-right" />
       </body>
     </html>
   );

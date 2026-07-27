@@ -5,5 +5,5 @@ interface Props {
 export default function CategoriesSettingsLayout({ children }: Props) {
   // The page header (title + description) is rendered inside CategoryList so the
   // "New Category" action can sit on the same row as the title.
-  return <div className="flex h-full flex-col">{children}</div>;
+  return <div className="flex min-h-0 flex-1 flex-col">{children}</div>;
 }

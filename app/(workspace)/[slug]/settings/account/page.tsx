@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AccountSettingsContent } from "@/components/profile/account-settings-content";
-import { ContentContainer, PageShell } from "@/components/ui/page";
+import { ContentContainer } from "@/components/ui/page";
+import { SetPageHeader } from "@/components/workspace/topbar";
 import { requireSession } from "@/lib/authz";
 import {
   getWorkspaceBySlug,
@@ -32,16 +33,17 @@ export default async function WorkspaceAccountPage({ params }: Props) {
   }
 
   return (
-    <PageShell
-      description="Manage your personal profile, active sessions, and account data."
-      title="Account Settings"
-    >
+    <>
+      <SetPageHeader
+        description="Manage your personal profile, active sessions, and account data."
+        title="Account Settings"
+      />
       <ContentContainer>
         <AccountSettingsContent
           currentSessionToken={session.session.token}
           userId={session.user.id}
         />
       </ContentContainer>
-    </PageShell>
+    </>
   );
 }

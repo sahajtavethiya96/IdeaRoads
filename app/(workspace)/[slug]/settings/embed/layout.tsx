@@ -1,4 +1,4 @@
-import { PageShell } from "@/components/ui/page";
+import { SetPageHeader } from "@/components/workspace/topbar";
 
 interface Props {
   children: React.ReactNode;
@@ -6,11 +6,12 @@ interface Props {
 
 export default function EmbedSettingsLayout({ children }: Props) {
   return (
-    <PageShell
-      description="Add a feedback widget to your own site — inline or as a floating launcher."
-      title="Embed"
-    >
+    <>
+      <SetPageHeader
+        description="Add a feedback widget to your own site — inline or as a floating launcher."
+        title="Embed"
+      />
       {children}
-    </PageShell>
+    </>
   );
 }

@@ -407,7 +407,7 @@ export function EmbedSection({
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[220px_minmax(0,1fr)_260px]">
           {/* Left — description/status */}
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col items-start gap-1.5">
               <h2 className="text-sm font-semibold text-ir-heading">
                 Feedback Widget
               </h2>

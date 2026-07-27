@@ -1,6 +1,6 @@
 import { UsersIcon as Users } from "@phosphor-icons/react/dist/ssr";
-import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { RelativeTime } from "@/components/ui/relative-time";
 import { SquareAvatar } from "@/components/ui/square-avatar";
 
 interface WorkspaceOverviewCardProps {
@@ -46,7 +46,8 @@ export function WorkspaceOverviewCard({
             </p>
           ) : (
             <p className="mt-0.5 text-xs text-ir-muted">
-              Created {formatDistanceToNow(createdAt, { addSuffix: true })}
+              Created{" "}
+              <RelativeTime date={createdAt} options={{ addSuffix: true }} />
             </p>
           )}
         </div>

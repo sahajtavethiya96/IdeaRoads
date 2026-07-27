@@ -82,7 +82,6 @@ export function RoadmapPostCard({
             initialCount={post.upvotes}
             initialHasVoted={post.hasVoted}
             isArchived={false}
-            isLocked={false}
             isSignedIn={isSignedIn}
             postId={post.id}
           />

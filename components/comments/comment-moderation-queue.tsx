@@ -1,11 +1,11 @@
 "use client";
 
 import { CheckIcon, TrashIcon } from "@phosphor-icons/react";
-import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { RelativeTime } from "@/components/ui/relative-time";
 import { commentPreviewText } from "@/lib/comments/preview";
 import { embedFetch } from "@/lib/embed/fetch";
 import type { CommentApi, CommentData, ReplyData } from "./types";
@@ -91,9 +91,10 @@ function PendingCommentRow({
               </span>
             )}
             <span className="text-xs text-ir-muted">
-              {formatDistanceToNow(new Date(comment.createdAt), {
-                addSuffix: true,
-              })}
+              <RelativeTime
+                date={comment.createdAt}
+                options={{ addSuffix: true }}
+              />
             </span>
           </div>
           <p className="mt-1 text-sm leading-relaxed whitespace-pre-wrap text-ir-body wrap-break-word">

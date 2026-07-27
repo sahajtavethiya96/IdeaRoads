@@ -1,10 +1,10 @@
-import { ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChangelogCommentSection } from "@/components/changelog/changelog-comment-section";
 import { ChangelogEditor } from "@/components/changelog/changelog-editor";
+import { ChangelogEntryView } from "@/components/changelog/changelog-entry-view";
 import { ContentContainer } from "@/components/ui/page";
+import { SetPageHeader } from "@/components/workspace/topbar";
 import { WORKSPACE_MEMBER } from "@/config/platform";
 import { requireSession } from "@/lib/authz";
 import { listChangelogLabels } from "@/lib/changelog/labels";
@@ -18,7 +18,7 @@ interface Props {
   params: Promise<{ slug: string; entryId: string }>;
 }
 
-export const metadata: Metadata = { title: "Edit Changelog Entry" };
+export const metadata: Metadata = { title: "Changelog Entry" };
 
 export default async function EditChangelogEntryPage({ params }: Props) {
   const { slug, entryId } = await params;
@@ -29,57 +29,70 @@ export default async function EditChangelogEntryPage({ params }: Props) {
     notFound();
   }
 
+  // Any member can view a published entry inside the workspace shell —
+  // editing (and viewing drafts) is still Brand Admin/Owner only.
   const member = await getWorkspaceMember(workspace.id, session.user.id);
-  if (!member || member.role === WORKSPACE_MEMBER) {
+  if (!member) {
     notFound();
   }
+  const isAdminOrOwner = member.role !== WORKSPACE_MEMBER;
 
   const entry = await getChangelogEntryById(entryId, workspace.id);
   if (!entry) {
     notFound();
   }
+  // Team Members never see drafts in the list either (listChangelogEntries
+  // excludes them for non-admins) — stay consistent if one guesses a
+  // draft's URL directly.
+  if (!isAdminOrOwner && !entry.isPublished) {
+    notFound();
+  }
 
-  const initialLabels = await listChangelogLabels(workspace.id);
+  const initialLabels = isAdminOrOwner
+    ? await listChangelogLabels(workspace.id)
+    : [];
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-ir-border px-4 py-4 sm:px-8">
-        <Link
-          aria-label="Back to Changelog"
-          className="flex cursor-pointer items-center justify-center rounded-ir-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-          href={`/${slug}/settings/changelog`}
-          title="Back to Changelog"
-        >
-          <ArrowLeftIcon className="size-4" />
-        </Link>
-        <h2 className="text-sm font-semibold text-ir-heading">
-          {entry.isPublished ? "Edit Published Entry" : "Edit Draft"}
-        </h2>
-        {entry.isPublished && (
-          <span className="text-xs text-ir-muted">
-            Changes are immediately live
-          </span>
-        )}
-      </div>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <SetPageHeader
+        backHref={`/${slug}/settings/changelog`}
+        description={
+          isAdminOrOwner && entry.isPublished
+            ? "Changes are immediately live"
+            : undefined
+        }
+        portalHref={entry.isPublished ? `/${slug}/changelog/${entry.id}` : null}
+        title={
+          isAdminOrOwner
+            ? entry.isPublished
+              ? "Edit Published Entry"
+              : "Edit Draft"
+            : entry.title
+        }
+      />
       <div className="flex-1 overflow-y-auto">
-        <ChangelogEditor
-          initialEntry={{
-            id: entry.id,
-            title: entry.title,
-            body: entry.body,
-            coverImageUrl: entry.coverImageUrl,
-            label: entry.label,
-            isPublished: entry.isPublished,
-            linkedPosts: entry.linkedPosts,
-          }}
-          initialLabels={initialLabels}
-          workspaceId={workspace.id}
-          workspaceSlug={slug}
-        />
+        {isAdminOrOwner ? (
+          <ChangelogEditor
+            initialEntry={{
+              id: entry.id,
+              title: entry.title,
+              body: entry.body,
+              coverImageUrl: entry.coverImageUrl,
+              label: entry.label,
+              isPublished: entry.isPublished,
+              linkedPosts: entry.linkedPosts,
+            }}
+            initialLabels={initialLabels}
+            workspaceId={workspace.id}
+            workspaceSlug={slug}
+          />
+        ) : (
+          <ChangelogEntryView entry={entry} workspaceSlug={slug} />
+        )}
         <ContentContainer className="pb-10">
-          <div className="border-t border-ir-border pt-8">
+          <div className="pt-8">
             <ChangelogCommentSection
-              canModerate={true}
+              canModerate={isAdminOrOwner}
               changelogEntryId={entry.id}
               currentUserId={session.user.id}
               isSignedIn={true}

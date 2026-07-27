@@ -1,18 +1,14 @@
 import { and, count, desc, eq, gte, lt, lte } from "drizzle-orm";
 import { boards, comments, posts, votes, workspaceMembers } from "@/db/schema";
 import { db } from "@/lib/db";
+import type { BreakdownPeriod } from "./constants";
 
-export type BreakdownPeriod = "7d" | "30d" | "all";
+export type { BreakdownPeriod } from "./constants";
+export { PERIOD_LABELS } from "./constants";
 
 const PERIOD_DAYS: Record<Exclude<BreakdownPeriod, "all">, number> = {
   "7d": 7,
   "30d": 30,
-};
-
-export const PERIOD_LABELS: Record<BreakdownPeriod, string | null> = {
-  "7d": "the previous 7 days",
-  "30d": "the previous 30 days",
-  all: null,
 };
 
 interface DateRange {
@@ -178,6 +174,72 @@ async function computeBreakdownCounts(
     newComments: commentRows.length,
     activeUsers: activeUserIds.size,
   };
+}
+
+export interface FeedbackTrendPoint {
+  count: number;
+  // ISO date (yyyy-mm-dd) of the bucket's start — a day for 7d/30d, the
+  // Monday of the week for "all" (matches JS's own Monday-start bucketing
+  // below, not Postgres's, so grouping and gap-filling always agree).
+  date: string;
+}
+
+const DAY_MS = 86_400_000;
+
+function bucketStart(date: Date, weekly: boolean): Date {
+  const start = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  );
+  if (weekly) {
+    const day = start.getUTCDay(); // 0 = Sunday
+    const diffToMonday = day === 0 ? 6 : day - 1;
+    start.setUTCDate(start.getUTCDate() - diffToMonday);
+  }
+  return start;
+}
+
+/**
+ * New feedback posts bucketed by day (7d/30d) or by week (all time, from the
+ * workspace's creation date) — gaps are filled with a zero count so a quiet
+ * stretch reads as a flat line on the chart, not a skipped point. Bucketing
+ * is done in JS (not Postgres's `date_trunc`) to sidestep any mismatch
+ * between the DB session's timezone and the UTC arithmetic used here.
+ */
+export async function getFeedbackTrend(
+  workspaceId: string,
+  period: BreakdownPeriod,
+  now: Date,
+  workspaceCreatedAt: Date
+): Promise<FeedbackTrendPoint[]> {
+  const weekly = period === "all";
+  const from =
+    period === "all"
+      ? workspaceCreatedAt
+      : new Date(now.getTime() - PERIOD_DAYS[period] * DAY_MS);
+
+  const rows = await db
+    .select({ createdAt: posts.createdAt })
+    .from(posts)
+    .where(and(eq(posts.workspaceId, workspaceId), gte(posts.createdAt, from)));
+
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    const key = bucketStart(row.createdAt, weekly).toISOString().slice(0, 10);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+
+  const stepMs = (weekly ? 7 : 1) * DAY_MS;
+  const end = bucketStart(now, weekly);
+  const points: FeedbackTrendPoint[] = [];
+  for (
+    let cursor = bucketStart(from, weekly);
+    cursor.getTime() <= end.getTime();
+    cursor = new Date(cursor.getTime() + stepMs)
+  ) {
+    const key = cursor.toISOString().slice(0, 10);
+    points.push({ date: key, count: counts.get(key) ?? 0 });
+  }
+  return points;
 }
 
 export type ActivityType = "all" | "post" | "comment" | "vote";

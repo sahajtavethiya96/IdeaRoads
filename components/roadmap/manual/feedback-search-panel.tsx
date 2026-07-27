@@ -1,11 +1,11 @@
 "use client";
 
 import { ChatCircleIcon, SpinnerIcon } from "@phosphor-icons/react";
-import { formatDistanceToNow } from "date-fns";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { searchRoadmapFeedbackAction } from "@/app/actions/roadmap";
 import { Button } from "@/components/ui/button";
+import { RelativeTime } from "@/components/ui/relative-time";
 import { SearchInput } from "@/components/ui/search-input";
 import type { FeedbackSearchResult } from "@/lib/roadmap/manual";
 
@@ -186,9 +186,10 @@ export function FeedbackSearchPanel({
                   {r.authorName && <span>· {r.authorName}</span>}
                   <span>
                     ·{" "}
-                    {formatDistanceToNow(new Date(r.createdAt), {
-                      addSuffix: true,
-                    })}
+                    <RelativeTime
+                      date={r.createdAt}
+                      options={{ addSuffix: true }}
+                    />
                   </span>
                 </div>
                 <Button

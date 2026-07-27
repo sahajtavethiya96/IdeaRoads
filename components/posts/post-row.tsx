@@ -1,7 +1,6 @@
 "use client";
 
-import { PushPinIcon } from "@phosphor-icons/react";
-import { formatDistanceToNow } from "date-fns";
+import { GitMergeIcon, PushPinIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RowCheckbox } from "@/components/posts/bulk-selection-context";
@@ -10,6 +9,7 @@ import { PostActionsMenu } from "@/components/posts/post-actions-menu";
 import type { PostsTableRow } from "@/components/posts/posts-table";
 import StatusSelect from "@/components/posts/status-select";
 import VisibilityToggle from "@/components/posts/visibility-toggle";
+import { RelativeTime } from "@/components/ui/relative-time";
 import VoteButton from "@/components/voting/vote-button";
 import { truncateHtmlToText } from "@/lib/changelog/html";
 
@@ -34,6 +34,9 @@ interface PostRowProps {
   isAdminOrOwner: boolean;
   isMember: boolean;
   isSignedIn: boolean;
+  // Link target for the "Merged into <title>" badge; null shows the target
+  // title as plain text (e.g. the target itself couldn't be resolved).
+  mergedIntoHref?: string | null;
   post: PostsTableRow;
   selectable?: boolean;
   showBoardColumn: boolean;
@@ -55,14 +58,18 @@ export function PostRow({
   isAdminOrOwner,
   isMember,
   workspaceId,
+  mergedIntoHref,
   selectable = false,
   showBoardColumn,
 }: PostRowProps) {
   const router = useRouter();
+  const isMerged = !!post.mergedIntoId;
 
   return (
     <tr
-      className="cursor-pointer transition-colors duration-150 ease-ir-standard hover:bg-ir-border/60"
+      className={`cursor-pointer transition-colors duration-150 ease-ir-standard hover:bg-ir-border/60 ${
+        isMerged ? "bg-ir-muted-surface/40" : ""
+      }`}
       onClick={() => router.push(href)}
     >
       {selectable && (
@@ -100,22 +107,49 @@ export function PostRow({
             </span>
           )}
           <Link
-            className="min-w-0 truncate font-medium text-ir-heading transition-colors duration-150 ease-ir-standard hover:text-ir-primary hover:underline focus-visible:outline-none focus-visible:underline"
+            className={`min-w-0 truncate font-medium transition-colors duration-150 ease-ir-standard hover:text-ir-primary hover:underline focus-visible:outline-none focus-visible:underline ${
+              isMerged ? "text-ir-muted" : "text-ir-heading"
+            }`}
             href={href}
             title={post.title}
           >
             {post.title}
           </Link>
+          {isMerged && (
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-ir-full bg-ir-muted-surface px-2 py-0.5 text-[11px] font-medium text-ir-muted">
+              <GitMergeIcon className="size-3" />
+              Merged
+            </span>
+          )}
           {post.isDraft && (
             <span className="inline-flex shrink-0 items-center rounded-ir-full bg-ir-warning/10 px-2 py-0.5 text-[11px] font-medium text-ir-warning">
               Draft
             </span>
           )}
         </div>
-        {showBoardColumn && (
+        {isMerged ? (
           <p className="mt-0.5 truncate text-xs text-ir-muted">
-            {post.boardName}
+            Merged into{" "}
+            {mergedIntoHref ? (
+              <Link
+                className="font-medium text-ir-body hover:text-ir-primary hover:underline"
+                href={mergedIntoHref}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {post.mergedIntoTitle ?? "another post"}
+              </Link>
+            ) : (
+              <span className="font-medium text-ir-body">
+                {post.mergedIntoTitle ?? "another post"}
+              </span>
+            )}
           </p>
+        ) : (
+          showBoardColumn && (
+            <p className="mt-0.5 truncate text-xs text-ir-muted">
+              {post.boardName}
+            </p>
+          )
         )}
       </td>
       <td className="hidden max-w-72 px-4 py-3 align-middle lg:table-cell">
@@ -129,7 +163,7 @@ export function PostRow({
         </p>
       </td>
       <td className="hidden whitespace-nowrap px-4 py-3 align-middle text-xs text-ir-muted sm:table-cell">
-        {formatDistanceToNow(post.createdAt, { addSuffix: true })}
+        <RelativeTime date={post.createdAt} options={{ addSuffix: true }} />
       </td>
       {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: only fences off row-click bubbling from the selects inside, not a new interaction */}
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: same — stopPropagation only, no new behavior to make keyboard-reachable */}
@@ -185,6 +219,8 @@ export function PostRow({
             detailHref={href}
             isDraft={post.isDraft}
             isPinned={post.isPinned}
+            mergedIntoId={post.mergedIntoId}
+            postCommentCount={post.commentCount}
             postId={post.id}
             postTitle={post.title}
             workspaceId={workspaceId}

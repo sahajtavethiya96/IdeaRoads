@@ -14,8 +14,8 @@ import {
 } from "@/components/roadmap/manual/manual-roadmap-search-context";
 import { RoadmapBoard } from "@/components/roadmap/roadmap-board";
 import { RoadmapSyncToggle } from "@/components/roadmap/roadmap-sync-toggle";
-import { PageHeader } from "@/components/ui/page";
 import { ListSearch } from "@/components/workspace/list-search";
+import { SetPageHeader } from "@/components/workspace/topbar";
 import { WORKSPACE_MEMBER } from "@/config/platform";
 import { requireSession } from "@/lib/authz";
 import { getDerivedRoadmap } from "@/lib/roadmap/derived";
@@ -83,7 +83,7 @@ export default async function WorkspaceRoadmapPage({
     return (
       <ManualRoadmapProvider>
         <div className="flex flex-col">
-          <PageHeader
+          <SetPageHeader
             actions={
               isAdmin ? (
                 <>
@@ -128,7 +128,7 @@ export default async function WorkspaceRoadmapPage({
 
   return (
     <div className="flex flex-col">
-      <PageHeader
+      <SetPageHeader
         beforeActions={
           <ListSearch
             className=""

@@ -71,6 +71,11 @@ export default function CategorySelect({
   );
   const categoryTriggerMinWidth = `${longestCategoryLabel + 4}ch`;
 
+  // Tint the trigger with the category's own color, matching the read-only
+  // CategoryChip — previously it was always a flat bg-ir-muted-surface
+  // regardless of the category's configured color.
+  const triggerColor = current?.color ?? "var(--ir-text-heading)";
+
   return (
     <Select
       disabled={isPending}
@@ -78,10 +83,13 @@ export default function CategorySelect({
       value={currentCategoryId ?? undefined}
     >
       <SelectTrigger
-        className="h-auto gap-1.5 rounded-ir-full border-0 bg-ir-muted-surface px-2.5 py-1 text-xs font-medium text-ir-heading"
-        showChevron={false}
+        className="h-7 gap-1.5 rounded-ir-md border-0 px-2.5 py-1 text-xs font-medium"
         size="sm"
-        style={{ minWidth: categoryTriggerMinWidth }}
+        style={{
+          backgroundColor: `color-mix(in oklab, ${triggerColor} 9%, transparent)`,
+          color: triggerColor,
+          minWidth: categoryTriggerMinWidth,
+        }}
       >
         <SelectValue placeholder="Select category" />
       </SelectTrigger>

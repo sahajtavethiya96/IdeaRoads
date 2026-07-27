@@ -31,7 +31,6 @@ export async function castVote(
   const post = await db
     .select({
       id: posts.id,
-      isLocked: posts.isLocked,
       boardId: posts.boardId,
     })
     .from(posts)
@@ -41,11 +40,6 @@ export async function castVote(
 
   if (!post) {
     throw new VoteNotFoundError();
-  }
-  if (post.isLocked) {
-    throw new VoteBlockedError(
-      "This post is locked and no longer accepting votes."
-    );
   }
 
   const board = await db

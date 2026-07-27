@@ -21,7 +21,11 @@ export function ChangelogEntryCard({
   workspaceSlug,
 }: ChangelogEntryCardProps) {
   const excerpt = truncateHtmlToText(entry.body, 220);
-  const href = `/${workspaceSlug}/changelog/${entry.id}`;
+  // Into the admin-shell entry page (viewable, read-only for non-admins),
+  // not the public portal — this card is only ever rendered inside the
+  // workspace settings list, and linking out to the public site would bounce
+  // the viewer out of the admin panel entirely.
+  const href = `/${workspaceSlug}/settings/changelog/${entry.id}/edit`;
 
   return (
     <article className="border-b border-ir-border py-8 last:border-0">

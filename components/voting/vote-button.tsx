@@ -18,7 +18,6 @@ interface VoteButtonProps {
   initialCount: number;
   initialHasVoted: boolean;
   isArchived?: boolean;
-  isLocked?: boolean;
   isSignedIn: boolean;
   postId: string;
 }
@@ -28,7 +27,6 @@ export default function VoteButton({
   initialCount,
   initialHasVoted,
   isSignedIn,
-  isLocked = false,
   isArchived = false,
   compact = false,
 }: VoteButtonProps) {
@@ -64,12 +62,22 @@ export default function VoteButton({
     setHasVoted(correctedHasVoted);
   }, [correctedHasVoted]);
 
-  const disabled = isLocked || isArchived || isPending;
-  const tooltip = isLocked
-    ? "Voting is closed"
-    : isArchived
-      ? "This board is archived"
-      : undefined;
+  // `count` starts from `initialCount` but — unlike `hasVoted` above — was
+  // never re-synced when it changes on a later render (e.g. a router.refresh()
+  // after this post gets merged into/out of, moving votes and changing the
+  // server-computed count elsewhere while this button stays mounted). Same
+  // guard as above: skip the resync once this specific button has taken a
+  // local action, so a slower-arriving stale render can't clobber an
+  // optimistic vote/unvote the visitor just made here.
+  useEffect(() => {
+    if (hasLocalActionRef.current) {
+      return;
+    }
+    setCount(initialCount);
+  }, [initialCount]);
+
+  const disabled = isArchived || isPending;
+  const tooltip = isArchived ? "This board is archived" : undefined;
 
   async function castVote() {
     hasLocalActionRef.current = true;

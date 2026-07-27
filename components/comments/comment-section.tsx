@@ -78,25 +78,29 @@ export default async function CommentSection({
     : [];
 
   return (
-    <div>
-      <h2 className="mb-6 flex items-center gap-2 text-sm font-semibold text-ir-heading">
-        <ChatCircleIcon className="size-4 text-ir-muted" />
-        {approvedCount === 0
-          ? "Comments"
-          : `${approvedCount} ${approvedCount === 1 ? "comment" : "comments"}`}
-      </h2>
+    <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+      <div className="border-b border-ir-border px-5 py-4">
+        <h2 className="flex items-center gap-2 text-sm font-semibold text-ir-heading">
+          <ChatCircleIcon className="size-4 text-ir-muted" />
+          {approvedCount === 0
+            ? "Comments"
+            : `${approvedCount} ${approvedCount === 1 ? "comment" : "comments"}`}
+        </h2>
+      </div>
 
-      <CommentThread
-        canModerate={canModerate}
-        initialComments={allComments}
-        isLocked={isLocked}
-        isSignedIn={isSignedIn}
-        postId={postId}
-      />
+      <div className="px-5 py-4">
+        <CommentThread
+          canModerate={canModerate}
+          initialComments={allComments}
+          isLocked={isLocked}
+          isSignedIn={isSignedIn}
+          postId={postId}
+        />
 
-      {canModerate && pending.length > 0 && (
-        <CommentModerationQueue pending={pending} />
-      )}
+        {canModerate && pending.length > 0 && (
+          <CommentModerationQueue pending={pending} />
+        )}
+      </div>
     </div>
   );
 }

@@ -28,6 +28,7 @@ import {
   updatePostStatus,
 } from "@/lib/posts/queries";
 import { submitFeedback } from "@/lib/posts/submit-feedback";
+import { UnmergeError, unmergePost } from "@/lib/posts/unmerge";
 import { uploadPostImage } from "@/lib/posts/upload-image";
 import {
   maxMeaningfulLength,
@@ -148,12 +149,18 @@ const updateStatusSchema = z.object({
   postId: z.string().min(1),
   workspaceId: z.string().min(1),
   status: z.string().min(1),
+  notify: z.boolean().optional(),
 });
 
 export async function updatePostStatusAction(input: {
   postId: string;
   workspaceId: string;
   status: string;
+  // Whether this change should notify voters (each voter's own
+  // emailStatusChange/inAppStatusChange preference still applies on top of
+  // this — see enqueueStatusChangeEmails). Defaults to false: this is an
+  // explicit admin opt-in per change, not sent unconditionally.
+  notify?: boolean;
 }): Promise<ActionResult<undefined>> {
   const session = await requireSession();
 
@@ -220,8 +227,10 @@ export async function updatePostStatusAction(input: {
   });
 
   // A draft isn't public yet, so a status change on it must not notify voters
-  // — that only runs once it's published.
-  if (!post.isDraft) {
+  // — that only runs once it's published. Beyond that, notifying is now an
+  // explicit per-change admin choice (the "Notify all voters" checkbox in
+  // StatusSelect), not automatic.
+  if (!post.isDraft && parsed.data.notify) {
     // Notify voters (fire-and-forget)
     enqueueStatusChangeEmails({
       postId: parsed.data.postId,
@@ -869,16 +878,80 @@ export async function mergePostAction(input: {
     };
   }
 
-  await mergePost(input.sourceId, input.targetId);
+  const voteSnapshot = await mergePost(input.sourceId, input.targetId);
 
   audit({
     action: "post.merged",
     actorId: session.user.id,
     actorEmail: session.user.email,
+    actorName: session.user.name,
     entityType: "post",
     entityId: input.sourceId,
     description: `Merged "${source.title}" into "${target.title}"`,
-    metadata: { workspaceId: input.workspaceId, targetId: input.targetId },
+    // voteSnapshot rides along here rather than in a dedicated table — it's
+    // read back by unmergePostAction (via unmergePost) to restore the
+    // source's pre-merge votes if this merge is later undone.
+    metadata: {
+      workspaceId: input.workspaceId,
+      targetId: input.targetId,
+      voteSnapshot,
+    },
+  });
+
+  return { success: true, data: undefined };
+}
+
+export async function unmergePostAction(input: {
+  postId: string;
+  workspaceId: string;
+}): Promise<ActionResult<undefined>> {
+  const session = await requireSession();
+
+  // Same triage-level permission as merging itself.
+  const actorMember = await getWorkspaceMember(
+    input.workspaceId,
+    session.user.id
+  );
+  if (!actorMember) {
+    return {
+      success: false,
+      error: "Only workspace members can unmerge feedback.",
+    };
+  }
+
+  const post = await getPost(input.postId);
+  if (!post || post.workspaceId !== input.workspaceId) {
+    return { success: false, error: "Post not found." };
+  }
+  if (!post.mergedIntoId) {
+    return { success: false, error: "This post is not merged." };
+  }
+
+  const target = await getPost(post.mergedIntoId);
+
+  try {
+    await unmergePost(input.postId);
+  } catch (err) {
+    if (err instanceof UnmergeError) {
+      return { success: false, error: err.message };
+    }
+    throw err;
+  }
+
+  audit({
+    action: "post.unmerged",
+    actorId: session.user.id,
+    actorEmail: session.user.email,
+    actorName: session.user.name,
+    entityType: "post",
+    entityId: input.postId,
+    description: target
+      ? `Unmerged "${post.title}" from "${target.title}"`
+      : `Unmerged "${post.title}"`,
+    metadata: {
+      workspaceId: input.workspaceId,
+      previousTargetId: post.mergedIntoId,
+    },
   });
 
   return { success: true, data: undefined };
@@ -891,7 +964,14 @@ export async function searchMergeTargetsAction(input: {
   query: string;
   excludePostId: string;
 }): Promise<
-  ActionResult<{ posts: { id: string; title: string; upvotes: number }[] }>
+  ActionResult<{
+    posts: {
+      commentCount: number;
+      id: string;
+      title: string;
+      upvotes: number;
+    }[];
+  }>
 > {
   const session = await requireSession();
 

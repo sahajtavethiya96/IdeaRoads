@@ -187,6 +187,13 @@ export default async function PublicProfilePage({
               isAdminOrOwner={isAdminOrOwner}
               isMember={isMember}
               isSignedIn={true}
+              mergedIntoHref={(post) =>
+                post.mergedIntoId &&
+                post.mergedIntoBoardSlug &&
+                post.mergedIntoSlug
+                  ? `/${slug}/b/${post.mergedIntoBoardSlug}/p/${post.mergedIntoSlug}${embedQuery}`
+                  : null
+              }
               postHref={(post) =>
                 `/${slug}/b/${post.boardSlug}/p/${post.slug}${embedQuery}`
               }

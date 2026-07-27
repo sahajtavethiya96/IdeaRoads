@@ -4,14 +4,17 @@ import {
   LightbulbIcon as Lightbulb,
   RadioIcon as Radio,
 } from "@phosphor-icons/react/dist/ssr";
-import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
-import { ParamSelect } from "@/components/dashboard/param-select";
+import { FilterSelect } from "@/components/dashboard/filter-select";
+import { RelativeTime } from "@/components/ui/relative-time";
 import type { ActivityItem, ActivityType } from "@/lib/dashboard/queries";
+import { cn } from "@/lib/utils";
 
 interface LiveStreamCardProps {
   activity: ActivityItem[];
   activityType: ActivityType;
+  isPending?: boolean;
+  onActivityTypeChange: (activityType: ActivityType) => void;
   workspaceSlug: string;
 }
 
@@ -43,15 +46,23 @@ function describe(item: ActivityItem): string {
 export function LiveStreamCard({
   activity,
   activityType,
+  isPending,
+  onActivityTypeChange,
   workspaceSlug,
 }: LiveStreamCardProps) {
   return (
-    <div className="flex flex-col rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+    <div
+      className={cn(
+        "flex flex-col rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs transition-opacity duration-150 ease-ir-standard",
+        isPending && "opacity-60"
+      )}
+    >
       <div className="flex items-center justify-between gap-4 border-b border-ir-border px-5 py-4">
         <h2 className="text-sm font-semibold text-ir-heading">Live Stream</h2>
-        <ParamSelect
+        <FilterSelect
+          disabled={isPending}
+          onChange={(value) => onActivityTypeChange(value as ActivityType)}
           options={TYPE_OPTIONS}
-          paramName="activityType"
           value={activityType}
         />
       </div>
@@ -85,7 +96,10 @@ export function LiveStreamCard({
                     </p>
                     <p className="mt-0.5 text-xs text-ir-muted">
                       {item.boardName} ·{" "}
-                      {formatDistanceToNow(item.createdAt, { addSuffix: true })}
+                      <RelativeTime
+                        date={item.createdAt}
+                        options={{ addSuffix: true }}
+                      />
                     </p>
                   </div>
                 </Link>

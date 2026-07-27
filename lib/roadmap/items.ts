@@ -69,6 +69,7 @@ export async function updateRoadmapItem(
     launchDate?: Date | null;
     coverImage?: string | null;
     statusId?: string;
+    feedbackId?: string | null;
   }
 ): Promise<void> {
   await db
@@ -79,6 +80,7 @@ export async function updateRoadmapItem(
       launchDate: input.launchDate,
       coverImage: input.coverImage,
       statusId: input.statusId,
+      feedbackId: input.feedbackId,
       updatedAt: new Date(),
     })
     .where(eq(roadmapItems.id, itemId));

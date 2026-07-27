@@ -24,7 +24,8 @@ import { Button } from "@/components/ui/button";
 import { ColorSwatchPicker } from "@/components/ui/color-swatch-picker";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
-import { ContentContainer, PageHeader } from "@/components/ui/page";
+import { ContentContainer } from "@/components/ui/page";
+import { SetPageHeader } from "@/components/workspace/topbar";
 import { useDirtyState } from "@/hooks/use-dirty-state";
 
 interface WorkspaceStatus {
@@ -248,7 +249,7 @@ export function StatusList({
   return (
     <div className="flex h-full flex-col">
       {/* Page header — title/description on the left, New Status on the right */}
-      <PageHeader
+      <SetPageHeader
         actions={
           canManage && !form ? (
             <Button onClick={openCreate}>

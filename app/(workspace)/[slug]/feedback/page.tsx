@@ -2,14 +2,15 @@ import { PlusIcon } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PostsPagination } from "@/components/posts/posts-pagination";
+import { PostsPaginationBar } from "@/components/posts/posts-pagination-bar";
 import { PostsTable } from "@/components/posts/posts-table";
 import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/ui/page";
+import { SetPageHeader } from "@/components/workspace/topbar";
 import { WORKSPACE_MEMBER } from "@/config/platform";
 import { requireSession } from "@/lib/authz";
 import { getWorkspaceBoard } from "@/lib/boards/queries";
 import { getActiveCategoriesForWorkspace } from "@/lib/categories/queries";
+import { MAX_PAGE_SIZE, MIN_PAGE_SIZE } from "@/lib/posts/constants";
 import {
   countWorkspacePostsFiltered,
   listWorkspacePosts,
@@ -21,7 +22,7 @@ import {
 } from "@/lib/workspaces/queries";
 import { FeedbackFilters } from "./_components/feedback-filters";
 
-const PAGE_SIZE = 20;
+const DEFAULT_PAGE_SIZE = 25;
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -29,6 +30,7 @@ interface Props {
     category?: string;
     draft?: string;
     page?: string;
+    pageSize?: string;
     q?: string;
     sort?: string;
     status?: string;
@@ -42,7 +44,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function FeedbackPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const { category, draft, page, q, sort, status } = await searchParams;
+  const { category, draft, page, pageSize, q, sort, status } =
+    await searchParams;
   const session = await requireSession();
 
   const workspace = await getWorkspaceBySlug(slug);
@@ -60,7 +63,19 @@ export default async function FeedbackPage({ params, searchParams }: Props) {
   const validStatus = status ?? "";
   const validCategoryId = category ?? "";
   const searchQuery = q ?? "";
-  const currentPage = Math.max(1, Number(page ?? 1));
+  const parsedPage = Number(page);
+  const currentPage =
+    page && Number.isFinite(parsedPage)
+      ? Math.max(1, Math.round(parsedPage))
+      : 1;
+  const parsedPageSize = Number(pageSize);
+  const validPageSize =
+    pageSize && Number.isFinite(parsedPageSize)
+      ? Math.min(
+          MAX_PAGE_SIZE,
+          Math.max(MIN_PAGE_SIZE, Math.round(parsedPageSize))
+        )
+      : DEFAULT_PAGE_SIZE;
   // Draft filter: "only" shows drafts, "published" hides them, default shows all
   // (published + drafts, so authors never lose track of a saved draft).
   const validDraft: "all" | "only" | "published" =
@@ -86,8 +101,8 @@ export default async function FeedbackPage({ params, searchParams }: Props) {
       listWorkspacePosts(workspace.id, {
         ...filterOpts,
         userId: session.user.id,
-        limit: PAGE_SIZE,
-        offset: (currentPage - 1) * PAGE_SIZE,
+        limit: validPageSize,
+        offset: (currentPage - 1) * validPageSize,
       }),
       countWorkspacePostsFiltered(workspace.id, filterOpts),
       getWorkspaceBoard(workspace.id),
@@ -95,37 +110,26 @@ export default async function FeedbackPage({ params, searchParams }: Props) {
       getActiveWorkspaceStatuses(workspace.id),
     ]);
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
-  const rangeStart = totalCount === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
-  const rangeEnd = Math.min(currentPage * PAGE_SIZE, totalCount);
+  const computedTotalPages = Math.max(1, Math.ceil(totalCount / validPageSize));
+  const totalPages = Number.isFinite(computedTotalPages)
+    ? computedTotalPages
+    : 1;
 
-  function pageHref(targetPage: number) {
-    const params = new URLSearchParams();
-    if (validSort !== "newest") {
-      params.set("sort", validSort);
-    }
-    if (validStatus) {
-      params.set("status", validStatus);
-    }
-    if (validCategoryId) {
-      params.set("category", validCategoryId);
-    }
-    if (searchQuery) {
-      params.set("q", searchQuery);
-    }
-    if (validDraft !== "all") {
-      params.set("draft", validDraft);
-    }
-    if (targetPage > 1) {
-      params.set("page", String(targetPage));
-    }
-    const qs = params.toString();
-    return `/${slug}/feedback${qs ? `?${qs}` : ""}`;
-  }
+  // Filter/sort/search params every pagination link needs to preserve —
+  // plain data (not a URL-building function: PostsPaginationBar is a Client
+  // Component, and functions from a server page can't cross that boundary).
+  // page/pageSize are added by the client component per-link, on top of this.
+  const paginationBaseParams: Record<string, string> = {
+    ...(validSort !== "newest" && { sort: validSort }),
+    ...(validStatus && { status: validStatus }),
+    ...(validCategoryId && { category: validCategoryId }),
+    ...(searchQuery && { q: searchQuery }),
+    ...(validDraft !== "all" && { draft: validDraft }),
+  };
 
   return (
     <div className="flex flex-col">
-      <PageHeader
+      <SetPageHeader
         actions={
           board ? (
             <Button asChild>
@@ -156,21 +160,22 @@ export default async function FeedbackPage({ params, searchParams }: Props) {
         isAdminOrOwner={isAdminOrOwner}
         isMember={true}
         isSignedIn={true}
+        mergedIntoHref={(post) =>
+          post.mergedIntoId ? `/${slug}/feedback/${post.mergedIntoId}` : null
+        }
         postHref={(post) => `/${slug}/feedback/${post.id}`}
         posts={posts}
         workspaceId={workspace.id}
         workspaceStatuses={workspaceStatuses}
       />
 
-      {totalPages > 1 && (
-        <div className="flex flex-col-reverse items-center justify-between gap-3 border-t border-ir-border px-4 py-3 sm:flex-row sm:px-8">
-          <span className="text-xs text-ir-muted">
-            Showing {rangeStart.toLocaleString()}–{rangeEnd.toLocaleString()} of{" "}
-            {totalCount.toLocaleString()}
-          </span>
-          <PostsPagination
+      {totalCount > 0 && (
+        <div className="border-t border-ir-border px-4 py-3 sm:px-8">
+          <PostsPaginationBar
+            baseParams={paginationBaseParams}
             currentPage={currentPage}
-            hrefForPage={pageHref}
+            defaultPageSize={DEFAULT_PAGE_SIZE}
+            pageSize={validPageSize}
             totalPages={totalPages}
           />
         </div>

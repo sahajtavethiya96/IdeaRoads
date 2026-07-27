@@ -14,17 +14,6 @@ function CardSkeleton({ className }: { className?: string }) {
 export default function DashboardLoading() {
   return (
     <div className="flex flex-col">
-      {/* Page header */}
-      <div className="border-b border-ir-border px-4 py-6 sm:px-8">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <div className="min-w-0 space-y-2">
-            <Skeleton className="h-6 w-40" />
-            <Skeleton className="h-4 w-64" />
-          </div>
-          <Skeleton className="h-10 w-32 rounded-ir-button" />
-        </div>
-      </div>
-
       <div className="space-y-8 px-4 py-8 sm:px-8">
         {/* Workspace overview */}
         <div className="flex flex-col gap-4 rounded-ir-card border border-ir-border bg-ir-surface px-5 py-4 shadow-ir-xs sm:flex-row sm:items-center sm:justify-between">
@@ -67,6 +56,20 @@ export default function DashboardLoading() {
               }`}
             />
           ))}
+        </div>
+
+        {/* Feedback trend */}
+        <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+          <div className="flex items-center justify-between gap-4 border-b border-ir-border px-5 py-4">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+            <Skeleton className="h-7 w-10" />
+          </div>
+          <div className="px-5 py-4">
+            <Skeleton className="h-48 w-full rounded-ir-sm" />
+          </div>
         </div>
 
         {/* Breakdown + Live Stream */}

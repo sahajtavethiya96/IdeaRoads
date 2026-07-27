@@ -245,46 +245,59 @@ export default async function PublicChangelogEntryPage({
                 Related Feedback
               </h2>
               <div className="space-y-2">
-                {entry.linkedPosts.map((post) => (
-                  // Stretched-link pattern: the row is a plain div (not a real
-                  // anchor) so the vote button can be a genuine interactive
-                  // element beside it — nesting a <button> inside an <a> is
-                  // invalid HTML. The title link's after:absolute overlay
-                  // stretches its hit-area to the whole row; the vote button
-                  // sits in a relative z-10 sibling so it intercepts clicks
-                  // above that overlay.
-                  <div
-                    className="group relative flex flex-col gap-2 rounded-ir-sm border border-ir-border px-4 py-3 transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface sm:flex-row sm:items-center sm:justify-between sm:gap-4"
-                    key={post.id}
-                  >
-                    <Link
-                      className="relative min-w-0 flex-1 text-sm font-medium text-ir-heading transition-colors duration-150 ease-ir-standard after:absolute after:inset-0 after:content-[''] group-hover:text-ir-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-                      href={`/${slug}/b/${post.boardSlug}/p/${post.slug}${embedQuery}`}
+                {entry.linkedPosts.map((post) => {
+                  const isMerged = !!post.mergedIntoId;
+                  return (
+                    // Stretched-link pattern: the row is a plain div (not a real
+                    // anchor) so the vote button can be a genuine interactive
+                    // element beside it — nesting a <button> inside an <a> is
+                    // invalid HTML. The title link's after:absolute overlay
+                    // stretches its hit-area to the whole row; the vote button
+                    // sits in a relative z-10 sibling so it intercepts clicks
+                    // above that overlay.
+                    <div
+                      className="group relative flex flex-col gap-2 rounded-ir-sm border border-ir-border px-4 py-3 transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                      key={post.id}
                     >
-                      {post.title}
-                    </Link>
-                    <div className="relative z-10 flex shrink-0 items-center gap-3">
-                      <VoteButton
-                        compact
-                        initialCount={post.upvotes}
-                        initialHasVoted={post.hasVoted}
-                        isArchived={post.boardIsArchived}
-                        isLocked={post.isLocked}
-                        isSignedIn={isSignedIn}
-                        postId={post.id}
-                      />
-                      <span className="rounded-ir-sm bg-ir-muted-surface px-2 py-0.5 text-[11px] font-semibold text-ir-muted">
-                        {post.status.replace(/_/g, " ")}
-                      </span>
+                      <div className="relative min-w-0 flex-1">
+                        <Link
+                          className={`text-sm font-medium transition-colors duration-150 ease-ir-standard after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 ${
+                            isMerged
+                              ? "text-ir-muted"
+                              : "text-ir-heading group-hover:text-ir-primary"
+                          }`}
+                          href={`/${slug}/b/${post.boardSlug}/p/${post.slug}${embedQuery}`}
+                        >
+                          {post.title}
+                        </Link>
+                        {isMerged && (
+                          <p className="mt-0.5 text-xs text-ir-muted">
+                            Merged into {post.mergedIntoTitle ?? "another post"}
+                          </p>
+                        )}
+                      </div>
+                      <div className="relative z-10 flex shrink-0 items-center gap-3">
+                        <VoteButton
+                          compact
+                          initialCount={post.upvotes}
+                          initialHasVoted={post.hasVoted}
+                          isArchived={post.boardIsArchived}
+                          isSignedIn={isSignedIn}
+                          postId={post.id}
+                        />
+                        <span className="rounded-ir-sm bg-ir-muted-surface px-2 py-0.5 text-[11px] font-semibold text-ir-muted">
+                          {isMerged ? "Merged" : post.status.replace(/_/g, " ")}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
 
           {/* Comments */}
-          <div className="mt-12 border-t border-ir-border pt-8">
+          <div className="mt-12">
             <ChangelogCommentSection
               canModerate={!!member && member.role !== WORKSPACE_MEMBER}
               changelogEntryId={entry.id}

@@ -4,6 +4,40 @@ import { db } from "@/lib/db";
 
 export type AuditLogRow = typeof auditLogs.$inferSelect;
 
+export interface MergeAuditInfo {
+  actorEmail: string | null;
+  actorName: string | null;
+  mergedAt: Date;
+}
+
+// mergePostAction writes a "post.merged" audit entry with entityId = the
+// source post; there's no denormalized mergedAt/mergedBy on the post row
+// itself, so this is the only place that history lives. Posts can only be
+// merged once (mergePostAction blocks merging an already-merged post), so the
+// latest match is the only one that could ever exist — this just guards
+// against ever showing something questionable.
+export async function getPostMergeAudit(
+  postId: string
+): Promise<MergeAuditInfo | null> {
+  const [row] = await db
+    .select({
+      actorName: auditLogs.actorName,
+      actorEmail: auditLogs.actorEmail,
+      mergedAt: auditLogs.createdAt,
+    })
+    .from(auditLogs)
+    .where(
+      and(
+        eq(auditLogs.entityType, "post"),
+        eq(auditLogs.action, "post.merged"),
+        eq(auditLogs.entityId, postId)
+      )
+    )
+    .orderBy(desc(auditLogs.createdAt))
+    .limit(1);
+  return row ?? null;
+}
+
 export async function listAuditLogs(
   workspaceId: string,
   opts: {

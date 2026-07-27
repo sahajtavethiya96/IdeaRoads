@@ -20,7 +20,8 @@ import { Button } from "@/components/ui/button";
 import { ColorSwatchPicker } from "@/components/ui/color-swatch-picker";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
-import { ContentContainer, PageHeader } from "@/components/ui/page";
+import { ContentContainer } from "@/components/ui/page";
+import { SetPageHeader } from "@/components/workspace/topbar";
 import { useDirtyState } from "@/hooks/use-dirty-state";
 import { CategoryChip } from "./category-chip";
 
@@ -208,7 +209,7 @@ export function CategoryList({
 
   return (
     <div className="flex h-full flex-col">
-      <PageHeader
+      <SetPageHeader
         actions={
           canManage && !form ? (
             <Button onClick={openCreate}>

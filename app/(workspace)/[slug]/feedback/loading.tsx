@@ -3,17 +3,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function FeedbackLoading() {
   return (
     <div className="flex flex-col">
-      {/* Page header */}
-      <div className="border-b border-ir-border px-4 py-6 sm:px-8">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <div className="min-w-0 space-y-2">
-            <Skeleton className="h-6 w-28" />
-            <Skeleton className="h-4 w-48" />
-          </div>
-          <Skeleton className="h-10 w-32 rounded-ir-button" />
-        </div>
-      </div>
-
       {/* Filters bar */}
       <div className="flex flex-wrap items-center gap-2.5 border-b border-ir-border px-4 py-4 sm:px-8">
         <Skeleton className="h-9 min-w-50 flex-1 rounded-ir-input" />

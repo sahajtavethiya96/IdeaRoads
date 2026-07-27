@@ -1,6 +1,5 @@
 "use client";
 
-import { formatDistanceToNow } from "date-fns";
 import {
   ArrowRight,
   Bell,
@@ -17,6 +16,7 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 import { useNotificationsContext } from "@/components/notifications/notifications-context";
+import { RelativeTime } from "@/components/ui/relative-time";
 import type { NotificationType } from "@/db/schema/notifications";
 import type { NotificationListItem } from "@/lib/notifications/queries";
 
@@ -86,10 +86,6 @@ export function NotificationItem({
     markRead();
   }
 
-  const timeAgo = formatDistanceToNow(new Date(notification.createdAt), {
-    addSuffix: true,
-  });
-
   return (
     <div
       className={`group relative flex w-full items-start gap-3 px-5 py-3.5 border-b border-border transition-colors hover:bg-muted/40 ${
@@ -158,7 +154,12 @@ export function NotificationItem({
             {REMOVED_MESSAGE}
           </p>
         )}
-        <p className="mt-1 text-xs text-muted-foreground/60">{timeAgo}</p>
+        <p className="mt-1 text-xs text-muted-foreground/60">
+          <RelativeTime
+            date={notification.createdAt}
+            options={{ addSuffix: true }}
+          />
+        </p>
       </div>
 
       {/* Hover actions — Gmail-style: mark as read (unread only) + clear,

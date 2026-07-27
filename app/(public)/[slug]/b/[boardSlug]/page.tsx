@@ -3,7 +3,6 @@ import {
   PlusIcon,
   PushPinIcon,
 } from "@phosphor-icons/react/dist/ssr";
-import { formatDistanceToNow } from "date-fns";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -16,6 +15,7 @@ import { PoweredByBadge } from "@/components/portal/powered-by-badge";
 import { PostStatusBadge } from "@/components/posts/post-status-badge";
 import { PostsPagination } from "@/components/posts/posts-pagination";
 import { Button } from "@/components/ui/button";
+import { RelativeTime } from "@/components/ui/relative-time";
 import VoteButton from "@/components/voting/vote-button";
 import { PortalHeader } from "@/components/workspace/portal-header";
 import { getCurrentSession } from "@/lib/authz";
@@ -433,9 +433,10 @@ export default async function BoardPage({ params, searchParams }: Props) {
                             />
                             <span className="text-xs text-ir-muted">
                               {post.authorName || post.authorEmail} ·{" "}
-                              {formatDistanceToNow(post.createdAt, {
-                                addSuffix: true,
-                              })}
+                              <RelativeTime
+                                date={post.createdAt}
+                                options={{ addSuffix: true }}
+                              />
                             </span>
                             {post.commentCount > 0 && (
                               <span className="flex items-center gap-1 text-xs text-ir-muted">
@@ -453,7 +454,6 @@ export default async function BoardPage({ params, searchParams }: Props) {
                             initialCount={post.upvotes}
                             initialHasVoted={post.hasVoted}
                             isArchived={board.isArchived}
-                            isLocked={false}
                             isSignedIn={isSignedIn}
                             postId={post.id}
                           />

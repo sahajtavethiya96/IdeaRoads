@@ -40,7 +40,7 @@ export function FeedbackWidgetLauncher({
     const script = document.createElement("script");
     script.id = LAUNCHER_SCRIPT_ID;
     script.src = `${appUrl}/widget.js`;
-    script.dataset.workspace = "testing-workspace";
+    script.dataset.workspace = "testing";
     document.body.appendChild(script);
   }, [appUrl]);
 
