@@ -64,7 +64,7 @@ async function processSendChangelogEmail(job: Job<SendChangelogEmailPayload>) {
     : true;
 
   if (emailEnabled) {
-    const { subject, html, text } = changelogEmailTemplate({
+    const { subject, html, text } = await changelogEmailTemplate({
       voterName,
       voterEmail,
       entryTitle,

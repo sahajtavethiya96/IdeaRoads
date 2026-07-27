@@ -1,10 +1,11 @@
 import { and, count, desc, eq, gte, lt, lte } from "drizzle-orm";
 import { boards, comments, posts, votes, workspaceMembers } from "@/db/schema";
 import { db } from "@/lib/db";
+import { categoryTrendKey } from "./constants";
 import type { BreakdownPeriod } from "./constants";
 
 export type { BreakdownPeriod } from "./constants";
-export { PERIOD_LABELS } from "./constants";
+export { categoryTrendKey, PERIOD_LABELS } from "./constants";
 
 const PERIOD_DAYS: Record<Exclude<BreakdownPeriod, "all">, number> = {
   "7d": 7,
@@ -177,11 +178,15 @@ async function computeBreakdownCounts(
 }
 
 export interface FeedbackTrendPoint {
-  count: number;
   // ISO date (yyyy-mm-dd) of the bucket's start — a day for 7d/30d, the
   // Monday of the week for "all" (matches JS's own Monday-start bucketing
   // below, not Postgres's, so grouping and gap-filling always agree).
   date: string;
+  total: number;
+  // Per-category counts for the same bucket, keyed by categoryTrendKey(id) —
+  // posts with no category (e.g. its category was since deleted) still count
+  // toward `total` but have no series of their own.
+  [categoryKey: string]: number | string;
 }
 
 const DAY_MS = 86_400_000;
@@ -200,16 +205,20 @@ function bucketStart(date: Date, weekly: boolean): Date {
 
 /**
  * New feedback posts bucketed by day (7d/30d) or by week (all time, from the
- * workspace's creation date) — gaps are filled with a zero count so a quiet
- * stretch reads as a flat line on the chart, not a skipped point. Bucketing
- * is done in JS (not Postgres's `date_trunc`) to sidestep any mismatch
- * between the DB session's timezone and the UTC arithmetic used here.
+ * workspace's creation date), broken down by category — gaps are filled with
+ * a zero count so a quiet stretch reads as a flat line on the chart, not a
+ * skipped point. `categoryIds` is zero-filled on every point (even categories
+ * with no posts at all in range) so every category still draws a flat line
+ * at 0 instead of not rendering. Bucketing is done in JS (not Postgres's
+ * `date_trunc`) to sidestep any mismatch between the DB session's timezone
+ * and the UTC arithmetic used here.
  */
 export async function getFeedbackTrend(
   workspaceId: string,
   period: BreakdownPeriod,
   now: Date,
-  workspaceCreatedAt: Date
+  workspaceCreatedAt: Date,
+  categoryIds: string[]
 ): Promise<FeedbackTrendPoint[]> {
   const weekly = period === "all";
   const from =
@@ -218,14 +227,22 @@ export async function getFeedbackTrend(
       : new Date(now.getTime() - PERIOD_DAYS[period] * DAY_MS);
 
   const rows = await db
-    .select({ createdAt: posts.createdAt })
+    .select({ createdAt: posts.createdAt, categoryId: posts.categoryId })
     .from(posts)
     .where(and(eq(posts.workspaceId, workspaceId), gte(posts.createdAt, from)));
 
-  const counts = new Map<string, number>();
+  const counts = new Map<string, Map<string, number>>();
   for (const row of rows) {
-    const key = bucketStart(row.createdAt, weekly).toISOString().slice(0, 10);
-    counts.set(key, (counts.get(key) ?? 0) + 1);
+    const dateKey = bucketStart(row.createdAt, weekly)
+      .toISOString()
+      .slice(0, 10);
+    const dayCounts = counts.get(dateKey) ?? new Map<string, number>();
+    dayCounts.set("total", (dayCounts.get("total") ?? 0) + 1);
+    if (row.categoryId) {
+      const categoryKey = categoryTrendKey(row.categoryId);
+      dayCounts.set(categoryKey, (dayCounts.get(categoryKey) ?? 0) + 1);
+    }
+    counts.set(dateKey, dayCounts);
   }
 
   const stepMs = (weekly ? 7 : 1) * DAY_MS;
@@ -237,7 +254,22 @@ export async function getFeedbackTrend(
     cursor = new Date(cursor.getTime() + stepMs)
   ) {
     const key = cursor.toISOString().slice(0, 10);
-    points.push({ date: key, count: counts.get(key) ?? 0 });
+    const dayCounts = counts.get(key);
+    const point: FeedbackTrendPoint = {
+      date: key,
+      total: dayCounts?.get("total") ?? 0,
+    };
+    for (const categoryId of categoryIds) {
+      point[categoryTrendKey(categoryId)] = 0;
+    }
+    if (dayCounts) {
+      for (const [categoryKey, value] of dayCounts) {
+        if (categoryKey !== "total") {
+          point[categoryKey] = value;
+        }
+      }
+    }
+    points.push(point);
   }
   return points;
 }

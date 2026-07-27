@@ -90,6 +90,7 @@ export function BlockedUsersSection({ workspaceId, blockedUsers }: Props) {
               Email address
             </label>
             <Input
+              autoComplete="off"
               disabled={isPending}
               id="block-email"
               onChange={(e) => setEmail(e.target.value)}
@@ -109,6 +110,7 @@ export function BlockedUsersSection({ workspaceId, blockedUsers }: Props) {
             </label>
             <Input
               disabled={isPending}
+              autoComplete="off"
               id="block-reason"
               maxLength={300}
               onChange={(e) => setReason(e.target.value)}

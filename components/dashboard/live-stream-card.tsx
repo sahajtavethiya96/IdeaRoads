@@ -75,7 +75,7 @@ export function LiveStreamCard({
           <p className="text-sm text-ir-muted">No recent activity</p>
         </div>
       ) : (
-        <ul className="divide-y divide-ir-border">
+        <ul className="max-h-96 divide-y divide-ir-border overflow-y-auto">
           {activity.map((item) => {
             const Icon = TYPE_ICON[item.type];
             return (

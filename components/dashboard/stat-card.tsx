@@ -9,6 +9,7 @@ interface StatCardProps {
   previousValue?: number | null;
   value: number | string;
   valueClassName?: string;
+  valueStyle?: React.CSSProperties;
 }
 
 export function StatCard({
@@ -16,6 +17,7 @@ export function StatCard({
   value,
   href,
   valueClassName,
+  valueStyle,
   previousValue,
   periodLabel,
 }: StatCardProps) {
@@ -31,6 +33,7 @@ export function StatCard({
           "mt-2 text-2xl font-semibold tabular-nums text-ir-heading",
           valueClassName
         )}
+        style={valueStyle}
       >
         {value}
       </p>

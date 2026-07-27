@@ -320,13 +320,6 @@ export default function StatusSelect({
         {/* Notify + Save */}
         <div className="space-y-3 border-t border-ir-border p-3">
           {/* biome-ignore lint/a11y/noLabelWithoutControl: Checkbox is a Radix custom control nested inside the label, which already associates it correctly */}
-          <label className="flex cursor-pointer items-center justify-center gap-2 text-xs text-ir-body">
-            <Checkbox
-              checked={notify}
-              onCheckedChange={(checked) => setNotify(checked === true)}
-            />
-            Notify all voters
-          </label>
           <Button
             className="w-full"
             disabled={isPending || pendingValue === currentEffectiveValue}

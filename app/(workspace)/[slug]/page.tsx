@@ -72,6 +72,9 @@ export default async function WorkspaceDashboardPage({
 
   const now = new Date();
 
+  const categories = await getActiveCategoriesForWorkspace(workspace.id);
+  const categoryIds = categories.map((category) => category.id);
+
   const [
     board,
     [{ memberCount }],
@@ -81,7 +84,6 @@ export default async function WorkspaceDashboardPage({
     feedbackTrend,
     recentActivity,
     newestPosts,
-    categories,
     workspaceStatuses,
   ] = await Promise.all([
     getWorkspaceBoard(workspace.id),
@@ -92,7 +94,13 @@ export default async function WorkspaceDashboardPage({
     countWorkspacePostsByStatus(workspace.id),
     getPreviousPeriodSnapshot(workspace.id, activePeriod, now),
     getBreakdownMetrics(workspace.id, activePeriod, now),
-    getFeedbackTrend(workspace.id, activePeriod, now, workspace.createdAt),
+    getFeedbackTrend(
+      workspace.id,
+      activePeriod,
+      now,
+      workspace.createdAt,
+      categoryIds
+    ),
     getRecentActivity(workspace.id, { limit: 8, type: activeActivityType }),
     listWorkspacePosts(workspace.id, {
       sort: "newest",
@@ -100,7 +108,6 @@ export default async function WorkspaceDashboardPage({
       includeUnapproved: true,
       limit: 5,
     }),
-    getActiveCategoriesForWorkspace(workspace.id),
     getActiveWorkspaceStatuses(workspace.id),
   ]);
 
@@ -131,6 +138,7 @@ export default async function WorkspaceDashboardPage({
           workspaceSlug={slug}
         />
         <DashboardMetricsSection
+          categories={categories}
           initialActivity={recentActivity}
           initialActivityType={activeActivityType}
           initialBreakdown={breakdown}
@@ -143,6 +151,7 @@ export default async function WorkspaceDashboardPage({
           statusCounts={statusCounts}
           workspaceCreatedAt={workspace.createdAt}
           workspaceId={workspace.id}
+          workspaceStatuses={workspaceStatuses}
         />
 
         {/* Roadmap Preview */}

@@ -46,6 +46,7 @@ export function ChangelogAdminCard({
   const [isPending, startTransition] = useTransition();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const excerpt = truncateHtmlToText(entry.body, 180);
+  const editHref = `/${workspaceSlug}/settings/changelog/${entry.id}/edit`;
 
   function handlePublish() {
     startTransition(async () => {
@@ -94,8 +95,17 @@ export function ChangelogAdminCard({
   }
 
   return (
+    // The whole card navigates to Edit on click, matching the feedback list's
+    // rows — only the action buttons below (Edit/Publish/Delete) opt out via
+    // stopPropagation, so using them doesn't also trigger navigation. The
+    // Edit link itself still provides real keyboard/screen-reader access to
+    // the same destination.
+    // biome-ignore lint/a11y/noStaticElementInteractions: click-to-navigate on the whole card; Edit link covers keyboard access
+    // biome-ignore lint/a11y/noNoninteractiveElementInteractions: same — a real, focusable Edit link elsewhere provides the keyboard path
+    // biome-ignore lint/a11y/useKeyWithClickEvents: same — no new behavior to make keyboard-reachable, only a click convenience
     <div
-      className={`rounded-ir-card border border-ir-border bg-ir-surface p-5 shadow-ir-xs transition-shadow duration-150 ease-ir-standard hover:shadow-ir-sm ${entry.isPublished ? "" : "opacity-80"}`}
+      className={`cursor-pointer rounded-ir-card border border-ir-border bg-ir-surface p-5 shadow-ir-xs transition-shadow duration-150 ease-ir-standard hover:shadow-ir-sm ${entry.isPublished ? "" : "opacity-80"}`}
+      onClick={() => router.push(editHref)}
     >
       {/* Header row */}
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -121,10 +131,16 @@ export function ChangelogAdminCard({
         </div>
 
         {/* Actions */}
-        <div className="flex shrink-0 items-center gap-2">
+        {/* biome-ignore lint/a11y/noStaticElementInteractions: only fences off card-click bubbling from the buttons inside, not a new interaction */}
+        {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: same — stopPropagation only */}
+        {/* biome-ignore lint/a11y/useKeyWithClickEvents: same — stopPropagation only, no new behavior to make keyboard-reachable */}
+        <div
+          className="flex shrink-0 items-center gap-2"
+          onClick={(e) => e.stopPropagation()}
+        >
           <Link
             className="flex items-center gap-1.5 rounded-ir-sm border border-ir-primary/40 px-3 py-1.5 text-xs font-medium text-ir-primary transition-colors duration-150 ease-ir-standard hover:bg-ir-primary-light/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-            href={`/${workspaceSlug}/settings/changelog/${entry.id}/edit`}
+            href={editHref}
           >
             <PencilIcon className="size-3" />
             Edit

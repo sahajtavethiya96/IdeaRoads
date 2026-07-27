@@ -58,12 +58,20 @@ export function RoadmapColumn({
     <div className="flex w-full min-w-0 flex-col">
       <RoadmapStatusHeader color={color} count={posts.length} name={name} />
 
-      {/* Drop zone. Keyboard/non-pointer users change status via the post's own
-          status control elsewhere (e.g. All Feedback) — drag here is a
-          pointer-only enhancement, matching the manual roadmap board (see
-          DraggableCard — it can only be started from each card's drag handle). */}
+      {/* Drop zone. flex-1 (not just min-h-*) so it fills the column's full
+          stretched height — the grid row stretches every column to match its
+          tallest sibling (CSS grid's default align-items: stretch), so
+          without flex-1 a short column's actual drop-zone element only wraps
+          its own cards, leaving empty space below that looks part of the
+          column but sits outside the div useKanbanDrag hit-tests against
+          (getBoundingClientRect on this exact ref). That's what made only the
+          top of a column register drops. Keyboard/non-pointer users change
+          status via the post's own status control elsewhere (e.g. All
+          Feedback) — drag here is a pointer-only enhancement, matching the
+          manual roadmap board (see DraggableCard — it can only be started
+          from each card's drag handle). */}
       <div
-        className={`flex min-h-16 flex-col gap-2 rounded-ir-md p-1 transition-colors duration-150 ease-ir-standard ${
+        className={`flex min-h-16 flex-1 flex-col gap-2 rounded-ir-md p-1 transition-colors duration-150 ease-ir-standard ${
           isDropTarget && canManage
             ? "bg-ir-primary-light/10 ring-1 ring-inset ring-ir-primary/30"
             : ""
@@ -71,7 +79,7 @@ export function RoadmapColumn({
         ref={columnRef}
       >
         {visible.length === 0 ? (
-          <div className="rounded-ir-card border border-dashed border-ir-border">
+          <div className="flex-1 rounded-ir-card border border-dashed border-ir-border">
             <RoadmapEmptyState
               label={isFiltering ? "No matches" : `Nothing in ${name} yet.`}
             />
