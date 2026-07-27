@@ -94,7 +94,7 @@ function JoinLayout({ children }: { children: React.ReactNode }) {
         >
           <Image
             alt={PRODUCT_NAME}
-            className="h-9 w-auto"
+            className="h-16 w-auto"
             height={164}
             priority
             src={LOGO_PATH}

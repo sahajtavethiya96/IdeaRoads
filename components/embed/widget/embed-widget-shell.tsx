@@ -226,14 +226,9 @@ export function EmbedWidgetShell({
         </AnimatePresence>
       </div>
       <div className="shrink-0 border-t border-ir-border px-3 py-2 text-center">
-        <a
-          className="text-2xs text-ir-muted hover:text-ir-heading"
-          href="/"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
+        <span className="text-2xs text-ir-muted hover:text-ir-heading">
           Powered by {PRODUCT_NAME}
-        </a>
+        </span>
       </div>
     </div>
   );

@@ -226,12 +226,19 @@ export function ManualRoadmapBoard({
                     name={s.name}
                   />
 
-                  {/* Drop zone. Keyboard users reorder/move via the item Edit
-                      dialog's Column selector and the Manage-columns controls;
-                      drag is a pointer-only enhancement (see DraggableCard —
-                      it can only be started from each card's drag handle). */}
+                  {/* Drop zone. flex-1 (not just min-h-*) so it fills the
+                      column's full stretched height — see roadmap-column.tsx
+                      for why: without it, a short column's actual drop-zone
+                      element (what useKanbanDrag hit-tests via
+                      getBoundingClientRect) only wraps its own cards, leaving
+                      empty space below that looks part of the column but
+                      isn't. Keyboard users reorder/move via the item Edit
+                      dialog's Column selector and the Manage-columns
+                      controls; drag is a pointer-only enhancement (see
+                      DraggableCard — it can only be started from each card's
+                      drag handle). */}
                   <div
-                    className={`flex min-h-24 flex-col gap-2 rounded-ir-md p-1 transition-colors duration-150 ease-ir-standard ${
+                    className={`flex min-h-24 flex-1 flex-col gap-2 rounded-ir-md p-1 transition-colors duration-150 ease-ir-standard ${
                       isDropTarget && canManage
                         ? "bg-ir-primary-light/10 ring-1 ring-inset ring-ir-primary/30"
                         : ""

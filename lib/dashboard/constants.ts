@@ -12,3 +12,10 @@ export const PERIOD_LABELS: Record<BreakdownPeriod, string | null> = {
   "30d": "the previous 30 days",
   all: null,
 };
+
+// The chart data-point key a given category's per-day count is stored under
+// (also used as the recharts `dataKey` for that category's series) — kept
+// distinct from "date"/"total" so a category can never collide with them.
+export function categoryTrendKey(categoryId: string): string {
+  return `cat_${categoryId}`;
+}

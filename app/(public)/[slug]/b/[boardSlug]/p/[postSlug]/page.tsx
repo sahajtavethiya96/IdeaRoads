@@ -114,16 +114,6 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
 
   const workspaceStatuses = await getActiveWorkspaceStatuses(workspace.id);
 
-  // Statuses an admin has marked "hidden from public feed" (Completed, by
-  // default) are blocked from direct URL access too — a direct link
-  // shouldn't reveal what the public feed hides.
-  const postWorkspaceStatus = workspaceStatuses.find(
-    (s) => s.slug === post.status
-  );
-  if (postWorkspaceStatus && !postWorkspaceStatus.showOnPublicFeed) {
-    notFound();
-  }
-
   const isAdminOrOwner = !!member && member.role !== WORKSPACE_MEMBER;
 
   const [votedByUser, categories, statusHistory, allBoards, members] =

@@ -43,7 +43,7 @@ export function ImageLightbox({
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent
-        className="flex h-[85vh] w-[calc(100vw-2rem)] max-w-5xl flex-col overflow-hidden rounded-ir-xl border border-ir-border bg-ir-surface p-0 shadow-ir-xl"
+        className="flex h-[85vh] w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-ir-xl border border-ir-border bg-ir-surface p-0 shadow-ir-xl sm:max-w-5xl"
         showCloseButton={false}
       >
         <DialogTitle className="sr-only">Image preview</DialogTitle>

@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 public/uploads
+Kanbanica-main
 
 # Next.js
 .next/

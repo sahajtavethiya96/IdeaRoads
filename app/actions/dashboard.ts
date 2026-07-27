@@ -26,14 +26,15 @@ async function assertMember(workspaceId: string) {
 export async function getDashboardPeriodDataAction(
   workspaceId: string,
   period: BreakdownPeriod,
-  workspaceCreatedAt: Date
+  workspaceCreatedAt: Date,
+  categoryIds: string[]
 ) {
   await assertMember(workspaceId);
   const now = new Date();
   const [previousSnapshot, breakdown, feedbackTrend] = await Promise.all([
     getPreviousPeriodSnapshot(workspaceId, period, now),
     getBreakdownMetrics(workspaceId, period, now),
-    getFeedbackTrend(workspaceId, period, now, workspaceCreatedAt),
+    getFeedbackTrend(workspaceId, period, now, workspaceCreatedAt, categoryIds),
   ]);
   return { breakdown, feedbackTrend, previousSnapshot };
 }

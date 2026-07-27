@@ -19,7 +19,21 @@ import type {
   StatusCountSnapshot,
 } from "@/lib/dashboard/queries";
 
+interface Category {
+  color: string;
+  id: string;
+  name: string;
+}
+
+interface WorkspaceStatus {
+  color: string;
+  id: string;
+  name: string;
+  slug: string;
+}
+
 interface DashboardMetricsSectionProps {
+  categories: Category[];
   initialActivity: ActivityItem[];
   initialActivityType: ActivityType;
   initialBreakdown: BreakdownMetrics;
@@ -32,6 +46,7 @@ interface DashboardMetricsSectionProps {
   statusCounts: Record<string, number>;
   workspaceCreatedAt: Date;
   workspaceId: string;
+  workspaceStatuses: WorkspaceStatus[];
 }
 
 // Keeps ?period=/?activityType= in the URL for shareable/bookmarkable links,
@@ -51,6 +66,7 @@ function syncSearchParam(name: string, value: string) {
 // Preview, Newest Feedback) re-renders, and the page never navigates or
 // scrolls.
 export function DashboardMetricsSection({
+  categories,
   initialActivity,
   initialActivityType,
   initialBreakdown,
@@ -63,6 +79,7 @@ export function DashboardMetricsSection({
   statusCounts,
   workspaceCreatedAt,
   workspaceId,
+  workspaceStatuses,
 }: DashboardMetricsSectionProps) {
   const [period, setPeriod] = useState(initialPeriod);
   const [breakdown, setBreakdown] = useState(initialBreakdown);
@@ -83,7 +100,8 @@ export function DashboardMetricsSection({
       const data = await getDashboardPeriodDataAction(
         workspaceId,
         next,
-        workspaceCreatedAt
+        workspaceCreatedAt,
+        categories.map((category) => category.id)
       );
       setBreakdown(data.breakdown);
       setFeedbackTrend(data.feedbackTrend);
@@ -101,12 +119,6 @@ export function DashboardMetricsSection({
   }
 
   const totalPosts = Object.values(statusCounts).reduce((sum, n) => sum + n, 0);
-  const openPosts = statusCounts.open ?? 0;
-  const underReviewPosts = statusCounts.under_review ?? 0;
-  const plannedPosts = statusCounts.planned ?? 0;
-  const inProgressPosts = statusCounts.in_progress ?? 0;
-  const completedPosts = statusCounts.completed ?? 0;
-  const closedPosts = statusCounts.closed ?? 0;
 
   const periodLabel = PERIOD_LABELS[period] ?? undefined;
   const previousMemberCount = previousSnapshot?.memberCount ?? null;
@@ -116,91 +128,65 @@ export function DashboardMetricsSection({
         0
       )
     : null;
-  const previousOpenPosts = previousSnapshot?.statusCounts.open ?? null;
-  const previousUnderReviewPosts =
-    previousSnapshot?.statusCounts.under_review ?? null;
-  const previousPlannedPosts = previousSnapshot?.statusCounts.planned ?? null;
-  const previousInProgressPosts =
-    previousSnapshot?.statusCounts.in_progress ?? null;
-  const previousCompletedPosts =
-    previousSnapshot?.statusCounts.completed ?? null;
-  const previousClosedPosts = previousSnapshot?.statusCounts.closed ?? null;
 
   return (
     <>
       {/* Feedback trend */}
       <FeedbackTrendCard
+        categories={categories}
         isPending={isPeriodPending}
         points={feedbackTrend}
         weekly={period === "all"}
       />
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard
-          href={isAdminOrOwner ? `/${slug}/settings/members` : undefined}
-          label="Members"
-          periodLabel={periodLabel}
-          previousValue={previousMemberCount}
-          value={memberCount}
-        />
-        <StatCard
-          href={`/${slug}/feedback`}
-          label="Total posts"
-          periodLabel={periodLabel}
-          previousValue={previousTotalPosts}
-          value={totalPosts}
-        />
-        <StatCard
-          href={`/${slug}/feedback?status=open`}
-          label="Open"
-          periodLabel={periodLabel}
-          previousValue={previousOpenPosts}
-          value={openPosts}
-        />
-        <StatCard
-          href={`/${slug}/feedback?status=under_review`}
-          label="Under Review"
-          periodLabel={periodLabel}
-          previousValue={previousUnderReviewPosts}
-          value={underReviewPosts}
-          valueClassName="text-ir-primary"
-        />
-        <StatCard
-          href={`/${slug}/feedback?status=planned`}
-          label="Planned"
-          periodLabel={periodLabel}
-          previousValue={previousPlannedPosts}
-          value={plannedPosts}
-          valueClassName="text-ir-primary"
-        />
-        <StatCard
-          href={`/${slug}/feedback?status=in_progress`}
-          label="In Progress"
-          periodLabel={periodLabel}
-          previousValue={previousInProgressPosts}
-          value={inProgressPosts}
-          valueClassName="text-ir-warning"
-        />
-        <StatCard
-          href={`/${slug}/feedback?status=completed`}
-          label="Completed"
-          periodLabel={periodLabel}
-          previousValue={previousCompletedPosts}
-          value={completedPosts}
-          valueClassName="text-ir-success"
-        />
-        <StatCard
-          href={`/${slug}/feedback?status=closed`}
-          label="Closed"
-          periodLabel={periodLabel}
-          previousValue={previousClosedPosts}
-          value={closedPosts}
-          valueClassName="text-ir-muted"
-        />
+      {/* Stat cards — flex-wrap (not grid) so an incomplete last row (the
+          status count depends on how many statuses the workspace has
+          configured) grows to fill the row instead of leaving a bare gap
+          where a trailing grid column would otherwise sit empty. */}
+      <div className="flex flex-wrap gap-3">
+        <div className="grow shrink-0 basis-[calc(50%-0.375rem)] sm:basis-[calc(25%-0.5625rem)]">
+          <StatCard
+            href={isAdminOrOwner ? `/${slug}/settings/members` : undefined}
+            label="Members"
+            periodLabel={periodLabel}
+            previousValue={previousMemberCount}
+            value={memberCount}
+          />
+        </div>
+        <div className="grow shrink-0 basis-[calc(50%-0.375rem)] sm:basis-[calc(25%-0.5625rem)]">
+          <StatCard
+            href={`/${slug}/feedback`}
+            label="Total posts"
+            periodLabel={periodLabel}
+            previousValue={previousTotalPosts}
+            value={totalPosts}
+          />
+        </div>
+        {workspaceStatuses.map((status) => (
+          <div
+            className="grow shrink-0 basis-[calc(50%-0.375rem)] sm:basis-[calc(25%-0.5625rem)]"
+            key={status.id}
+          >
+            <StatCard
+              href={`/${slug}/feedback?status=${status.slug}`}
+              label={status.name}
+              periodLabel={periodLabel}
+              previousValue={
+                previousSnapshot?.statusCounts[status.slug] ?? null
+              }
+              value={statusCounts[status.slug] ?? 0}
+              valueStyle={{ color: status.color }}
+            />
+          </div>
+        ))}
       </div>
 
-      {/* Breakdown + Live Stream */}
+      {/* Breakdown + Live Stream — both cards stretch (CSS Grid's default) to
+          match row height. Live Stream's own list is capped with an internal
+          scroll (see live-stream-card.tsx) so that height stays reasonable
+          regardless of activity count, instead of growing unbounded and
+          leaving Breakdown either badly stretched or with a bare gap beside
+          it depending on alignment. */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <BreakdownCard
           isPending={isPeriodPending}

@@ -6,6 +6,7 @@ import { NotificationEmptyState } from "@/components/notifications/notification-
 import { NotificationItem } from "@/components/notifications/notification-item";
 import { useNotificationsContext } from "@/components/notifications/notifications-context";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { SetPageHeader } from "@/components/workspace/topbar";
 import type { NotificationListItem } from "@/lib/notifications/queries";
 import { cn } from "@/lib/utils";
 
@@ -193,70 +194,22 @@ export function NotificationList({
     }
   }
   const visibleGroups = groups.filter((g) => g.items.length > 0);
+  const showToolbar = items.length > 0;
 
   return (
     <div>
-      {/* Header + toolbar stick together as one unit while the list scrolls
-          beneath them. */}
-      <div className="sticky top-0 z-10 bg-[rgba(247,249,251,1)]">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <div>
-            <h1 className="text-xl font-semibold text-foreground">
-              Notifications
-            </h1>
-            {total > 0 && (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {total} notification{total === 1 ? "" : "s"}
-                {unreadCount > 0 && (
-                  <span className="ml-1.5 text-primary font-medium">
-                    · {unreadCount} unread
-                  </span>
-                )}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Toolbar: filter tabs + bulk actions */}
-        {items.length > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-border">
-            <div className="flex items-center gap-1 rounded-ir-md bg-muted/50 p-0.5">
-              <button
-                className={cn(
-                  "cursor-pointer rounded-ir-sm px-2.5 py-1 text-xs font-medium transition-colors",
-                  filter === "all"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-                onClick={() => setFilter("all")}
-                type="button"
-              >
-                All
-              </button>
-              <button
-                className={cn(
-                  "flex cursor-pointer items-center gap-1.5 rounded-ir-sm px-2.5 py-1 text-xs font-medium transition-colors",
-                  filter === "unread"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-                onClick={() => setFilter("unread")}
-                type="button"
-              >
-                Unread
-                {unreadCount > 0 && (
-                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary/15 px-1 text-2xs font-semibold text-primary">
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
-            </div>
-
-            <div className="flex items-center gap-4">
+      {/* Reports title/description/toolbar up to the shared, layout-owned
+          Topbar (see components/workspace/topbar.tsx) instead of rendering a
+          second sticky header locally — this page used to render its own
+          "Notifications" heading + toolbar here, which duplicated and
+          visually overlapped the Topbar's own sticky bar. */}
+      <SetPageHeader
+        actions={
+          showToolbar ? (
+            <>
               {unreadCount > 0 && (
                 <button
-                  className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                  className="shrink-0 whitespace-nowrap rounded-ir-button px-3 py-2 text-sm font-medium text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={isPending}
                   onClick={handleMarkAllRead}
                   type="button"
@@ -265,17 +218,67 @@ export function NotificationList({
                 </button>
               )}
               <button
-                className="text-xs font-medium text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                className="shrink-0 whitespace-nowrap rounded-ir-button px-3 py-2 text-sm font-medium text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-danger/10 hover:text-ir-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={isPending}
                 onClick={() => setClearConfirmOpen(true)}
                 type="button"
               >
                 Clear all
               </button>
+            </>
+          ) : undefined
+        }
+        beforeActions={
+          showToolbar ? (
+            <div className="flex shrink-0 items-center gap-0.5 rounded-ir-button border border-ir-border bg-ir-surface p-1">
+              <button
+                className={cn(
+                  "cursor-pointer rounded-ir-sm px-2.5 py-1.5 text-sm font-medium transition-colors duration-150 ease-ir-standard",
+                  filter === "all"
+                    ? "bg-ir-muted-surface text-ir-heading"
+                    : "text-ir-muted hover:text-ir-heading"
+                )}
+                onClick={() => setFilter("all")}
+                type="button"
+              >
+                All
+              </button>
+              <button
+                className={cn(
+                  "flex cursor-pointer items-center gap-1.5 rounded-ir-sm px-2.5 py-1.5 text-sm font-medium transition-colors duration-150 ease-ir-standard",
+                  filter === "unread"
+                    ? "bg-ir-muted-surface text-ir-heading"
+                    : "text-ir-muted hover:text-ir-heading"
+                )}
+                onClick={() => setFilter("unread")}
+                type="button"
+              >
+                Unread
+                {unreadCount > 0 && (
+                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-ir-primary/15 px-1 text-2xs font-semibold text-ir-primary">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
             </div>
-          </div>
-        )}
-      </div>
+          ) : undefined
+        }
+        description={
+          total > 0 ? (
+            <>
+              {total} notification{total === 1 ? "" : "s"}
+              {unreadCount > 0 && (
+                <span className="ml-1.5 font-medium text-ir-primary">
+                  · {unreadCount} unread
+                </span>
+              )}
+            </>
+          ) : (
+            "Updates on the feedback you're following."
+          )
+        }
+        title="Notifications"
+      />
 
       {/* List */}
       {items.length === 0 ? (
