@@ -24,6 +24,9 @@ const RESERVED_TOP = new Set([
   "api",
   "signin",
   "signup",
+  "setup",
+  "forgot-password",
+  "reset-password",
   "orbit",
   "onboarding",
   "post-auth",
@@ -75,6 +78,9 @@ function isDualHostPath(pathname: string): boolean {
   return (
     pathname === "/signin" ||
     pathname === "/signup" ||
+    pathname === "/setup" ||
+    pathname === "/forgot-password" ||
+    pathname === "/reset-password" ||
     pathname.startsWith("/signin/") ||
     pathname.startsWith("/signup/") ||
     // Landing page for the embed widget's popup/magic-link sign-in — opened

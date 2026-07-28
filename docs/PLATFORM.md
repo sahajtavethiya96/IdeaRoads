@@ -365,7 +365,7 @@ How each role moves through the product, including the redirects that route peop
 ```
 Visit IdeaRoads → Landing page
    ↓ (Sign in)
-Sign-in page → magic link or Google
+Sign-in page → magic link or Google (or email + password, if an Orbit Admin has enabled it)
    ↓ (after authentication)
 Post-auth routing:
    ├── No workspace yet        → Onboarding (create first workspace)

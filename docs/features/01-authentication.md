@@ -2,11 +2,11 @@
 
 ## Overview
 
-IdeaRoads has no passwords. People sign in with a **Magic Link** (a one-time link sent to their email) or with **Google**. There is no email-and-password sign-in and no forgot-password or password-reset flow — neither is needed with passwordless sign-in.
+IdeaRoads is passwordless by default. People sign in with a **Magic Link** (a one-time link sent to their email) or with **Google**, and a first-time sign-in with either method automatically creates an account — there is no separate registration step for them.
+
+Self-hosted instances can additionally turn on **Email + Password** sign-in — an Orbit Admin opts in per-instance from **Platform → Feature Flags** (`password_auth`, off by default). This exists mainly so a self-hoster isn't forced to configure SMTP or Google OAuth before anyone can sign in: the `/setup` first-run wizard always creates the very first Orbit Admin with a password, regardless of this flag. When the flag is off (the default, and the current behavior of the hosted IdeaRoads instance), `/signup` and the password field on `/signin` simply don't appear — nothing changes from the passwordless experience described below.
 
 The **same sign-in serves all four product roles**: an Orbit Admin, a Brand Admin, a Team Member, and a User all sign in through the same screen. Where they land afterwards depends on what their account already has, not on a different login. (For the role model, see [../PLATFORM.md](../PLATFORM.md).)
-
-A first-time sign-in automatically creates an account — there is no separate registration step. Signing in and signing up are the same action.
 
 Anyone can browse a brand's public boards, roadmap, and changelog without an account. **Creating feedback, voting, commenting, and following the roadmap all require signing in first** — there is no anonymous participation.
 
@@ -18,14 +18,16 @@ Anyone can browse a brand's public boards, roadmap, and changelog without an acc
 |---|---|
 | **Magic Link** | Enters their email, receives a one-time sign-in link, clicks it, and is signed in. A new account is created automatically on first use. |
 | **Google** | Clicks "Continue with Google", approves on Google's screen, and is signed in. A new account is created automatically on first use. |
+| **Email + Password** *(optional)* | Only offered when an Orbit Admin has enabled the `password_auth` feature flag. Visits `/signup` to create an account with a name, email, and password, then signs in from `/signin` with that email and password. Unlike the other two methods, this one requires an explicit registration step. |
 
-Both methods live on the same sign-in screen. The "Continue with Google" option appears only when Google sign-in is enabled for the deployment.
+Magic Link and Google live on the sign-in screen for every deployment. The "Continue with Google" option appears only when Google sign-in is enabled; the password field and the "Sign up" link appear only when `password_auth` is enabled.
 
 Product facts:
 
-- No email-and-password sign-in.
-- No forgot-password / reset-password flow.
-- First sign-in creates the account automatically — no separate signup form.
+- Magic Link and Google both create an account automatically on first sign-in — no separate signup form for either.
+- Email + password is opt-in per instance and off by default; when off, nothing about the passwordless experience changes.
+- When password sign-in is enabled, forgot-password / reset-password is available too — but only once SMTP is configured, since the reset link has to be emailed.
+- Signing IN with an existing password always works, even while `password_auth` is off — that flag only gates self-serve *registration* (`/signup` and the password field's visibility). This is what lets the `/setup` first-run wizard create a password-based Orbit Admin on a brand-new instance before any other sign-in method is configured.
 
 ---
 
@@ -35,8 +37,11 @@ IdeaRoads exposes clean, predictable URLs for the sign-in experience:
 
 | Page | Purpose |
 |---|---|
-| `/signin` | Sign in or sign up (Magic Link + Google) |
-| `/signup` | Sends people to `/signin` — there is no separate registration form |
+| `/signin` | Sign in or sign up (Magic Link + Google), plus password sign-in when `password_auth` is enabled |
+| `/signup` | Password registration form when `password_auth` is enabled; otherwise sends people to `/signin` |
+| `/forgot-password` | Request a password-reset email — only reachable when `password_auth` is enabled and SMTP is configured |
+| `/reset-password` | Set a new password from the emailed reset link |
+| `/setup` | First-run wizard on a brand-new instance (empty `user` table): creates the first Orbit Admin and the first workspace. Redirects to `/signin` once the instance has any user. |
 | `/post-auth` | Routes a freshly signed-in person to the right destination |
 | `/invite/[token]` | Accept an invitation to join a workspace |
 
@@ -120,9 +125,12 @@ Any signed-in person can manage their own account:
 
 ## Acceptance Criteria
 
-- A person can sign in with a Magic Link or with Google, and nothing else.
-- There is no email-and-password sign-in and no password-reset flow anywhere in the product.
-- A first-time sign-in creates an account automatically; there is no separate registration form.
+- A person can always sign in with a Magic Link or with Google.
+- Email + password sign-in exists only when an Orbit Admin has enabled the `password_auth` feature flag; while it's off (the default), `/signup` sends people to `/signin` and no password field appears anywhere.
+- When `password_auth` is enabled, `/signup` becomes a real registration form, and a password field (plus "Forgot password?" once SMTP is configured) appears on `/signin`.
+- Magic Link and Google both create an account automatically on first sign-in; there is no separate registration form for either.
+- Signing in with an existing password always works regardless of the `password_auth` flag — only self-serve registration is gated.
+- A brand-new instance with no users is routed to `/setup` instead of `/signin`; completing it creates the first Orbit Admin and first workspace, and `/setup` becomes unreachable (redirects to `/signin`) afterwards.
 - The same sign-in serves all four roles (Orbit Admin, Brand Admin, Team Member, User).
 - After signing in, a person with no workspace reaches onboarding.
 - After signing in, a person with one or more workspaces reaches their workspace dashboard.

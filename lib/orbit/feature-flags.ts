@@ -43,7 +43,14 @@ export async function isFeatureEnabled(key: string): Promise<boolean> {
       .where(eq(featureFlags.key, key))
       .limit(1);
 
-    const value = flag?.isEnabled ?? true; // opt-out model: default true if missing
+    // Fall back to this flag's own declared default when its row hasn't been
+    // seeded yet (seeding happens in the worker process — see
+    // lib/worker/boss.ts — so a web-only deployment may not have it yet).
+    // Falls back further to `true` (opt-out) only for an unknown key.
+    const value =
+      flag?.isEnabled ??
+      DEFAULT_FEATURE_FLAGS.find((f) => f.key === key)?.isEnabled ??
+      true;
     flagCache.set(key, { value, expiresAt: Date.now() + CACHE_TTL_MS });
     return value;
   } catch (error) {
@@ -78,6 +85,11 @@ export const DEFAULT_FEATURE_FLAGS: Array<{
     isEnabled: true,
   },
   { key: "google_auth", description: "Google OAuth sign-in", isEnabled: true },
+  {
+    key: "password_auth",
+    description: "Email + password sign-up (self-serve registration)",
+    isEnabled: false,
+  },
   {
     key: "changelog_rss",
     description: "RSS feed for changelog",

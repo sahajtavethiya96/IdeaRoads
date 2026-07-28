@@ -16,7 +16,8 @@ import { slugify } from "@/lib/utils";
 interface StepWorkspaceProps {
   appHost: string;
   error?: string | null;
-  onBack: () => void;
+  /** Omit to hide the Back button (e.g. once a prior step can't be undone). */
+  onBack?: () => void;
   onSubmit: (input: { description: string; slug: string }) => void;
   submitting: boolean;
   workspaceName: string;
@@ -206,15 +207,17 @@ export function StepWorkspace({
         </p>
 
         <div className="flex items-center gap-3">
-          <Button
-            className="shrink-0"
-            disabled={submitting}
-            onClick={onBack}
-            type="button"
-            variant="ghost"
-          >
-            Back
-          </Button>
+          {onBack && (
+            <Button
+              className="shrink-0"
+              disabled={submitting}
+              onClick={onBack}
+              type="button"
+              variant="ghost"
+            >
+              Back
+            </Button>
+          )}
           <Button className="flex-1" disabled={!canSubmit} type="submit">
             {submitting ? (
               <span className="flex items-center gap-2">
