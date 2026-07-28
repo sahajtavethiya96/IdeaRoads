@@ -7,6 +7,7 @@ import {
   grantAdminAction,
   revokeAdminAction,
 } from "@/app/actions/orbit-settings";
+import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface Props {
@@ -78,41 +79,38 @@ export function UserAdminActions({
   return (
     <div className="flex flex-wrap gap-2">
       {impersonationEnabled && !isCurrentUser && (
-        <button
-          className="cursor-pointer border border-border bg-card px-3 py-1.5 text-xs font-semibold uppercase tracking-ui transition-colors hover:bg-accent disabled:opacity-50"
+        <Button
           disabled={isImpersonating}
           onClick={handleImpersonate}
-          type="button"
+          size="sm"
+          variant="outline"
         >
           {isImpersonating ? "Starting…" : "Impersonate"}
-        </button>
+        </Button>
       )}
 
       {isAdmin ? (
-        <button
-          className="cursor-pointer border border-destructive/40 bg-destructive/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-ui text-destructive transition-colors hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-40"
+        <Button
+          className="border-ir-danger/40 bg-ir-danger/5 text-ir-danger hover:bg-ir-danger/10"
           disabled={isCurrentUser}
           onClick={() => setRevokeOpen(true)}
+          size="sm"
           title={
             isCurrentUser ? "Cannot revoke your own admin access" : undefined
           }
-          type="button"
+          variant="outline"
         >
           Revoke Admin
-        </button>
+        </Button>
       ) : (
-        <button
-          className="cursor-pointer border border-border bg-card px-3 py-1.5 text-xs font-semibold uppercase tracking-ui transition-colors hover:bg-accent"
-          onClick={() => setGrantOpen(true)}
-          type="button"
-        >
+        <Button onClick={() => setGrantOpen(true)} size="sm" variant="outline">
           Grant Admin
-        </button>
+        </Button>
       )}
 
       <ConfirmDialog
         confirmLabel="Grant admin"
-        description={`${userEmail} will gain full access to Orbit Admin and all platform controls.`}
+        description={`${userEmail} will gain full access to Platform Admin and all platform controls.`}
         isPending={isPending}
         onConfirm={handleGrant}
         onOpenChange={setGrantOpen}
@@ -123,7 +121,7 @@ export function UserAdminActions({
 
       <ConfirmDialog
         confirmLabel="Revoke admin"
-        description={`${userEmail} will lose access to Orbit Admin immediately.`}
+        description={`${userEmail} will lose access to Platform Admin immediately.`}
         isPending={isPending}
         onConfirm={handleRevoke}
         onOpenChange={setRevokeOpen}

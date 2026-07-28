@@ -56,7 +56,7 @@ Better Auth manages its own tables (`user`, `session`, `account`, `verification`
 - `account` — linked providers (e.g. `google`, `magic-link`); `password` column is unused.
 - `verification` — magic link one-time tokens; expiry and cleanup handled by Better Auth.
 
-The `superadmins` table (see [../DATABASE.md](../DATABASE.md)) backs the Orbit Admin product role and is checked during post-sign-in routing.
+The `superadmins` table (see [../DATABASE.md](../DATABASE.md)) backs the Platform Admin product role and is checked during post-sign-in routing.
 
 ---
 
@@ -232,7 +232,7 @@ Server component, runs after successful sign-in.
 ```
 1. Get session (auth.api.getSession)
 2. If no session → redirect /signin
-3. If user is an Orbit Admin (in superadmins table) → redirect /orbit
+3. If user is a Platform Admin (in superadmins table) → redirect /orbit
 4. If user has any workspace_members record
    → Yes: redirect to their first workspace /{ws-slug}
    → No:  redirect to /onboarding (create first workspace)
@@ -302,7 +302,7 @@ Protected route groups (require valid session):
   /(workspace)/*  → must be signed in (Brand Admin or Team Member)
   /onboarding     → must be signed in (new user creating workspace)
   /post-auth      → must be signed in (post-login redirect)
-  /orbit/*        → must be signed in + must be Orbit Admin (checked in orbit layout)
+  /orbit/*        → must be signed in + must be Platform Admin (checked in orbit layout)
 
 Public routes (no auth required):
   /signin         → sign in / register
@@ -313,7 +313,7 @@ Public routes (no auth required):
 
 Implementation uses `betterFetch` to call `/api/auth/get-session` from middleware, checking the cookie header.
 
-**Note:** The `/orbit` prefix requires Orbit Admin status, enforced in `app/(orbit)/layout.tsx` by checking the `superadmins` table. Non-Orbit-Admins get 404 (not 403).
+**Note:** The `/orbit` prefix requires Platform Admin status, enforced in `app/(orbit)/layout.tsx` by checking the `superadmins` table. Non-platform-admins get 404 (not 403).
 
 ---
 

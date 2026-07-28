@@ -70,16 +70,6 @@ export const DEFAULT_FEATURE_FLAGS: Array<{
     isEnabled: true,
   },
   {
-    key: "public_roadmap",
-    description: "Allow workspaces to make roadmap public",
-    isEnabled: true,
-  },
-  {
-    key: "public_changelog",
-    description: "Allow workspaces to publish changelog",
-    isEnabled: true,
-  },
-  {
     key: "magic_link_auth",
     description: "Magic link sign-in",
     isEnabled: true,
@@ -89,10 +79,5 @@ export const DEFAULT_FEATURE_FLAGS: Array<{
     key: "password_auth",
     description: "Email + password sign-up (self-serve registration)",
     isEnabled: false,
-  },
-  {
-    key: "changelog_rss",
-    description: "RSS feed for changelog",
-    isEnabled: true,
   },
 ];

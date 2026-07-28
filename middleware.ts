@@ -11,6 +11,7 @@ const AUTH_GATE_PREFIXES = [
   "/onboarding",
   "/post-auth",
   "/invite/link",
+  "/complete-profile",
 ];
 
 // Second path segment of the /{slug}/… routes that belong to the Public Portal.
@@ -31,6 +32,7 @@ const RESERVED_TOP = new Set([
   "onboarding",
   "post-auth",
   "account",
+  "complete-profile",
   "invite",
   "dashboard",
   "features",

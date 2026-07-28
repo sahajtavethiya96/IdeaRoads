@@ -272,7 +272,7 @@ export function WorkspaceSidebar({
         </nav>
       </LayoutGroup>
 
-      {/* Orbit Admin quick link (admins only) */}
+      {/* Platform Admin quick link (admins only) */}
       {isOrbitAdmin && (
         <div className="border-t border-sidebar-border px-2.5 py-2">
           <motion.div
@@ -284,10 +284,10 @@ export function WorkspaceSidebar({
                 effectiveCollapsed ? "justify-center px-0 py-2" : "px-3 py-2"
               )}
               href="/orbit"
-              title={effectiveCollapsed ? "Orbit Admin" : undefined}
+              title={effectiveCollapsed ? "Platform Admin" : undefined}
             >
               <Shield className="size-3.5 shrink-0" />
-              {!effectiveCollapsed && <span>Orbit Admin</span>}
+              {!effectiveCollapsed && <span>Platform Admin</span>}
             </Link>
           </motion.div>
         </div>

@@ -6,7 +6,7 @@ IdeaRoads is passwordless by default. People sign in with a **Magic Link** (a on
 
 Self-hosted instances can additionally turn on **Email + Password** sign-in — an Orbit Admin opts in per-instance from **Platform → Feature Flags** (`password_auth`, off by default). This exists mainly so a self-hoster isn't forced to configure SMTP or Google OAuth before anyone can sign in: the `/setup` first-run wizard always creates the very first Orbit Admin with a password, regardless of this flag. When the flag is off (the default, and the current behavior of the hosted IdeaRoads instance), `/signup` and the password field on `/signin` simply don't appear — nothing changes from the passwordless experience described below.
 
-The **same sign-in serves all four product roles**: an Orbit Admin, a Brand Admin, a Team Member, and a User all sign in through the same screen. Where they land afterwards depends on what their account already has, not on a different login. (For the role model, see [../PLATFORM.md](../PLATFORM.md).)
+The **same sign-in serves all four product roles**: a Platform Admin, a Brand Admin, a Team Member, and a User all sign in through the same screen. Where they land afterwards depends on what their account already has, not on a different login. (For the role model, see [../PLATFORM.md](../PLATFORM.md).)
 
 Anyone can browse a brand's public boards, roadmap, and changelog without an account. **Creating feedback, voting, commenting, and following the roadmap all require signing in first** — there is no anonymous participation.
 

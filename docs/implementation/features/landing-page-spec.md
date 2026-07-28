@@ -99,7 +99,7 @@ Components in `components/marketing/` are isolated from app components in `compo
 - **Node container** — `bg-card border border-border p-4`, equal width across all six. Step number `font-mono text-xs text-muted-foreground`.
 - **Closing quote** — `blockquote`, `text-xl font-semibold text-foreground text-center` (`text-lg` on mobile), `max-w-2xl mx-auto`. No decorative quotation-mark glyph.
 - **Quick Start code blocks** — `bg-primary-foreground/5 border border-primary-foreground/15`; code text `font-mono text-sm text-primary-foreground`; comment lines `text-primary-foreground/40`. `Copy` button top-right copies the command; not rendered when JS disabled (`suppressHydrationWarning`); always visible (not hover-only) on mobile for touch targets.
-- **Quick Start "What's included" panel** — `bg-primary-foreground/5 border border-primary-foreground/15 p-8`, title "What's included", lists: "PostgreSQL + Drizzle", "Better Auth (Magic Link + Google)", "pg-boss job queue", "Email via SMTP", "Orbit admin panel". On mobile rendered below steps; optional via `hidden sm:block`.
+- **Quick Start "What's included" panel** — `bg-primary-foreground/5 border border-primary-foreground/15 p-8`, title "What's included", lists: "PostgreSQL + Drizzle", "Better Auth (Magic Link + Google)", "pg-boss job queue", "Email via SMTP", "platform admin panel". On mobile rendered below steps; optional via `hidden sm:block`.
 - **CTA button rendering on dark sections** — primary renders as light/white (`bg-primary-foreground text-primary`); outline/secondary render as outlined/light buttons on dark.
 
 ---
@@ -190,7 +190,7 @@ Footer link destinations: Documentation → `DOCS_URL`; GitHub → `GITHUB_REPO_
 
 ## Technical Notes
 
-- **Auth routing** — an authenticated visitor to `/` is redirected to `/post-auth`, which routes them to their workspace (`/{slug}`), Orbit (if Orbit Admin), or onboarding. Both nav CTAs ("Get Started" and "Sign In") link to `/signin`; the auth layer handles new vs. returning users. The Sign In link is intentionally omitted from the mobile nav.
+- **Auth routing** — an authenticated visitor to `/` is redirected to `/post-auth`, which routes them to their workspace (`/{slug}`), Orbit (if Platform Admin), or onboarding. Both nav CTAs ("Get Started" and "Sign In") link to `/signin`; the auth layer handles new vs. returning users. The Sign In link is intentionally omitted from the mobile nav.
 - **SSR / no-JS** — page is fully SSR and renders completely with JavaScript disabled. CTAs are plain anchor tags wrapped in Next.js `Link`. The copy-to-clipboard button is the only interactive element and degrades gracefully (not rendered when JS is disabled).
 - **External links** — "View on GitHub" and other GitHub links open in a new tab.
 - **Performance** — target ≥ 90 on Lighthouse Performance (desktop).

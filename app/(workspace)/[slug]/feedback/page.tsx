@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { PostsPaginationBar } from "@/components/posts/posts-pagination-bar";
 import { PostsTable } from "@/components/posts/posts-table";
 import { Button } from "@/components/ui/button";
+import { PageBody } from "@/components/ui/page";
 import { SetPageHeader } from "@/components/workspace/topbar";
 import { WORKSPACE_MEMBER } from "@/config/platform";
 import { requireSession } from "@/lib/authz";
@@ -154,32 +155,41 @@ export default async function FeedbackPage({ params, searchParams }: Props) {
         workspaceStatuses={workspaceStatuses}
       />
 
-      <PostsTable
-        categories={categories}
-        enableBulkActions
-        isAdminOrOwner={isAdminOrOwner}
-        isMember={true}
-        isSignedIn={true}
-        mergedIntoHref={(post) =>
-          post.mergedIntoId ? `/${slug}/feedback/${post.mergedIntoId}` : null
-        }
-        postHref={(post) => `/${slug}/feedback/${post.id}`}
-        posts={posts}
-        workspaceId={workspace.id}
-        workspaceStatuses={workspaceStatuses}
-      />
-
-      {totalCount > 0 && (
-        <div className="border-t border-ir-border px-4 py-3 sm:px-8">
-          <PostsPaginationBar
-            baseParams={paginationBaseParams}
-            currentPage={currentPage}
-            defaultPageSize={DEFAULT_PAGE_SIZE}
-            pageSize={validPageSize}
-            totalPages={totalPages}
+      <PageBody>
+        {/* No overflow-hidden here: BulkActionBar (rendered by PostsTable)
+            sticks to the viewport bottom while the page scrolls, which an
+            overflow-hidden ancestor would clip. */}
+        <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+          <PostsTable
+            categories={categories}
+            enableBulkActions
+            isAdminOrOwner={isAdminOrOwner}
+            isMember={true}
+            isSignedIn={true}
+            mergedIntoHref={(post) =>
+              post.mergedIntoId
+                ? `/${slug}/feedback/${post.mergedIntoId}`
+                : null
+            }
+            postHref={(post) => `/${slug}/feedback/${post.id}`}
+            posts={posts}
+            workspaceId={workspace.id}
+            workspaceStatuses={workspaceStatuses}
           />
+
+          {totalCount > 0 && (
+            <div className="border-t border-ir-border px-4 py-3 sm:px-8">
+              <PostsPaginationBar
+                baseParams={paginationBaseParams}
+                currentPage={currentPage}
+                defaultPageSize={DEFAULT_PAGE_SIZE}
+                pageSize={validPageSize}
+                totalPages={totalPages}
+              />
+            </div>
+          )}
         </div>
-      )}
+      </PageBody>
     </div>
   );
 }

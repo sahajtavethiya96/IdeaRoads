@@ -18,6 +18,7 @@ import { enqueueEmail } from "@/lib/email";
 import { MemberRemovedEmail } from "@/lib/email/components/member-removed";
 import { renderEmailTemplate } from "@/lib/email/renderer";
 import { adminBaseUrl } from "@/lib/urls";
+import { realNameOrEmpty } from "@/lib/users/profile-name";
 import { maxMeaningfulLength } from "@/lib/validation/text-length";
 import {
   createInviteLink,
@@ -173,7 +174,7 @@ export async function inviteMemberAction(input: {
 
 export async function acceptInviteAction(
   token: string
-): Promise<ActionResult<{ slug: string }>> {
+): Promise<ActionResult<{ needsProfile: boolean; slug: string }>> {
   const session = await requireSession();
 
   const result = await acceptInvite({
@@ -209,14 +210,21 @@ export async function acceptInviteAction(
     metadata: { workspaceSlug: result.workspaceSlug },
   });
 
-  return { success: true, data: { slug: result.workspaceSlug } };
+  // A brand-new (or still-nameless) user completes their profile before
+  // landing in the workspace — see app/complete-profile/page.tsx.
+  const needsProfile = !realNameOrEmpty(session.user.name, session.user.email);
+
+  return {
+    success: true,
+    data: { slug: result.workspaceSlug, needsProfile },
+  };
 }
 
 // ─── Join via Shareable Link ──────────────────────────────────────────────────
 
 export async function joinViaLinkAction(
   token: string
-): Promise<ActionResult<{ slug: string }>> {
+): Promise<ActionResult<{ needsProfile: boolean; slug: string }>> {
   const session = await requireSession();
 
   const result = await joinViaLink({ token, userId: session.user.id });
@@ -249,7 +257,14 @@ export async function joinViaLinkAction(
     metadata: { workspaceSlug: result.workspaceSlug },
   });
 
-  return { success: true, data: { slug: result.workspaceSlug } };
+  // A brand-new (or still-nameless) user completes their profile before
+  // landing in the workspace — see app/complete-profile/page.tsx.
+  const needsProfile = !realNameOrEmpty(session.user.name, session.user.email);
+
+  return {
+    success: true,
+    data: { slug: result.workspaceSlug, needsProfile },
+  };
 }
 
 // ─── Revoke Email Invite ──────────────────────────────────────────────────────

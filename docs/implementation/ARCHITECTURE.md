@@ -13,7 +13,7 @@ app/
 ├── (auth)/               /signin, /signup, /post-auth
 ├── (public)/[ws-slug]/   Public workspace pages — boards, posts, roadmap, changelog
 ├── (workspace)/[ws-slug]/Admin workspace pages — settings, members, moderation
-└── orbit/                Orbit Admin panel — /orbit/*
+└── orbit/                Platform Admin panel — /orbit/*
 ```
 
 ---

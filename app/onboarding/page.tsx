@@ -3,6 +3,7 @@ import { OnboardingForm } from "@/app/onboarding/_components/onboarding-form";
 import { OnboardingWizard } from "@/app/onboarding/_components/onboarding-wizard";
 import { requireSession } from "@/lib/authz";
 import { portalBaseUrl } from "@/lib/urls";
+import { realNameOrEmpty } from "@/lib/users/profile-name";
 import { getFirstUserWorkspace } from "@/lib/workspaces/queries";
 
 export const metadata = {
@@ -11,27 +12,6 @@ export const metadata = {
 
 interface OnboardingPageProps {
   searchParams: Promise<{ new?: string }>;
-}
-
-// Better Auth has no name-collection step for magic-link sign-in (the
-// dominant sign-up path — see auth-form.tsx), so it defaults a brand-new
-// user's name to something derived from their email. Google sign-ins DO get
-// a real name from the OAuth profile. Treat anything that collapses back to
-// the email itself (or its local part) as "not a real name yet" so Step 1
-// asks for one instead of pre-filling a login-looking string.
-function realNameOrEmpty(name: string, email: string): string {
-  const trimmed = name.trim();
-  if (!trimmed || trimmed.includes("@")) {
-    return "";
-  }
-  const localPart = email.split("@")[0]?.toLowerCase();
-  if (
-    trimmed.toLowerCase() === email.toLowerCase() ||
-    trimmed.toLowerCase() === localPart
-  ) {
-    return "";
-  }
-  return trimmed;
 }
 
 export default async function OnboardingPage({

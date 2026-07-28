@@ -11,4 +11,4 @@
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Route groups, URL patterns, folder structure, and engineering conventions |
 | [JOBS.md](JOBS.md) | Background jobs (pg-boss) and outbound webhook events |
 
-Anything in these files — table names, columns, file paths, function names, env vars, library choices — is an implementation detail. Product documentation refers to product concepts (Brand Admin, Team Member, User, Orbit Admin, Workspace, Board, Feedback, Roadmap, Changelog) and links here when a technical detail is genuinely needed.
+Anything in these files — table names, columns, file paths, function names, env vars, library choices — is an implementation detail. Product documentation refers to product concepts (Brand Admin, Team Member, User, Platform Admin, Workspace, Board, Feedback, Roadmap, Changelog) and links here when a technical detail is genuinely needed.

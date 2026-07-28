@@ -77,7 +77,7 @@ Without `SMTP_HOST`, `SMTP_USER`, and `SMTP_PASS` set, the worker logs emails to
 - Export account data as JSON
 - Delete account
 
-### Orbit Admin (`/orbit/*`)
+### Platform Admin (`/orbit/*`)
 
 Superadmin-only panel — returns 404 for everyone else.
 

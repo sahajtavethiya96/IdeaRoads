@@ -24,7 +24,7 @@
 | Auth | Better Auth (Magic Link + Google OAuth; optional Email + Password, opt-in per instance) |
 | Encryption | AES-256-GCM (`lib/encrypt.ts`, for webhook secrets + API keys) |
 | Linting + Formatting | Biome (replaces ESLint + Prettier, faster) |
-| Super Admin Panel | Orbit Admin (custom built at `/orbit`) |
+| Super Admin Panel | Platform Admin (custom built at `/orbit`) |
 | Deployment | Docker Compose (self-hosted) |
 | License | MIT |
 
@@ -58,7 +58,7 @@ Better Auth's Magic Link is the default and only method most deployments need �
 pg-boss uses the same PostgreSQL instance for the background job queue. One less service to operate in production.
 
 ### No Paid Services
-Everything is free and open-source: Better Auth (auth), Nodemailer (email), pg-boss (jobs), shadcn/ui (components), Drizzle ORM (database). Orbit Admin is custom-built — not a third-party paid service.
+Everything is free and open-source: Better Auth (auth), Nodemailer (email), pg-boss (jobs), shadcn/ui (components), Drizzle ORM (database). Platform Admin is custom-built — not a third-party paid service.
 
 ### Denormalised Counters
 `vote_count` and `comment_count` on the `posts` table are maintained atomically inside `db.transaction()` with `GREATEST(count - 1, 0)` guards. Avoids expensive COUNT(*) queries on every page load.
@@ -75,7 +75,7 @@ Comments are soft-deleted (body → `"[deleted]"`, author fields cleared). Posts
 `createAuditLog()` is never awaited — it runs as a best-effort background insert. Audit log failure never blocks the primary action.
 
 ### Orbit is Invisible
-`/orbit` returns 404 (not 403) for non-Orbit-Admins. The panel does not reveal itself to users who lack access.
+`/orbit` returns 404 (not 403) for non-platform-admins. The panel does not reveal itself to users who lack access.
 
 ### Durable Email Outbox
 Email is never sent synchronously. `enqueueEmail()` inserts a row into `email_outbox` first, then enqueues the pg-boss job. If the app crashes between these two lines, the nightly `CLEANUP_EMAIL_OUTBOX` cron re-queues any rows still stuck in `queued`. Zero email loss.
@@ -119,9 +119,9 @@ SMTP_USER=""
 SMTP_PASS=""
 EMAIL_FROM="IdeaRoads <noreply@yourdomain.com>"
 
-# Orbit Admin
-ORBIT_SEED_EMAIL=""            # First Orbit Admin email — seeded at startup if set
-ENABLE_IMPERSONATION="false"   # Set to "true" to allow Orbit Admin user impersonation
+# Platform Admin
+ORBIT_SEED_EMAIL=""            # First Platform Admin email — seeded at startup if set
+ENABLE_IMPERSONATION="false"   # Set to "true" to allow Platform Admin user impersonation
 
 # Encryption — for webhook secrets and API key display tokens
 ENCRYPTION_KEY=""              # generate with: openssl rand -hex 32 (AES-256 key)

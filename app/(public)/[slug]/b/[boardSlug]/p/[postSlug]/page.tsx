@@ -130,6 +130,7 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
     id: m.userId,
     name: m.user.name,
     email: m.user.email,
+    image: m.user.image,
   }));
 
   // If this post was merged into another, resolve the target's URL plus

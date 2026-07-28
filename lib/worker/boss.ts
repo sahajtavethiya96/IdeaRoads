@@ -5,7 +5,6 @@ import { featureFlags, user } from "@/db/schema";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 import { DEFAULT_FEATURE_FLAGS } from "@/lib/orbit/feature-flags";
-import { getPlatformSettings } from "@/lib/orbit/settings";
 import { normalizePgConnectionString } from "@/lib/pg-connection";
 import { sleep } from "@/lib/utils";
 import { ensureJobQueues } from "@/lib/worker/ensure-queues";
@@ -108,9 +107,6 @@ async function seedPlatformData() {
         })
         .onConflictDoNothing();
     }
-
-    // Ensure platform settings singleton exists
-    await getPlatformSettings();
 
     // Seed superadmin from ORBIT_SEED_EMAIL if set
     if (env.ORBIT_SEED_EMAIL) {

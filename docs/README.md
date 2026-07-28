@@ -25,7 +25,7 @@ IdeaRoads has **exactly four product roles**. Full definitions and the complete 
 
 | Role | Scope | Description |
 |---|---|---|
-| **Orbit Admin** | Platform | Internal IdeaRoads staff — manages every workspace, suspends/deletes workspaces, manages platform users |
+| **Platform Admin** | Platform | Internal IdeaRoads staff — manages every workspace, suspends/deletes workspaces, manages platform users |
 | **Brand Admin** | Workspace | Paying customer — creates and owns a workspace, manages everything inside it |
 | **Team Member** | Workspace | Invited helper — manages feedback and replies to customers; every Team Member has the same fixed permissions |
 | **User** | Public | A brand's customer — reads the portal and, once signed in, creates feedback, votes, comments, follows the roadmap, reads the changelog |
@@ -69,7 +69,7 @@ IdeaRoads has **exactly four product roles**. Full definitions and the complete 
 | 10  | [10-changelog.md](features/10-changelog.md) | Changelog | Release announcements, linked feedback, RSS |
 | 11  | [11-notifications.md](features/11-notifications.md) | Notifications | Email and in-app notifications |
 | 12  | [12-workspace-settings-moderation.md](features/12-workspace-settings-moderation.md) | Workspace Settings & Moderation | Settings, moderation, webhooks, API keys, audit log |
-| 13  | [13-orbit-admin.md](features/13-orbit-admin.md) | Orbit Admin | Platform-management area for Orbit Admins |
+| 13  | [13-orbit-admin.md](features/13-orbit-admin.md) | Platform Admin | Platform-management area for Platform Admins |
 
 ### Implementation Reference
 
@@ -107,7 +107,7 @@ Phase 3 — Organisation & Discovery
 Phase 4 — Platform Layer
   11  Notifications
   12  Workspace Settings & Moderation
-  13  Orbit Admin
+  13  Platform Admin
 
 Phase 5 — Marketing
   00  Landing Page

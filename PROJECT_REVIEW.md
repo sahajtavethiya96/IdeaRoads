@@ -13,7 +13,7 @@
 **Primary features** (see `docs/MASTER.md` for the authoritative product spec):
 
 - Passwordless auth (Magic Link, one-time email code, Google OAuth)
-- Multi-tenant workspaces with a 4-role model (Orbit Admin / Brand Admin / Team Member / User)
+- Multi-tenant workspaces with a 4-role model (Platform Admin / Brand Admin / Team Member / User)
 - Feedback boards, posts, voting, threaded comments with reactions
 - Categories, workflow statuses, moderation (approval rules, blocking users)
 - Public roadmap (auto-derived from statuses, or a manual drag-and-drop board)
@@ -55,7 +55,7 @@
 app/
 ├── (auth)/                 # /signin, /signup — standalone full-page auth screens
 ├── (marketing)/            # Public marketing site: /, /features/*, /demo, /privacy, /terms
-├── (orbit)/orbit/          # Platform-admin area (Orbit Admin role only)
+├── (orbit)/orbit/          # Platform-admin area (Platform Admin role only)
 ├── (public)/[slug]/        # Public Portal: board list, post detail, roadmap, changelog, profile
 ├── (workspace)/[slug]/     # Workspace/Admin app: feedback inbox, settings, notifications
 ├── account/                # Cross-cutting account pages (profile, confirm-email)
@@ -225,7 +225,7 @@ Both hosts (Admin/Portal) are `trustedOrigins`; Better Auth's dynamic `baseURL` 
 - `getCurrentSession()` / `requireSession()` / `requireAdmin()` (`lib/authz.ts`) are the three building blocks used throughout Server Components, Server Actions, and Route Handlers.
 - Workspace-level authorization checks `workspaceMembers.role` (`owner`/`admin`/`member` — product-facing labels "Brand Admin"/"Team Member", `config/platform.ts`) via `getWorkspaceMember()`.
 - Platform-level authorization (`requireAdmin`) checks `user.role === "admin"` and additionally re-reads the user's `banned` flag fresh from the DB on every call rather than trusting the session snapshot.
-- Orbit Admin area (`app/(orbit)/orbit/**`) is deliberately invisible (404, not redirect) to non-Orbit-Admins, so its existence isn't revealed to unauthorized users.
+- Platform Admin area (`app/(orbit)/orbit/**`) is deliberately invisible (404, not redirect) to non-platform-admins, so its existence isn't revealed to unauthorized users.
 - External API access (`/api/v1/*`) uses a completely separate, stateless auth path: `Authorization: Bearer <key>` / `x-api-key` header, validated against a SHA-256 hash (`lib/api-keys/validate.ts`) — no cookies/sessions involved.
 
 ### 4.5 File upload flow
@@ -310,7 +310,7 @@ Grouped by surface:
 - **Fully public (no auth):** marketing site, board list, post detail, roadmap, changelog (when the workspace has made them public), RSS feed, `/api/v1/*` with a valid key.
 - **Requires sign-in:** voting, commenting, creating feedback, reacting, subscribing to changelog, `/profile`, `/account/*`, `/onboarding`.
 - **Requires workspace membership:** everything under `(workspace)/[slug]`.
-- **Requires Orbit Admin:** everything under `(orbit)/orbit`.
+- **Requires Platform Admin:** everything under `(orbit)/orbit`.
 
 ---
 
@@ -435,7 +435,7 @@ No `Secure` flag is set in the current dev environment (auto-derived from protoc
 | `EMAIL_WEBHOOK_SECRET`                                                                                                          | Validates inbound email-provider webhook calls (`/api/webhooks/email`) | No                                                         | Yes                        |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`                                                                                     | Google OAuth app credentials                                           | No — Google sign-in simply doesn't appear if unset         | `GOOGLE_CLIENT_SECRET` yes |
 | `ENCRYPTION_KEY`                                                                                                                | 32-byte hex key for AES-256-GCM at-rest encryption (`lib/encrypt.ts`)  | Required only if a feature stores an encrypted secret      | Yes                        |
-| `ORBIT_SEED_EMAIL`                                                                                                              | Bootstraps the first Orbit Admin                                       | No                                                         | No                         |
+| `ORBIT_SEED_EMAIL`                                                                                                              | Bootstraps the first Platform Admin                                       | No                                                         | No                         |
 | `ENABLE_IMPERSONATION`                                                                                                          | Feature-flags the admin impersonation capability                       | No (default false)                                         | No                         |
 | `STORAGE_S3_REGION` / `STORAGE_S3_BUCKET` / `STORAGE_S3_ACCESS_KEY_ID` / `STORAGE_S3_SECRET_ACCESS_KEY` / `STORAGE_S3_ENDPOINT` | S3-compatible file storage                                             | No — falls back to local disk if unset                     | Access key/secret yes      |
 | `STORAGE_PUBLIC_URL_BASE`                                                                                                       | Public base URL for served files                                       | Required only when using S3/R2                             | No                         |
@@ -592,7 +592,7 @@ Selected notable dependencies (full list in [§3](#3-tech-stack) / `package.json
 | `pg-boss`                                       | Job queue           | Actively maintained, niche       | Good no-Redis-needed choice for this project's scale                                                                                                                         |
 | `radix-ui` / `@base-ui/react`                   | UI primitives       | Both actively maintained         | Having **both** in dependencies is worth a deliberate check — confirm this isn't accidental duplication of the same concern via two libraries                                |
 | `quill` 2.x                                     | Rich text editor    | Maintained                       | —                                                                                                                                                                            |
-| `recharts` 3.8.0                                | Charts              | Maintained                       | Used in Orbit admin dashboards presumably; not deeply reviewed                                                                                                               |
+| `recharts` 3.8.0                                | Charts              | Maintained                       | Used in platform admin dashboards presumably; not deeply reviewed                                                                                                               |
 | `isomorphic-dompurify`                          | HTML sanitization   | Maintained                       | Correctly used for changelog HTML (see §14)                                                                                                                                  |
 | `embedded-postgres` (dev dep, `18.4.0-beta.17`) | Local/test Postgres | **Beta version pinned**          | A beta dependency for the test database is worth revisiting once a stable release exists                                                                                     |
 | `ultracite` (dev dep)                           | Biome rule preset   | —                                | Underlies `biome.jsonc`                                                                                                                                                      |

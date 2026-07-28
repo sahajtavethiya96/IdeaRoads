@@ -3,6 +3,7 @@
 import { useOptimistic, useTransition } from "react";
 import { toast } from "sonner";
 import { toggleFeatureFlagAction } from "@/app/actions/orbit-feature-flags";
+import { Switch } from "@/components/ui/switch";
 
 interface Props {
   flagKey: string;
@@ -26,24 +27,11 @@ export function FeatureFlagToggle({ flagKey, isEnabled }: Props) {
   }
 
   return (
-    <button
-      aria-checked={optimisticEnabled}
-      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center border-2 border-transparent transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
-        optimisticEnabled ? "bg-primary" : "bg-muted"
-      }`}
+    <Switch
+      aria-label={optimisticEnabled ? "Disable flag" : "Enable flag"}
+      checked={optimisticEnabled}
       disabled={isPending}
-      onClick={toggle}
-      role="switch"
-      type="button"
-    >
-      <span
-        className={`inline-block size-5 bg-white shadow transition-transform duration-150 ${
-          optimisticEnabled ? "translate-x-5" : "translate-x-0"
-        }`}
-      />
-      <span className="sr-only">
-        {optimisticEnabled ? "Enabled" : "Disabled"}
-      </span>
-    </button>
+      onCheckedChange={toggle}
+    />
   );
 }
