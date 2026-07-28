@@ -46,6 +46,7 @@ export const RESERVED_SLUGS: readonly string[] = [
   "logout",
   "onboarding",
   "post-auth",
+  "complete-profile",
   "orbit",
   "setup",
   "dashboard",

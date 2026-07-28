@@ -42,8 +42,8 @@ export default async function WorkspaceLayout({
     notFound();
   }
 
-  // A suspended workspace is unavailable to everyone (PLATFORM.md §6) — Orbit
-  // Admins govern it from /orbit, not from the live workspace.
+  // A suspended workspace is unavailable to everyone (PLATFORM.md §6) —
+  // platform admins govern it from /orbit, not from the live workspace.
   if (workspace.isSuspended) {
     return <WorkspaceSuspendedPage />;
   }

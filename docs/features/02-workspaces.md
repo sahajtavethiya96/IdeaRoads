@@ -29,7 +29,7 @@ Workspaces follow the four product roles defined in [../PLATFORM.md](../PLATFORM
 - **Brand Admin** — creates, owns, and manages the workspace and everything inside it. Workspace ownership is an attribute of the Brand Admin who created it.
 - **Team Member** — invited by the Brand Admin to help; cannot change workspace settings, manage the team, or delete the workspace.
 - **User** — the brand's customer; never accesses the workspace dashboard or settings.
-- **Orbit Admin** — internal IdeaRoads staff; may suspend or delete any workspace at the platform level but never belongs to a workspace.
+- **Platform Admin** — internal IdeaRoads staff; may suspend or delete any workspace at the platform level but never belongs to a workspace.
 
 | Action | Who can do it |
 |---|---|
@@ -37,7 +37,7 @@ Workspaces follow the four product roles defined in [../PLATFORM.md](../PLATFORM
 | Edit workspace name / slug / description / logo | Brand Admin |
 | Delete the workspace | Brand Admin who owns it |
 | Switch between workspaces | Any member (Brand Admin, Team Member) |
-| Suspend or delete at the platform level | Orbit Admin |
+| Suspend or delete at the platform level | Platform Admin |
 
 ---
 
@@ -138,7 +138,7 @@ When a workspace is created, a slug is suggested automatically from the name (sp
 | Old slug after a change | A changed slug does not redirect from the old URL; the old slug stops working and the new one must be used. |
 | Sole Brand Admin leaving | The Brand Admin who owns the workspace cannot simply leave — they must transfer ownership or delete the workspace first. |
 | Last workspace deleted | After deleting their only workspace, the person is taken to `/onboarding`. |
-| Suspended workspace | A workspace suspended by an Orbit Admin is unavailable to everyone until restored. |
+| Suspended workspace | A workspace suspended by a Platform Admin is unavailable to everyone until restored. |
 
 ---
 

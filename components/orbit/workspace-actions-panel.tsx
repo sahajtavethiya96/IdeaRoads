@@ -8,7 +8,9 @@ import {
   suspendWorkspaceAction,
   unsuspendWorkspaceAction,
 } from "@/app/actions/orbit-workspaces";
+import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Input } from "@/components/ui/input";
 
 interface Props {
   isSuspended: boolean;
@@ -72,34 +74,35 @@ export function WorkspaceActionsPanel({
   return (
     <div className="flex flex-wrap gap-2">
       {isSuspended ? (
-        <button
-          className="cursor-pointer border border-border bg-card px-3 py-1.5 text-xs font-semibold uppercase tracking-ui transition-colors hover:bg-accent disabled:opacity-50"
+        <Button
           disabled={isPending}
           onClick={handleUnsuspend}
-          type="button"
+          size="sm"
+          variant="outline"
         >
           Unsuspend
-        </button>
+        </Button>
       ) : (
-        <button
-          className="cursor-pointer border border-border bg-card px-3 py-1.5 text-xs font-semibold uppercase tracking-ui transition-colors hover:bg-accent"
+        <Button
           onClick={() => setSuspendOpen(true)}
-          type="button"
+          size="sm"
+          variant="outline"
         >
           Suspend
-        </button>
+        </Button>
       )}
 
-      <button
-        className="cursor-pointer border border-destructive/40 bg-destructive/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-ui text-destructive transition-colors hover:bg-destructive/10"
+      <Button
+        className="border-ir-danger/40 bg-ir-danger/5 text-ir-danger hover:bg-ir-danger/10"
         onClick={() => {
           setDeleteSlugInput("");
           setDeleteOpen(true);
         }}
-        type="button"
+        size="sm"
+        variant="outline"
       >
         Delete
-      </button>
+      </Button>
 
       {/* Suspend dialog */}
       <ConfirmDialog
@@ -126,8 +129,8 @@ export function WorkspaceActionsPanel({
         title="Delete workspace?"
         variant="destructive"
       >
-        <input
-          className="w-full border border-border bg-background px-3 py-2 font-mono text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        <Input
+          className="font-mono"
           onChange={(e) => setDeleteSlugInput(e.target.value)}
           placeholder={workspaceSlug}
           type="text"

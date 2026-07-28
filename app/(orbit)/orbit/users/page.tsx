@@ -1,14 +1,9 @@
+import { MagnifyingGlassIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
-import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { PageBody } from "@/components/ui/page";
+import { SetPageHeader } from "@/components/workspace/topbar";
 import { listOrbitUsers } from "@/lib/orbit/users";
 import { formatDateTime } from "@/lib/utils";
 
@@ -21,6 +16,11 @@ interface Props {
     filter?: string;
   }>;
 }
+
+const ROLE_FILTERS = [
+  { label: "All", value: "" },
+  { label: "Admins", value: "admins" },
+] as const;
 
 export default async function OrbitUsersPage({ searchParams }: Props) {
   const params = await searchParams;
@@ -51,164 +51,181 @@ export default async function OrbitUsersPage({ searchParams }: Props) {
   };
 
   return (
-    <div>
-      <OrbitPageHeader
+    <div className="flex flex-col">
+      <SetPageHeader
         description="Inspect, manage roles, and impersonate any user on the platform."
-        eyebrow="Orbit"
+        portalHref={null}
         title="Users"
       />
 
       {/* Filters */}
-      <div className="mb-6 flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-ir-border px-4 py-3 sm:px-8">
         <form
           action="/orbit/users"
           className="flex flex-wrap gap-2"
           method="GET"
         >
           {adminsOnly && <input name="filter" type="hidden" value="admins" />}
-          <input
-            className="h-9 w-64 border border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            defaultValue={search}
-            name="search"
-            placeholder="Search name or email…"
-          />
-          <button
-            className="h-9 border border-border bg-card px-3 text-xs font-semibold uppercase tracking-ui transition-colors hover:bg-accent"
-            type="submit"
-          >
+          <div className="relative">
+            <MagnifyingGlassIcon className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-ir-muted" />
+            <input
+              className="h-9 w-64 rounded-ir-input border border-ir-border bg-ir-surface pl-8 pr-3 text-sm text-ir-heading placeholder:text-ir-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+              defaultValue={search}
+              name="search"
+              placeholder="Search name or email…"
+            />
+          </div>
+          <Button size="sm" type="submit" variant="outline">
             Search
-          </button>
+          </Button>
           {search && (
-            <Link
-              className="flex h-9 items-center border border-border bg-card px-3 text-xs font-semibold uppercase tracking-ui transition-colors hover:bg-accent"
-              href={buildUrl({ search: undefined, page: "1" })}
-            >
-              Clear
-            </Link>
+            <Button asChild size="sm" variant="ghost">
+              <Link href={buildUrl({ search: undefined, page: "1" })}>
+                Clear
+              </Link>
+            </Button>
           )}
         </form>
 
-        {/* Filter */}
-        <div className="flex gap-1">
-          {(
-            [
-              { label: "All", value: "" },
-              { label: "Admins", value: "admins" },
-            ] as const
-          ).map(({ label, value }) => (
-            <Link
-              className={`flex h-9 items-center border px-3 text-xs font-semibold uppercase tracking-ui transition-colors ${
-                (adminsOnly ? "admins" : "") === value
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-border bg-card hover:bg-accent"
-              }`}
-              href={buildUrl({ filter: value || undefined, page: "1" })}
+        <div className="flex gap-1.5">
+          {ROLE_FILTERS.map(({ label, value }) => (
+            <Button
+              asChild
               key={label}
+              size="sm"
+              variant={
+                (adminsOnly ? "admins" : "") === value ? "default" : "outline"
+              }
             >
-              {label}
-            </Link>
+              <Link href={buildUrl({ filter: value || undefined, page: "1" })}>
+                {label}
+              </Link>
+            </Button>
           ))}
         </div>
       </div>
 
-      <div className="border border-border bg-card">
-        <div className="overflow-x-auto">
-          <Table className="sm:table-fixed">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="sm:w-[32%]">User</TableHead>
-                <TableHead className="sm:w-[10%]">Role</TableHead>
-                <TableHead className="sm:w-[10%]">Status</TableHead>
-                <TableHead className="text-right sm:w-[12%]">
-                  Workspaces
-                </TableHead>
-                <TableHead className="sm:w-[24%]">Joined</TableHead>
-                <TableHead className="sm:w-[12%]" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    className="py-10 text-center text-muted-foreground"
-                    colSpan={6}
-                  >
-                    No users found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                users.map((u) => (
-                  <TableRow key={u.id}>
-                    <TableCell className="sm:max-w-0">
-                      <div className="truncate font-semibold">{u.email}</div>
-                      {u.name && (
-                        <div className="truncate text-xs text-muted-foreground">
-                          {u.name}
+      <PageBody>
+        <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+          {users.length === 0 ? (
+            <EmptyState
+              message={
+                search || adminsOnly
+                  ? "Try adjusting your search or filters."
+                  : "Users will appear here as they sign up."
+              }
+              title="No users found"
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-ir-border">
+                    <th className="px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+                      User
+                    </th>
+                    <th className="px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+                      Role
+                    </th>
+                    <th className="hidden px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted sm:table-cell">
+                      Status
+                    </th>
+                    <th className="hidden px-4 py-2.5 text-right text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted md:table-cell">
+                      Workspaces
+                    </th>
+                    <th className="hidden px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted lg:table-cell">
+                      Joined
+                    </th>
+                    <th className="px-4 py-2.5">
+                      <span className="sr-only">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-ir-border">
+                  {users.map((u) => (
+                    <tr
+                      className="transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface"
+                      key={u.id}
+                    >
+                      <td className="max-w-0 px-4 py-3">
+                        <div className="truncate font-semibold text-ir-heading">
+                          {u.email}
                         </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        className={u.isAdmin ? "text-success" : undefined}
-                        variant={u.isAdmin ? "default" : "secondary"}
-                      >
-                        {u.isAdmin ? "Admin" : "User"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        className={u.banned ? undefined : "text-success"}
-                        variant={u.banned ? "destructive" : "default"}
-                      >
-                        {u.banned ? "Banned" : "Active"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-sm">
-                      {u.workspaceCount}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                      {formatDateTime(u.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        className="text-xs font-semibold uppercase tracking-ui text-muted-foreground hover:text-foreground transition-colors"
-                        href={`/orbit/users/${u.id}`}
-                      >
-                        View →
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-
-        {totalPages > 1 && (
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-4 py-3">
-            <span className="text-xs text-muted-foreground">
-              Page {page} of {totalPages} · {total} users
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {page > 1 && (
-                <Link
-                  className="border border-border bg-card px-3 py-1.5 text-xs font-semibold uppercase tracking-ui hover:bg-accent"
-                  href={buildUrl({ page: String(page - 1) })}
-                >
-                  ← Previous
-                </Link>
-              )}
-              {page < totalPages && (
-                <Link
-                  className="border border-border bg-card px-3 py-1.5 text-xs font-semibold uppercase tracking-ui hover:bg-accent"
-                  href={buildUrl({ page: String(page + 1) })}
-                >
-                  Next →
-                </Link>
-              )}
+                        {u.name && (
+                          <div className="truncate text-xs text-ir-muted">
+                            {u.name}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant={u.isAdmin ? "default" : "secondary"}>
+                          {u.isAdmin ? "Admin" : "User"}
+                        </Badge>
+                      </td>
+                      <td className="hidden px-4 py-3 sm:table-cell">
+                        <Badge variant={u.banned ? "destructive" : "default"}>
+                          {u.banned ? "Banned" : "Active"}
+                        </Badge>
+                      </td>
+                      <td className="hidden px-4 py-3 text-right font-mono text-sm text-ir-body md:table-cell">
+                        {u.workspaceCount}
+                      </td>
+                      <td className="hidden whitespace-nowrap px-4 py-3 text-xs text-ir-muted lg:table-cell">
+                        {formatDateTime(u.createdAt)}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <Link
+                          className="text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading"
+                          href={`/orbit/users/${u.id}`}
+                        >
+                          View →
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
-        )}
+          )}
+
+          {totalPages > 1 && (
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-ir-border px-4 py-3">
+              <span className="text-xs text-ir-muted">
+                Page {page} of {totalPages} · {total} users
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {page > 1 && (
+                  <Button asChild size="sm" variant="outline">
+                    <Link href={buildUrl({ page: String(page - 1) })}>
+                      ← Previous
+                    </Link>
+                  </Button>
+                )}
+                {page < totalPages && (
+                  <Button asChild size="sm" variant="outline">
+                    <Link href={buildUrl({ page: String(page + 1) })}>
+                      Next →
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </PageBody>
+    </div>
+  );
+}
+
+function EmptyState({ title, message }: { title: string; message: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 px-4 py-16 text-center">
+      <div className="flex size-10 items-center justify-center rounded-ir-full bg-ir-muted-surface text-ir-muted">
+        <MagnifyingGlassIcon className="size-5" />
+      </div>
+      <div>
+        <p className="text-sm font-medium text-ir-heading">{title}</p>
+        <p className="mt-1 text-xs text-ir-muted">{message}</p>
       </div>
     </div>
   );

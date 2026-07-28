@@ -405,8 +405,11 @@ export function EmbedSection({
     <div className="space-y-8">
       <form onSubmit={handleSave}>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[220px_minmax(0,1fr)_260px]">
-          {/* Left — description/status */}
-          <div>
+          {/* Left — description/status. Sticky for the same reason as the
+              Preview column: on a long settings page this stays in view as
+              context while the center column scrolls, clearing the Topbar
+              the same way (see the Preview column's comment below). */}
+          <div className="lg:sticky lg:top-24 lg:self-start">
             <div className="flex flex-col items-start gap-1.5">
               <h2 className="text-sm font-semibold text-ir-heading">
                 Feedback Widget
@@ -802,8 +805,12 @@ export function EmbedSection({
             </div>
           </div>
 
-          {/* Right — live preview */}
-          <div className="lg:sticky lg:top-4 lg:self-start">
+          {/* Right — live preview. `top-24` clears the workspace Topbar
+              (sticky top-0 above this in the scroll container) so the two
+              don't fight for the same band while scrolling; `self-start`
+              keeps this column's own height content-sized within the grid
+              row so it has room to travel and unstick at the row's end. */}
+          <div className="lg:sticky lg:top-24 lg:self-start">
             <div className="rounded-ir-card border border-ir-border bg-ir-muted-surface p-4">
               <h3 className="text-xs font-semibold tracking-wide text-ir-heading uppercase">
                 Preview

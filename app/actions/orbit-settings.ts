@@ -1,36 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { audit } from "@/lib/audit";
 import { requireAdmin } from "@/lib/authz";
-import type { PlatformSettings } from "@/lib/orbit/settings";
-import { updatePlatformSettings } from "@/lib/orbit/settings";
-
-export async function updatePlatformSettingsAction(
-  changes: Partial<Omit<PlatformSettings, "id" | "updatedAt">>
-): Promise<{ error?: string }> {
-  const session = await requireAdmin();
-
-  try {
-    await updatePlatformSettings(changes);
-
-    await audit({
-      action: "platform.settings_updated",
-      actorId: session.user.id,
-      actorEmail: session.user.email,
-      description: "Platform settings updated",
-      entityType: "platform",
-      metadata: changes as Record<string, unknown>,
-      workspaceId: null,
-    });
-
-    revalidatePath("/orbit/settings");
-    return {};
-  } catch (error) {
-    console.error("[orbit] updatePlatformSettings failed", error);
-    return { error: "Failed to update settings" };
-  }
-}
 
 export async function grantAdminAction(
   targetUserId: string

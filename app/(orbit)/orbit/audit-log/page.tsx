@@ -1,8 +1,10 @@
+import { MagnifyingGlassIcon } from "@phosphor-icons/react/dist/ssr";
 import { and, count, desc, eq, ilike, isNull, or } from "drizzle-orm";
-import { Search, X } from "lucide-react";
 import Link from "next/link";
 import { AuditTypeSelect } from "@/components/admin/audit-type-select";
-import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
+import { Button } from "@/components/ui/button";
+import { PageBody } from "@/components/ui/page";
+import { SetPageHeader } from "@/components/workspace/topbar";
 import { auditLogs } from "@/db/schema";
 import { db } from "@/lib/db";
 import { formatDateTime } from "@/lib/utils";
@@ -29,15 +31,15 @@ const ENTITY_TYPES = [
 
 function actionBadgeClass(action: string): string {
   if (/delete|ban|suspend|revoke|remove|left/.test(action)) {
-    return "bg-destructive/10 text-destructive";
+    return "bg-ir-danger/10 text-ir-danger";
   }
   if (/creat|join|unsuspend|unban|invited|added|grant/.test(action)) {
-    return "bg-success-subtle text-success";
+    return "bg-ir-success/10 text-ir-success";
   }
   if (/impersonat|auth\.|user\.created/.test(action)) {
-    return "bg-warning/10 text-warning";
+    return "bg-ir-warning/10 text-ir-warning";
   }
-  return "bg-muted text-muted-foreground";
+  return "bg-ir-muted-surface text-ir-muted";
 }
 
 function buildUrl(params: Record<string, string | number | undefined>) {
@@ -109,23 +111,23 @@ export default async function OrbitAuditLogPage({ searchParams }: Props) {
   const hasFilters = q || type;
 
   return (
-    <div>
-      <OrbitPageHeader
+    <div className="flex flex-col">
+      <SetPageHeader
         description="Platform-level admin actions workspace suspension, role changes, impersonation, and auth events."
-        eyebrow="Orbit"
+        portalHref={null}
         title="Platform Audit Log"
       />
 
       {/* Filter bar */}
       <form
         action="/orbit/audit-log"
-        className="mb-4 flex flex-wrap items-center gap-2"
+        className="flex flex-wrap items-center gap-2 border-b border-ir-border px-4 py-3 sm:px-8"
         method="get"
       >
         <div className="relative">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <MagnifyingGlassIcon className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-ir-muted" />
           <input
-            className="h-8 w-64 border border-border bg-background pl-8 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-9 w-64 rounded-ir-input border border-ir-border bg-ir-surface pl-8 pr-3 text-sm text-ir-heading placeholder:text-ir-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
             defaultValue={q}
             name="q"
             placeholder="Search events, actors, entities…"
@@ -142,202 +144,182 @@ export default async function OrbitAuditLogPage({ searchParams }: Props) {
           }))}
         />
 
-        <button
-          className="h-8 border border-border bg-card px-3 text-xs font-semibold uppercase tracking-ui transition-colors hover:bg-accent"
-          type="submit"
-        >
+        <Button size="sm" type="submit" variant="outline">
           Filter
-        </button>
+        </Button>
 
         {hasFilters && (
-          <Link
-            className="flex h-8 items-center gap-1.5 border border-border bg-card px-3 text-xs font-semibold uppercase tracking-ui text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-            href="/orbit/audit-log"
-          >
-            <X className="size-3" />
-            Clear
-          </Link>
+          <Button asChild size="sm" variant="ghost">
+            <Link href="/orbit/audit-log">Clear</Link>
+          </Button>
         )}
 
-        <span className="ml-auto text-xs text-muted-foreground">
+        <span className="ml-auto text-xs text-ir-muted">
           {totalCount.toLocaleString()} event{totalCount === 1 ? "" : "s"}
         </span>
       </form>
 
-      {/* Table */}
-      <div className="border border-border bg-card">
-        {logs.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="mb-3 flex size-10 items-center justify-center border border-border bg-muted">
-              <Search className="size-4 text-muted-foreground" />
+      <PageBody>
+        <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+          {logs.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-3 px-4 py-16 text-center">
+              <div className="flex size-10 items-center justify-center rounded-ir-full bg-ir-muted-surface text-ir-muted">
+                <MagnifyingGlassIcon className="size-5" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-ir-heading">
+                  {hasFilters ? "No matching events" : "No audit events yet"}
+                </p>
+                <p className="mt-1 text-xs text-ir-muted">
+                  {hasFilters
+                    ? "Try adjusting your search or filters."
+                    : "Platform-level admin actions will appear here."}
+                </p>
+              </div>
+              {hasFilters && (
+                <Link
+                  className="text-xs font-semibold text-ir-muted underline-offset-2 hover:text-ir-heading hover:underline"
+                  href="/orbit/audit-log"
+                >
+                  Clear filters
+                </Link>
+              )}
             </div>
-            <p className="text-sm font-medium text-foreground">
-              {hasFilters ? "No matching events" : "No audit events yet"}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {hasFilters
-                ? "Try adjusting your search or filters."
-                : "Platform-level admin actions will appear here."}
-            </p>
-            {hasFilters && (
-              <Link
-                className="mt-3 text-xs font-semibold text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-                href="/orbit/audit-log"
-              >
-                Clear filters
-              </Link>
-            )}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="sticky top-0 z-10 border-b border-border bg-muted/60 backdrop-blur-sm">
-                <tr>
-                  <th className="h-10 px-4 text-left text-2xs font-semibold uppercase tracking-ui text-muted-foreground whitespace-nowrap">
-                    Event
-                  </th>
-                  <th className="h-10 px-4 text-left text-2xs font-semibold uppercase tracking-ui text-muted-foreground whitespace-nowrap">
-                    Actor
-                  </th>
-                  <th className="h-10 px-4 text-left text-2xs font-semibold uppercase tracking-ui text-muted-foreground whitespace-nowrap">
-                    Entity
-                  </th>
-                  <th className="h-10 px-4 text-left text-2xs font-semibold uppercase tracking-ui text-muted-foreground">
-                    Description
-                  </th>
-                  <th className="h-10 px-4 text-right text-2xs font-semibold uppercase tracking-ui text-muted-foreground whitespace-nowrap">
-                    When
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {logs.map((log) => (
-                  <tr
-                    className="transition-colors hover:bg-muted/30"
-                    key={log.id}
-                  >
-                    {/* Action */}
-                    <td className="px-4 py-3 align-top">
-                      <div className="flex flex-col gap-1">
-                        <span
-                          className={`inline-flex max-w-40 items-center truncate px-1.5 py-0.5 font-mono text-2xs font-semibold uppercase tracking-ui ${actionBadgeClass(log.action)}`}
-                          title={log.action}
-                        >
-                          {log.action}
-                        </span>
-                        <span className="text-2xs text-muted-foreground/60 uppercase tracking-ui">
-                          {log.entityType}
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* Actor */}
-                    <td className="max-w-40 px-4 py-3 align-top">
-                      <span
-                        className="block truncate text-xs text-muted-foreground"
-                        title={log.actorEmail ?? log.actorId ?? undefined}
-                      >
-                        {log.actorName
-                          ? log.actorName
-                          : (log.actorEmail ??
-                            log.actorId ?? (
-                              <span className="italic">System</span>
-                            ))}
-                      </span>
-                      {log.actorName && log.actorEmail && (
-                        <span
-                          className="block truncate text-2xs text-muted-foreground/60"
-                          title={log.actorEmail}
-                        >
-                          {log.actorEmail}
-                        </span>
-                      )}
-                    </td>
-
-                    {/* Entity */}
-                    <td className="max-w-40 px-4 py-3 align-top">
-                      {log.entityName ? (
-                        <span
-                          className="block truncate text-xs text-foreground"
-                          title={log.entityName}
-                        >
-                          {log.entityName}
-                        </span>
-                      ) : log.entityId ? (
-                        <span
-                          className="block truncate font-mono text-2xs text-muted-foreground"
-                          title={log.entityId}
-                        >
-                          {log.entityId.slice(0, 12)}…
-                        </span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground/40">
-                          —
-                        </span>
-                      )}
-                    </td>
-
-                    {/* Description */}
-                    <td className="min-w-50 px-4 py-3 align-top">
-                      <p className="line-clamp-2 text-xs text-muted-foreground">
-                        {log.description}
-                      </p>
-                    </td>
-
-                    {/* When */}
-                    <td className="px-4 py-3 align-top text-right">
-                      <time
-                        className="whitespace-nowrap text-xs text-muted-foreground"
-                        dateTime={log.createdAt.toISOString()}
-                        title={log.createdAt.toISOString()}
-                      >
-                        {formatDateTime(log.createdAt)}
-                      </time>
-                    </td>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 z-10 border-b border-ir-border bg-ir-muted-surface/60 backdrop-blur-sm">
+                  <tr>
+                    <th className="h-10 whitespace-nowrap px-4 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+                      Event
+                    </th>
+                    <th className="h-10 whitespace-nowrap px-4 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+                      Actor
+                    </th>
+                    <th className="h-10 whitespace-nowrap px-4 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+                      Entity
+                    </th>
+                    <th className="h-10 px-4 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+                      Description
+                    </th>
+                    <th className="h-10 whitespace-nowrap px-4 text-right text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+                      When
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody className="divide-y divide-ir-border">
+                  {logs.map((log) => (
+                    <tr
+                      className="transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface"
+                      key={log.id}
+                    >
+                      {/* Action */}
+                      <td className="px-4 py-3 align-top">
+                        <div className="flex flex-col gap-1">
+                          <span
+                            className={`inline-flex max-w-40 items-center truncate rounded-ir-sm px-1.5 py-0.5 font-mono text-2xs font-semibold uppercase tracking-eyebrow ${actionBadgeClass(log.action)}`}
+                            title={log.action}
+                          >
+                            {log.action}
+                          </span>
+                          <span className="text-2xs uppercase tracking-eyebrow text-ir-muted/60">
+                            {log.entityType}
+                          </span>
+                        </div>
+                      </td>
 
-        {/* Pagination */}
-        {(prevUrl || nextUrl || totalCount > 0) && (
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-4 py-3">
-            <span className="text-xs text-muted-foreground">
-              {totalCount === 0
-                ? "No events"
-                : `${from.toLocaleString()}–${to.toLocaleString()} of ${totalCount.toLocaleString()} events`}
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {prevUrl ? (
-                <Link
-                  className="h-7 border border-border bg-card px-3 text-xs font-semibold uppercase tracking-ui transition-colors hover:bg-accent inline-flex items-center"
-                  href={prevUrl}
-                >
-                  ← Previous
-                </Link>
-              ) : (
-                <span className="h-7 cursor-not-allowed border border-border bg-card px-3 text-xs font-semibold uppercase tracking-ui opacity-30 inline-flex items-center">
-                  ← Previous
-                </span>
-              )}
-              {nextUrl ? (
-                <Link
-                  className="h-7 border border-border bg-card px-3 text-xs font-semibold uppercase tracking-ui transition-colors hover:bg-accent inline-flex items-center"
-                  href={nextUrl}
-                >
-                  Next →
-                </Link>
-              ) : (
-                <span className="h-7 cursor-not-allowed border border-border bg-card px-3 text-xs font-semibold uppercase tracking-ui opacity-30 inline-flex items-center">
-                  Next →
-                </span>
-              )}
+                      {/* Actor */}
+                      <td className="max-w-40 px-4 py-3 align-top">
+                        <span
+                          className="block truncate text-xs text-ir-muted"
+                          title={log.actorEmail ?? log.actorId ?? undefined}
+                        >
+                          {log.actorName
+                            ? log.actorName
+                            : (log.actorEmail ??
+                              log.actorId ?? (
+                                <span className="italic">System</span>
+                              ))}
+                        </span>
+                        {log.actorName && log.actorEmail && (
+                          <span
+                            className="block truncate text-2xs text-ir-muted/60"
+                            title={log.actorEmail}
+                          >
+                            {log.actorEmail}
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Entity */}
+                      <td className="max-w-40 px-4 py-3 align-top">
+                        {log.entityName ? (
+                          <span
+                            className="block truncate text-xs text-ir-heading"
+                            title={log.entityName}
+                          >
+                            {log.entityName}
+                          </span>
+                        ) : log.entityId ? (
+                          <span
+                            className="block truncate font-mono text-2xs text-ir-muted"
+                            title={log.entityId}
+                          >
+                            {log.entityId.slice(0, 12)}…
+                          </span>
+                        ) : (
+                          <span className="text-xs text-ir-muted/40">—</span>
+                        )}
+                      </td>
+
+                      {/* Description */}
+                      <td className="min-w-50 px-4 py-3 align-top">
+                        <p className="line-clamp-2 text-xs text-ir-muted">
+                          {log.description}
+                        </p>
+                      </td>
+
+                      {/* When */}
+                      <td className="px-4 py-3 text-right align-top">
+                        <time
+                          className="whitespace-nowrap text-xs text-ir-muted"
+                          dateTime={log.createdAt.toISOString()}
+                          title={log.createdAt.toISOString()}
+                        >
+                          {formatDateTime(log.createdAt)}
+                        </time>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+
+          {/* Pagination */}
+          {(prevUrl || nextUrl || totalCount > 0) && (
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-ir-border px-4 py-3">
+              <span className="text-xs text-ir-muted">
+                {totalCount === 0
+                  ? "No events"
+                  : `${from.toLocaleString()}–${to.toLocaleString()} of ${totalCount.toLocaleString()} events`}
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {prevUrl && (
+                  <Button asChild size="sm" variant="outline">
+                    <Link href={prevUrl}>← Previous</Link>
+                  </Button>
+                )}
+                {nextUrl && (
+                  <Button asChild size="sm" variant="outline">
+                    <Link href={nextUrl}>Next →</Link>
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </PageBody>
     </div>
   );
 }

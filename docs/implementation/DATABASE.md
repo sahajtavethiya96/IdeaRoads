@@ -173,8 +173,8 @@ workspace_embed_config  workspace_id (PK), mode (inline|button),
                         theme (light|dark|auto), width, height,
                         accent_color, updated_at
 
--- Orbit Admin
--- There is no `superadmins` table. The Orbit Admin product role is backed by
+-- Platform Admin
+-- There is no `superadmins` table. The Platform Admin product role is backed by
 -- the `user.role` column (value `admin`); a normal end user has `user.role = user`.
 feature_flags       id, key UNIQUE, is_enabled, description, created_at, updated_at
 
@@ -200,4 +200,4 @@ The `workspace_members.role` column stores `owner | admin | member`. These are *
 | `admin` | Brand Admin |
 | `member` | Team Member |
 
-The **Orbit Admin** product role is backed by the `user.role` column (value `admin`) — there is no separate `superadmins` table. Public end users (**User**) have a `user` row (with `role = user`) but never a `workspace_members` row.
+The **Platform Admin** product role is backed by the `user.role` column (value `admin`) — there is no separate `superadmins` table. Public end users (**User**) have a `user` row (with `role = user`) but never a `workspace_members` row.

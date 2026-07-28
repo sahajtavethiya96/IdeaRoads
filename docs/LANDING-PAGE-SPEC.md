@@ -197,7 +197,7 @@ Three plainly numbered steps walk the visitor through getting IdeaRoads running 
 2. **Configure your environment**
 3. **Start the stack**
 
-Each step shows the exact command to run, with a one-tap copy action. A supporting callout summarizes what a deployment includes (database, authentication with magic link and Google, a background job queue, email, and the Orbit admin area) so the visitor knows what they are getting.
+Each step shows the exact command to run, with a one-tap copy action. A supporting callout summarizes what a deployment includes (database, authentication with magic link and Google, a background job queue, email, and the platform admin area) so the visitor knows what they are getting.
 
 A secondary text link, **Full self-hosting guide →**, points to the documentation for visitors who want the complete walkthrough.
 

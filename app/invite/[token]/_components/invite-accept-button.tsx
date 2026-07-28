@@ -20,7 +20,12 @@ export function InviteAcceptButton({ token }: { token: string }) {
       setError(result.error);
       return;
     }
-    router.push(`/${result.data.slug}`);
+    const target = `/${result.data.slug}`;
+    router.push(
+      result.data.needsProfile
+        ? `/complete-profile?next=${encodeURIComponent(target)}`
+        : target
+    );
   }
 
   return (

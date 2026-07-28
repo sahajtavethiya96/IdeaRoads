@@ -1,14 +1,14 @@
-# Feature 13 — Orbit Admin (Implementation Reference)
+# Feature 13 — Platform Admin (Implementation Reference)
 
-> Implementation reference for Feature 13 — Orbit Admin. Product behaviour: ../../features/13-orbit-admin.md
+> Implementation reference for Feature 13 — Platform Admin. Product behaviour: ../../features/13-orbit-admin.md
 
 This file captures the technical detail removed from the product spec: access control, seeding, impersonation, plan enforcement, feature flags, API endpoints, components, and engineering notes. For the full database schema see [../DATABASE.md](../DATABASE.md).
 
 > **Implemented (Phase 6 — access hardening).**
-> - **Orbit is now invisible (M1):** `requireAdmin()` (`lib/authz.ts`) returns `notFound()` for a signed-in user who is not an Orbit Admin, instead of redirecting to `/post-auth` — the area's existence is never revealed. Signed-out users are still sent to `/signin` (by `requireSession` and the middleware), with `?next=/orbit` so they return after authenticating.
-> - **Suspension applies to everyone (L1):** the Orbit-Admin bypass was removed from the workspace and public `[slug]` layouts. A suspended workspace shows the unavailable notice to all visitors, including Orbit Admins — Orbit Admins govern suspended workspaces from `/orbit`, not from the live workspace.
+> - **Orbit is now invisible (M1):** `requireAdmin()` (`lib/authz.ts`) returns `notFound()` for a signed-in user who is not a platform admin, instead of redirecting to `/post-auth` — the area's existence is never revealed. Signed-out users are still sent to `/signin` (by `requireSession` and the middleware), with `?next=/orbit` so they return after authenticating.
+> - **Suspension applies to everyone (L1):** the platform-admin bypass was removed from the workspace and public `[slug]` layouts. A suspended workspace shows the unavailable notice to all visitors, including platform admins — platform admins govern suspended workspaces from `/orbit`, not from the live workspace.
 
-> **Terminology note.** In product prose the internal-staff role is **Orbit Admin**. Internally the implementation stores and references this concept as `superadmin` (the `superadmins` table, `requireSuperadmin()`, `grantSuperadmin()`, etc.). The two terms are interchangeable below; `superadmin` is an implementation detail only.
+> **Terminology note.** In product prose the internal-staff role is **Platform Admin** (previously "Orbit Admin"). Internally the implementation stores and references this concept as `superadmin` (the `superadmins` table, `requireSuperadmin()`, `grantSuperadmin()`, etc.). The two terms are interchangeable below; `superadmin` is an implementation detail only.
 
 ---
 
@@ -64,12 +64,12 @@ export async function requireSuperadmin(request: NextRequest) {
 
 ## Seeding
 
-### First Orbit Admin seed
+### First platform admin seed
 
 On first startup with no superadmins in the database, the startup job in `lib/worker/startup.ts` reads `ORBIT_SEED_EMAIL` from env. If set, it upserts a `superadmins` record linked to the user with that email (a pending record that activates once the user signs in for the first time).
 
 ```env
-ORBIT_SEED_EMAIL=admin@example.com   # First Orbit Admin email (optional)
+ORBIT_SEED_EMAIL=admin@example.com   # First platform admin email (optional)
 ```
 
 If `ORBIT_SEED_EMAIL` is not set and no superadmins exist, `/orbit` remains inaccessible until a `superadmins` row is manually inserted.
@@ -265,11 +265,8 @@ isFeatureEnabled(key: string): Promise<boolean>
 ```ts
 const DEFAULT_FLAGS = [
   { key: "guest_voting", description: "Allow guests to vote with email only", isEnabled: true },
-  { key: "public_roadmap", description: "Allow workspaces to make roadmap public", isEnabled: true },
-  { key: "public_changelog", description: "Allow workspaces to publish changelog", isEnabled: true },
   { key: "magic_link_auth", description: "Magic link sign-in", isEnabled: true },
   { key: "google_auth", description: "Google OAuth sign-in", isEnabled: true },
-  { key: "changelog_rss", description: "RSS feed for changelog", isEnabled: true },
 ];
 
 // INSERT INTO feature_flags ON CONFLICT (key) DO NOTHING
@@ -284,37 +281,6 @@ import { isFeatureEnabled } from "@/lib/orbit/feature-flags";
 const guestVotingEnabled = await isFeatureEnabled("guest_voting");
 if (!guestVotingEnabled) {
   // require auth to vote
-}
-```
-
----
-
-## Platform Settings
-
-`platform_settings` is a singleton row (always `id=1`). `lib/orbit/settings.ts` caches it for 60 seconds; edits invalidate the cache immediately.
-
-```ts
-let _cache: { data: PlatformSettings; expiresAt: number } | null = null
-
-getPlatformSettings()
-  → if cache is fresh (expiresAt > now): return cached
-  → SELECT * FROM platform_settings WHERE id = 1
-  → if no row: INSERT defaults (id=1, signup_enabled=true, max_workspaces=5, maintenance=false)
-  → cache result for 60 seconds
-  → return settings
-
-updatePlatformSettings(changes)
-  → UPSERT platform_settings WHERE id = 1
-  → _cache = null  (invalidate immediately)
-  → createAuditLog: 'platform.settings_updated'
-```
-
-### Maintenance mode (enforced in `middleware.ts`)
-
-```ts
-const settings = await getPlatformSettings()
-if (settings.maintenanceMode && !isOrbitRoute && !isSuperadmin) {
-  return NextResponse.rewrite(new URL("/maintenance", req.url))
 }
 ```
 
@@ -438,7 +404,6 @@ getOrbitUser(userId)
 | POST   | `/api/orbit/end-impersonation`         | End impersonation session               |
 | GET    | `/api/orbit/plans`                     | List plans / POST create                |
 | GET    | `/api/orbit/plans/[id]`                | Plan detail / PATCH update / DELETE archive |
-| GET    | `/api/orbit/settings`                  | Platform settings / PATCH update        |
 | GET    | `/api/orbit/feature-flags`             | List feature flags                      |
 | PATCH  | `/api/orbit/feature-flags/[key]`       | Toggle feature flag                     |
 | GET    | `/api/orbit/audit-log`                 | Platform-level audit log                |
@@ -455,7 +420,6 @@ app/orbit/                                  Next.js route group (no special fram
 ├── layout.tsx                              Orbit layout — superadmin auth check + sidebar
 ├── page.tsx                                Dashboard
 ├── plans/page.tsx                          Plan catalog (create, edit, archive, duplicate)
-├── settings/page.tsx                       Platform settings (signup, limits, maintenance)
 ├── audit-log/page.tsx                      Platform-level audit log
 ├── workspaces/page.tsx                     Workspace list
 ├── workspaces/[workspaceId]/page.tsx       Workspace detail
@@ -481,7 +445,6 @@ lib/orbit/
 ├── workspaces.ts                           listOrbitWorkspaces(), suspendWorkspace(), deleteOrbitWorkspace()
 ├── users.ts                                listOrbitUsers(), grantSuperadmin(), revokeSuperadmin()
 ├── plans.ts                                listPlans(), createPlan(), updatePlan(), archivePlan(), duplicatePlan()
-├── settings.ts                             getPlatformSettings() (60s cached), updatePlatformSettings()
 ├── feature-flags.ts                        listFeatureFlags(), toggleFlag(), isFeatureEnabled() (60s cached)
 └── jobs.ts                                 getJobQueueStatus()
 ```
@@ -537,4 +500,4 @@ In MVP these are stored but there is no dedicated Orbit audit-log viewer page; w
 
 ### Database schema
 
-The `superadmins`, `feature_flags`, `plans`, `workspace_plan_assignments`, `platform_settings` tables and the `workspaces` suspension columns (`is_suspended`, `suspended_at`, `suspended_by`, `plan_id`) are defined in [../DATABASE.md](../DATABASE.md).
+The `superadmins`, `feature_flags`, `plans`, `workspace_plan_assignments` tables and the `workspaces` suspension columns (`is_suspended`, `suspended_at`, `suspended_by`, `plan_id`) are defined in [../DATABASE.md](../DATABASE.md). The `platform_settings` table remains in the schema but is no longer read or written by any code path — the Platform Settings admin page was removed.

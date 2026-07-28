@@ -5,20 +5,20 @@ import {
   Buildings,
   CaretUpDown,
   ChartBar,
-  Envelope,
+  CreditCard,
   Flag,
   Gauge,
   List,
   Scroll,
+  SidebarSimpleIcon,
   SignOut,
   UserCircle,
   Users,
-  Wrench,
 } from "@phosphor-icons/react";
 import { LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { type ComponentType, useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,21 +50,69 @@ const navItems = [
     exact: false,
   },
   { href: "/orbit/users", label: "Users", icon: Users, exact: false },
+  { href: "/orbit/plans", label: "Plans", icon: CreditCard, exact: false },
   {
     href: "/orbit/feature-flags",
     label: "Feature Flags",
     icon: Flag,
     exact: false,
   },
-  { href: "/orbit/settings", label: "Settings", icon: Wrench, exact: false },
   { href: "/orbit/jobs", label: "Job Queue", icon: Gauge, exact: false },
   { href: "/orbit/audit-log", label: "Audit Log", icon: Scroll, exact: false },
-  { href: "/orbit/email", label: "Email", icon: Envelope, exact: false },
   { href: "/orbit/account", label: "Account", icon: UserCircle, exact: true },
 ];
 
 // Shared active-indicator layoutId — the bar smoothly slides between nav rows.
 const NAV_INDICATOR_ID = "orbit-nav-active-indicator";
+
+function NavLink({
+  href,
+  exact = false,
+  icon: Icon,
+  children,
+  collapsed = false,
+}: {
+  children: string;
+  collapsed?: boolean;
+  exact?: boolean;
+  href: string;
+  icon: ComponentType<{ className?: string; weight?: "regular" | "fill" }>;
+}) {
+  const pathname = usePathname();
+  const shouldReduceMotion = useReducedMotion();
+  const isActive = exact ? pathname === href : pathname.startsWith(href);
+
+  return (
+    <Link
+      className={cn(
+        "group relative flex cursor-pointer items-center gap-2.5 rounded-ir-md text-sm transition-colors duration-150 ease-ir-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40",
+        collapsed ? "justify-center px-0 py-2" : "px-3 py-2",
+        isActive
+          ? "bg-ir-primary/15 font-medium text-ir-primary-light"
+          : "text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+      )}
+      href={href}
+      title={collapsed ? children : undefined}
+    >
+      {isActive && (
+        <motion.span
+          className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-ir-primary"
+          layoutId={NAV_INDICATOR_ID}
+          transition={
+            shouldReduceMotion
+              ? { duration: 0 }
+              : { type: "spring", stiffness: 500, damping: 40 }
+          }
+        />
+      )}
+      <Icon
+        className="size-4 shrink-0"
+        weight={isActive ? "fill" : "regular"}
+      />
+      {!collapsed && <span className="truncate">{children}</span>}
+    </Link>
+  );
+}
 
 export function AdminSidebar({
   email,
@@ -81,6 +129,27 @@ export function AdminSidebar({
   const shouldReduceMotion = useReducedMotion();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+
+  // Desktop-only, persisted across sessions. Read after mount to avoid an
+  // SSR/client markup mismatch (localStorage isn't available on the server).
+  useEffect(() => {
+    if (localStorage.getItem("orbit-sidebar-collapsed") === "1") {
+      setCollapsed(true);
+    }
+  }, []);
+
+  function toggleCollapsed() {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("orbit-sidebar-collapsed", next ? "1" : "0");
+      return next;
+    });
+  }
+
+  // The mobile drawer always shows full labels — collapsing only applies to
+  // the persistent desktop rail.
+  const effectiveCollapsed = collapsed && !isMobile;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is a watch-only trigger, not read in the body
   useEffect(() => {
@@ -89,57 +158,62 @@ export function AdminSidebar({
 
   const sidebarContent = (
     <>
-      {/* Brand */}
-      <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-5">
-        <span className="grid size-9 shrink-0 place-items-center rounded-ir-sm bg-sidebar-primary font-black text-sidebar-primary-foreground text-xs">
-          KR
-        </span>
-        <div className="min-w-0">
-          <p className="font-black text-sm leading-none">{PRODUCT_NAME}</p>
-          <p className="mt-1 text-2xs font-semibold uppercase tracking-ui text-sidebar-foreground/40">
-            Orbit Admin
-          </p>
+      {/* Brand + collapse toggle, same ChatGPT-style swap as the workspace
+          sidebar: collapsed shows just the mark, hover reveals the expand
+          icon in its place; expanded shows a persistent collapse button. */}
+      {effectiveCollapsed ? (
+        <button
+          aria-label="Expand sidebar"
+          className="group relative flex h-14 w-full cursor-pointer items-center justify-center border-b border-sidebar-border transition-colors duration-150 ease-ir-standard hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+          onClick={toggleCollapsed}
+          title="Expand sidebar"
+          type="button"
+        >
+          <span className="grid size-9 shrink-0 place-items-center rounded-ir-sm bg-sidebar-primary font-black text-sidebar-primary-foreground text-xs transition-opacity duration-150 ease-ir-standard group-hover:opacity-0">
+            IR
+          </span>
+          <SidebarSimpleIcon className="absolute size-4 text-sidebar-foreground/85 opacity-0 transition-opacity duration-150 ease-ir-standard group-hover:opacity-100" />
+        </button>
+      ) : (
+        <div className="flex h-14 items-center gap-3 border-b border-sidebar-border px-5">
+          <span className="grid size-9 shrink-0 place-items-center rounded-ir-sm bg-sidebar-primary font-black text-sidebar-primary-foreground text-xs">
+            IR
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-black text-sm leading-none">{PRODUCT_NAME}</p>
+            <p className="mt-1 text-2xs font-semibold uppercase tracking-ui text-sidebar-foreground/40">
+              Platform Admin
+            </p>
+          </div>
+          {!isMobile && (
+            <button
+              aria-label="Collapse sidebar"
+              className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-ir-sm text-sidebar-foreground/85 transition-colors duration-150 ease-ir-standard hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+              onClick={toggleCollapsed}
+              title="Collapse sidebar"
+              type="button"
+            >
+              <SidebarSimpleIcon className="size-4" />
+            </button>
+          )}
         </div>
-      </div>
+      )}
 
       {/* Navigation */}
       <LayoutGroup id="orbit-nav">
         <nav className="min-h-0 flex-1 overflow-y-auto px-2.5 py-5">
-          <p className="mb-2 px-3 text-2xs font-semibold uppercase tracking-ui text-sidebar-foreground/30">
-            Navigation
-          </p>
           <div className="space-y-0.5">
-            {navItems.map(({ href, label, icon: Icon, exact }) => {
-              const isActive = exact
-                ? pathname === href
-                : pathname.startsWith(href);
-              return (
-                <Link
-                  className={cn(
-                    "group relative flex cursor-pointer items-center gap-3 rounded-ir-sm px-3 py-2.5 text-xs font-semibold tracking-ui uppercase transition-colors duration-150 ease-ir-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40",
-                    isActive
-                      ? "bg-ir-primary/15 text-ir-primary-light"
-                      : "text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                  )}
-                  href={href}
-                  key={href}
-                >
-                  {isActive && (
-                    <motion.span
-                      className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-ir-primary"
-                      layoutId={NAV_INDICATOR_ID}
-                      transition={
-                        shouldReduceMotion
-                          ? { duration: 0 }
-                          : { type: "spring", stiffness: 500, damping: 40 }
-                      }
-                    />
-                  )}
-                  <Icon size={15} weight={isActive ? "fill" : "regular"} />
-                  {label}
-                </Link>
-              );
-            })}
+            {navItems.map(({ href, label, icon, exact }) => (
+              <NavLink
+                collapsed={effectiveCollapsed}
+                exact={exact}
+                href={href}
+                icon={icon}
+                key={href}
+              >
+                {label}
+              </NavLink>
+            ))}
           </div>
         </nav>
       </LayoutGroup>
@@ -150,11 +224,15 @@ export function AdminSidebar({
         {workspaceSlug && (
           <div className="border-b border-sidebar-border px-2.5 py-2">
             <Link
-              className="flex cursor-pointer items-center gap-2.5 rounded-ir-sm px-3 py-2 text-xs font-semibold text-sidebar-foreground/85 transition-colors duration-150 ease-ir-standard hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+              className={cn(
+                "flex cursor-pointer items-center gap-2.5 rounded-ir-sm text-xs font-semibold text-sidebar-foreground/85 transition-colors duration-150 ease-ir-standard hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40",
+                effectiveCollapsed ? "justify-center px-0 py-2" : "px-3 py-2"
+              )}
               href={`/${workspaceSlug}`}
+              title={effectiveCollapsed ? "My Workspace" : undefined}
             >
               <ArrowLeft className="size-3.5 shrink-0" size={13} />
-              <span>My Workspace</span>
+              {!effectiveCollapsed && <span>My Workspace</span>}
             </Link>
           </div>
         )}
@@ -163,7 +241,11 @@ export function AdminSidebar({
         <DropdownMenu onOpenChange={setAccountOpen} open={accountOpen}>
           <DropdownMenuTrigger asChild>
             <button
-              className="flex h-14 w-full min-w-0 cursor-pointer items-center gap-2.5 px-4 text-left transition-colors duration-150 ease-ir-standard hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+              className={cn(
+                "flex h-14 w-full min-w-0 cursor-pointer items-center gap-2.5 text-left transition-colors duration-150 ease-ir-standard hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40",
+                effectiveCollapsed ? "justify-center px-0" : "px-4"
+              )}
+              title={effectiveCollapsed ? email : undefined}
               type="button"
             >
               <SquareAvatar
@@ -171,29 +253,33 @@ export function AdminSidebar({
                 fallback={email.charAt(0).toUpperCase()}
                 imageUrl={image}
               />
-              <span
-                className="min-w-0 flex-1 truncate text-xs text-sidebar-foreground/70"
-                title={email}
-              >
-                {email}
-              </span>
-              <motion.span
-                animate={{ rotate: accountOpen ? 180 : 0 }}
-                className="shrink-0 text-sidebar-foreground/60"
-                transition={{
-                  duration: shouldReduceMotion ? 0 : 0.15,
-                  ease: "easeOut",
-                }}
-              >
-                <CaretUpDown className="size-4" />
-              </motion.span>
+              {!effectiveCollapsed && (
+                <>
+                  <span
+                    className="min-w-0 flex-1 truncate text-xs text-sidebar-foreground/70"
+                    title={email}
+                  >
+                    {email}
+                  </span>
+                  <motion.span
+                    animate={{ rotate: accountOpen ? 180 : 0 }}
+                    className="shrink-0 text-sidebar-foreground/60"
+                    transition={{
+                      duration: shouldReduceMotion ? 0 : 0.15,
+                      ease: "easeOut",
+                    }}
+                  >
+                    <CaretUpDown className="size-4" />
+                  </motion.span>
+                </>
+              )}
             </button>
           </DropdownMenuTrigger>
 
           <DropdownMenuContent
             align="start"
             className="w-64 max-w-[calc(100vw-1rem)]"
-            side="top"
+            side={effectiveCollapsed ? "right" : "top"}
             sideOffset={6}
           >
             <DropdownMenuLabel className="flex items-center gap-2.5 font-normal normal-case tracking-normal">
@@ -250,7 +336,7 @@ export function AdminSidebar({
             </motion.button>
           </SheetTrigger>
           <span className="flex-1 truncate text-sm font-semibold">
-            {PRODUCT_NAME} — Orbit Admin
+            {PRODUCT_NAME} — Platform Admin
           </span>
         </div>
 
@@ -261,7 +347,7 @@ export function AdminSidebar({
         >
           <SheetHeader className="sr-only">
             <SheetTitle>Navigation</SheetTitle>
-            <SheetDescription>Orbit admin navigation menu</SheetDescription>
+            <SheetDescription>Platform admin navigation menu</SheetDescription>
           </SheetHeader>
           {sidebarContent}
         </SheetContent>
@@ -270,7 +356,12 @@ export function AdminSidebar({
   }
 
   return (
-    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:w-72">
+    <aside
+      className={cn(
+        "flex h-screen shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-150 ease-ir-standard",
+        effectiveCollapsed ? "w-16" : "w-64 lg:w-72"
+      )}
+    >
       {sidebarContent}
     </aside>
   );

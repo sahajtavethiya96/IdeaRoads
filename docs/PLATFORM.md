@@ -22,7 +22,7 @@ Team       (the people inside a brand who manage feedback)
 Customers  (the brand's end users, who submit and vote on feedback)
 ```
 
-- **IdeaRoads** is the platform itself. It hosts every brand, governs the platform, and is run by internal staff (**Orbit Admins**).
+- **IdeaRoads** is the platform itself. It hosts every brand, governs the platform, and is run by internal staff (**Platform Admins**).
 - A **Brand** is a single paying customer, represented by a **Workspace**. Each workspace is fully isolated — its own boards, feedback, roadmap, changelog, team, and settings. It is owned and operated by a **Brand Admin**.
 - A **Team** is the group of people a Brand Admin invites to help run the workspace. Each helper is a **Team Member**.
 - **Customers** are the brand's end users — the public. They visit the brand's feedback portal as **Users** to submit feedback, vote, comment, follow the roadmap, and read the changelog.
@@ -33,14 +33,14 @@ Customers  (the brand's end users, who submit and vote on feedback)
 
 IdeaRoads has **exactly four product roles**. There are no others. There is no "Guest", "Workspace Admin", "Superadmin", "Owner", "Member", "Anonymous User", or "Authenticated User" as a *product role* — those terms are never used in product documentation.
 
-### 1. Orbit Admin
+### 1. Platform Admin
 - Internal IdeaRoads staff only.
 - Manages the IdeaRoads platform.
 - Can manage every workspace.
 - Can suspend workspaces.
 - Can delete workspaces.
 - Can manage platform users.
-- Can access Orbit Admin.
+- Can access Platform Admin.
 - Never belongs to a customer's workspace.
 
 ### 2. Brand Admin
@@ -66,7 +66,7 @@ IdeaRoads has **exactly four product roles**. There are no others. There is no "
 - Helps organise the roadmap.
 - Helps reply to customers.
 - **Every Team Member has the same fixed set of permissions.** There is no per-member configuration — a Brand Admin invites a Team Member and that person receives the standard Team Member permissions described in the [permission matrix](#4-complete-permission-matrix).
-- Never accesses workspace settings or Orbit Admin.
+- Never accesses workspace settings or Platform Admin.
 
 ### 4. User
 - Customer / Visitor / End User of a brand.
@@ -82,9 +82,9 @@ IdeaRoads has **exactly four product roles**. There are no others. There is no "
 
 ### One person, different roles
 
-Roles describe a person's relationship to a specific workspace (or, for Orbit Admin, to the platform) — they are not a permanent global label. The same person can hold different roles in different places at the same time. For example, one person might be:
+Roles describe a person's relationship to a specific workspace (or, for Platform Admin, to the platform) — they are not a permanent global label. The same person can hold different roles in different places at the same time. For example, one person might be:
 
-- an **Orbit Admin** for the platform,
+- an **Platform Admin** for the platform,
 - the **Brand Admin** of the workspace they created,
 - a **Team Member** in a colleague's workspace, and
 - a **User** on an unrelated brand's public portal.
@@ -98,7 +98,7 @@ Each role applies only in its own context.
 ```
 IdeaRoads
 │
-├── Orbit Admin                  (internal staff — governs the whole platform)
+├── Platform Admin                  (internal staff — governs the whole platform)
 │
 ├── Brand A                      (a workspace)
 │     ├── Brand Admin            (owns and operates the workspace)
@@ -116,7 +116,7 @@ IdeaRoads
       └── Users
 ```
 
-- Orbit Admin sits **above** all brands and is not part of any workspace.
+- Platform Admin sits **above** all brands and is not part of any workspace.
 - Each brand is an isolated workspace. People and data never cross between brands.
 - A Brand Admin and Team Members are **internal** to one brand; Users are the **public** customers of that brand.
 
@@ -128,15 +128,15 @@ Legend: ✅ = can perform · ❌ = cannot.
 
 A ✅ in the **User** column means a **signed-in** User. Reading public pages (boards, roadmap, changelog) needs no account; **creating feedback, voting, commenting, and following the roadmap require signing in**.
 
-| Action | Orbit Admin | Brand Admin | Team Member | User |
+| Action | Platform Admin | Brand Admin | Team Member | User |
 |---|:---:|:---:|:---:|:---:|
 | **Platform** | | | | |
-| Access Orbit Admin | ✅ | ❌ | ❌ | ❌ |
+| Access Platform Admin | ✅ | ❌ | ❌ | ❌ |
 | View platform dashboard / stats | ✅ | ❌ | ❌ | ❌ |
 | Suspend / unsuspend any workspace | ✅ | ❌ | ❌ | ❌ |
 | Delete any workspace | ✅ | ❌ | ❌ | ❌ |
 | Manage platform users | ✅ | ❌ | ❌ | ❌ |
-| Grant / revoke Orbit Admin access | ✅ | ❌ | ❌ | ❌ |
+| Grant / revoke Platform Admin access | ✅ | ❌ | ❌ | ❌ |
 | Impersonate a user (when enabled) | ✅ | ❌ | ❌ | ❌ |
 | Manage plans / platform settings / feature flags | ✅ | ❌ | ❌ | ❌ |
 | **Workspace lifecycle** | | | | |
@@ -175,9 +175,9 @@ A ✅ in the **User** column means a **signed-in** User. Reading public pages (b
 | View workspace audit log | ✅³ | ✅ | ❌ | ❌ |
 
 **Footnotes**
-1. Orbit Admins do not create workspaces for themselves; they govern existing brands. A workspace is always created by the Brand Admin who owns it.
+1. Platform Admins do not create workspaces for themselves; they govern existing brands. A workspace is always created by the Brand Admin who owns it.
 2. A **User** becomes a **Brand Admin** at the moment they create a workspace. Creating a workspace is how someone enters the platform as a paying customer.
-3. Orbit Admins can perform workspace-scoped actions **only while impersonating** a workspace member, and only when impersonation is enabled by the platform (impersonation is opt-in, time-limited, and audited). Outside impersonation, Orbit Admins never act inside a workspace.
+3. Platform Admins can perform workspace-scoped actions **only while impersonating** a workspace member, and only when impersonation is enabled by the platform (impersonation is opt-in, time-limited, and audited). Outside impersonation, Platform Admins never act inside a workspace.
 4. Deleting the workspace and transferring ownership are reserved to the **Brand Admin who owns** the workspace.
 5. The Brand Admin who owns the workspace cannot simply leave; they must transfer ownership or delete the workspace first.
 6. Reading public pages needs no account. The other ✅ marks in the User column require the User to be signed in.
@@ -190,7 +190,7 @@ A ✅ in the **User** column means a **signed-in** User. Reading public pages (b
 
 ## 5. Complete User Journeys
 
-### Orbit Admin
+### Platform Admin
 ```
 Login
    ↓
@@ -198,7 +198,7 @@ Orbit Dashboard
    ↓
 Manage Platform
    ├── Review workspaces (suspend / delete)
-   ├── Manage platform users (grant / revoke Orbit Admin)
+   ├── Manage platform users (grant / revoke Platform Admin)
    ├── Tune plans, platform settings, feature flags
    └── Monitor platform health
 ```
@@ -295,7 +295,7 @@ Changelog
 | Release | Work is completed | Brand Admin / Team Member |
 | Changelog | Releases are announced to customers | Brand Admin |
 
-A workspace may also be **suspended** or **deleted** by an Orbit Admin at the platform level; a suspended workspace is unavailable to everyone until an Orbit Admin restores it.
+A workspace may also be **suspended** or **deleted** by a Platform Admin at the platform level; a suspended workspace is unavailable to everyone until a Platform Admin restores it.
 
 ---
 
@@ -317,13 +317,13 @@ Every page in IdeaRoads belongs to exactly one access tier.
 | Workspace settings (general, members, categories, moderation, webhooks, API keys, audit log) | Workspace only | Brand Admin |
 | Changelog editor | Workspace only | Brand Admin |
 | In-app notifications | Workspace only | Signed-in workspace members |
-| Orbit dashboard & all Orbit pages | Orbit only | Orbit Admin |
+| Orbit dashboard & all Orbit pages | Orbit only | Platform Admin |
 
 **Access tiers defined**
 
 - **Public** — reachable without signing in. Public pages are **read-only** to people who are not signed in; participating (creating feedback, voting, commenting, following the roadmap) requires signing in. Some public pages also depend on a Brand Admin setting (e.g. a workspace's roadmap or changelog can be made private).
 - **Workspace only** — reachable only by members of that specific workspace (Brand Admin and Team Members). Other brands' members cannot see it.
-- **Orbit only** — reachable only by Orbit Admins. Invisible to everyone else.
+- **Orbit only** — reachable only by Platform Admins. Invisible to everyone else.
 
 **Browsing vs participating**
 
@@ -345,7 +345,7 @@ Every API in IdeaRoads belongs to one access tier.
 | Changelog management | Workspace only | Brand Admin |
 | Webhooks & API key management | Workspace only | Brand Admin |
 | Programmatic workspace API (via API Key) | API key | Holder of a valid workspace API key |
-| Platform management (workspaces, users, plans, settings, flags, jobs) | Orbit only | Orbit Admin |
+| Platform management (workspaces, users, plans, settings, flags, jobs) | Orbit only | Platform Admin |
 
 **Tier definitions**
 
@@ -353,7 +353,7 @@ Every API in IdeaRoads belongs to one access tier.
 - **Authenticated** — caller must be a signed-in User. Creating feedback, voting, commenting, and following require this tier.
 - **Workspace only** — caller must be a member of the target workspace; the action must be permitted for their role.
 - **API key** — server-to-server access scoped to a single workspace, authorised by a workspace API key created by a Brand Admin.
-- **Orbit only** — caller must be an Orbit Admin. These endpoints are invisible to non-Orbit-Admins.
+- **Orbit only** — caller must be a Platform Admin. These endpoints are invisible to non-platform-admins.
 
 ---
 
@@ -410,13 +410,13 @@ Brand's public feedback portal
 (No access to workspace dashboard, settings, or Orbit.)
 ```
 
-### Orbit Admin
+### Platform Admin
 ```
 Sign in (same sign-in page as everyone)
    ↓
 Orbit dashboard
    ├── Workspaces → workspace detail → suspend / delete
-   ├── Users → user detail → grant/revoke Orbit Admin, impersonate
+   ├── Users → user detail → grant/revoke Platform Admin, impersonate
    ├── Plans
    ├── Platform settings
    ├── Feature flags
@@ -429,7 +429,7 @@ Orbit dashboard
 - A signed-in person with **no workspace** is sent to onboarding.
 - A signed-in person **with** a workspace lands on their workspace dashboard.
 - A not-signed-in visitor can read public pages; attempting to create feedback, vote, comment, or follow prompts them to sign in.
-- A **Team Member** or **User** who reaches a Brand-Admin-only or Orbit-only page is denied access; Orbit pages are invisible (not found) to non-Orbit-Admins rather than showing a forbidden screen.
+- A **Team Member** or **User** who reaches a Brand-Admin-only or Orbit-only page is denied access; Orbit pages are invisible (not found) to non-platform-admins rather than showing a forbidden screen.
 - A visitor to a **suspended** workspace sees an unavailable notice instead of the portal.
 
 ---
@@ -454,7 +454,7 @@ Who owns — i.e. is the primary actor for — each major feature.
 | Workspace settings | **Brand Admin** | Owns workspace configuration |
 | API Keys & Webhooks | **Brand Admin** | Owns integrations |
 | Notifications | **System** | Delivered automatically to signed-in Users and the team based on events |
-| Orbit Admin / platform governance | **Orbit Admin** | Manages all workspaces, users, plans, and platform settings |
+| Platform Admin / platform governance | **Platform Admin** | Manages all workspaces, users, plans, and platform settings |
 | Billing | **Future scope** | Not in the MVP; will belong to the owning Brand Admin when introduced |
 
 ---
@@ -464,7 +464,7 @@ Who owns — i.e. is the primary actor for — each major feature.
 | Term | Definition |
 |---|---|
 | **IdeaRoads** | The SaaS platform itself, operated by internal staff and used by many brands. |
-| **Orbit Admin** | An internal IdeaRoads staff member who governs the entire platform. One of the four product roles. |
+| **Platform Admin** | An internal IdeaRoads staff member who governs the entire platform. One of the four product roles. |
 | **Brand** | A single paying customer of IdeaRoads, represented by one workspace. |
 | **Brand Admin** | The paying customer who creates, owns, and operates a workspace. A single product role; the Brand Admin who owns the workspace may also transfer ownership or delete it. One of the four product roles. |
 | **Team Member** | A person invited by a Brand Admin to help manage feedback inside a workspace. Every Team Member has the same fixed permissions. One of the four product roles. |
@@ -478,8 +478,8 @@ Who owns — i.e. is the primary actor for — each major feature.
 | **Roadmap** | The public view of where feedback stands — what's planned, in progress, and completed — derived from statuses. |
 | **Changelog** | The public record of releases and updates a brand publishes to its customers. |
 | **Feedback Portal** | The public-facing pages of a workspace (boards, roadmap, changelog) where customers participate. |
-| **Orbit Admin (panel)** | The platform-management area used exclusively by Orbit Admins. |
-| **Suspension** | A platform action by an Orbit Admin that makes a workspace temporarily unavailable. |
-| **Impersonation** | A platform capability that lets an Orbit Admin temporarily act as a specific user for support; disabled by default, time-limited, and audited. |
+| **Platform Admin (panel)** | The platform-management area used exclusively by Platform Admins. |
+| **Suspension** | A platform action by a Platform Admin that makes a workspace temporarily unavailable. |
+| **Impersonation** | A platform capability that lets a Platform Admin temporarily act as a specific user for support; disabled by default, time-limited, and audited. |
 
 > **Deprecated terms — never use in product documentation.** "Owner", "Admin", "Member", "Superadmin", "Guest", "Anonymous User", "Authenticated User", "Workspace Admin". The product recognises only the four roles above. Any internal naming the system may use is an implementation detail and lives solely in [`implementation/`](implementation/) — it must never appear in product documentation.

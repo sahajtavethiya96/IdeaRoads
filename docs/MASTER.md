@@ -16,11 +16,11 @@ IdeaRoads is multi-tenant: the platform hosts many independent brands, each in i
 
 ## Roles
 
-IdeaRoads has **exactly four product roles**: **Orbit Admin**, **Brand Admin**, **Team Member**, and **User**. Full definitions, the hierarchy diagram, and the complete permission matrix live in **[PLATFORM.md → Product Roles](PLATFORM.md#2-product-roles)**.
+IdeaRoads has **exactly four product roles**: **Platform Admin**, **Brand Admin**, **Team Member**, and **User**. Full definitions, the hierarchy diagram, and the complete permission matrix live in **[PLATFORM.md → Product Roles](PLATFORM.md#2-product-roles)**.
 
 | Role | Scope | In one line |
 |---|---|---|
-| **Orbit Admin** | Platform | Internal IdeaRoads staff who govern the entire platform |
+| **Platform Admin** | Platform | Internal IdeaRoads staff who govern the entire platform |
 | **Brand Admin** | Workspace | The paying customer who owns and operates a workspace |
 | **Team Member** | Workspace | A helper invited by the Brand Admin to manage feedback |
 | **User** | Public | A customer of the brand who creates feedback, votes, and comments |
@@ -36,7 +36,7 @@ Users sign in without a password:
 - **Magic Link** — enter an email, receive a one-time login link, click to sign in.
 - **Google** — one-click sign in / register.
 
-There is no password to create, forget, or reset. The same sign-in flow serves everyone — Users, Team Members, Brand Admins, and Orbit Admins.
+There is no password to create, forget, or reset. The same sign-in flow serves everyone — Users, Team Members, Brand Admins, and Platform Admins.
 
 Anyone can browse a brand's public boards, roadmap, and changelog without an account. **Creating feedback, voting, commenting, and following the roadmap all require signing in.** See **[Feature 1 — Authentication](features/01-authentication.md)**.
 
@@ -82,8 +82,8 @@ The product keeps people informed through email and in-app notifications: new fe
 ### Feature 12 — [Workspace Settings & Moderation](features/12-workspace-settings-moderation.md)
 The Brand Admin's control center: workspace details and visibility, team management, categories, moderation (approval rules, spam filtering, blocking users), outbound webhooks, API keys, and an audit log of workspace actions.
 
-### Feature 13 — [Orbit Admin](features/13-orbit-admin.md)
-The platform-management area used only by Orbit Admins. It provides oversight of every workspace and user, the ability to suspend or delete workspaces, plan and platform-setting management, feature flags, and platform health monitoring.
+### Feature 13 — [Platform Admin](features/13-orbit-admin.md)
+The platform-management area used only by Platform Admins. It provides oversight of every workspace and user, the ability to suspend or delete workspaces, plan and platform-setting management, feature flags, and platform health monitoring.
 
 ### Feature 00 — [Landing Page](features/00-landing-page.md)
 The public marketing homepage that introduces IdeaRoads and routes visitors to sign up.
@@ -108,7 +108,7 @@ Features depend on one another and are built in this sequence.
 | 10 | [Changelog](features/10-changelog.md) | Posts, Workspaces |
 | 11 | [Notifications](features/11-notifications.md) | Posts, Comments, Status, Changelog |
 | 12 | [Workspace Settings & Moderation](features/12-workspace-settings-moderation.md) | Workspaces, Team Members |
-| 13 | [Orbit Admin](features/13-orbit-admin.md) | All |
+| 13 | [Platform Admin](features/13-orbit-admin.md) | All |
 | 00 | [Landing Page](features/00-landing-page.md) | — (build last) |
 
 ---

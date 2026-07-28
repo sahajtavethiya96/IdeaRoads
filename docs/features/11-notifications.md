@@ -11,7 +11,7 @@ Notifications are delivered through **two channels**:
 - **Email** — sent to the recipient's inbox so they stay in the loop without keeping the product open.
 - **In-app** — a notification bell shown inside a workspace.
 
-Because participating in a brand — creating feedback, voting, commenting, or following the roadmap — [requires signing in](../PLATFORM.md#7-public-vs-private-pages), every notification recipient is a signed-in person. [Brand Admins](../PLATFORM.md#2-brand-admin), [Team Members](../PLATFORM.md#3-team-member), and [Users](../PLATFORM.md#4-user) therefore all receive **both** channels: email **and** the in-app bell. ([Orbit Admins](../PLATFORM.md#1-orbit-admin) are internal staff and are not part of a customer workspace's notifications.)
+Because participating in a brand — creating feedback, voting, commenting, or following the roadmap — [requires signing in](../PLATFORM.md#7-public-vs-private-pages), every notification recipient is a signed-in person. [Brand Admins](../PLATFORM.md#2-brand-admin), [Team Members](../PLATFORM.md#3-team-member), and [Users](../PLATFORM.md#4-user) therefore all receive **both** channels: email **and** the in-app bell. ([Platform Admins](../PLATFORM.md#1-orbit-admin) are internal staff and are not part of a customer workspace's notifications.)
 
 ---
 

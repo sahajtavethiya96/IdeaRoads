@@ -79,7 +79,7 @@ export function FeedbackFilters({
   return (
     <div className="flex flex-col gap-0">
       {/* Sort tabs */}
-      <div className="flex flex-wrap items-center border-b border-ir-border px-4">
+      <div className="flex flex-wrap items-center border-b border-ir-border px-4 sm:px-8">
         <div className="flex">
           {SORT_TABS.map((tab) => (
             <button
@@ -99,7 +99,7 @@ export function FeedbackFilters({
       </div>
 
       {/* Search + filters */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-ir-border px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-ir-border px-4 py-3 sm:px-8">
         <div className="flex justify-start">
           <SearchInput
             className="w-full sm:max-w-sm"

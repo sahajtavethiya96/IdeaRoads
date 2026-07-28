@@ -1,14 +1,9 @@
+import { MagnifyingGlassIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
-import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { PageBody } from "@/components/ui/page";
+import { SetPageHeader } from "@/components/workspace/topbar";
 import { listOrbitWorkspaces } from "@/lib/orbit/workspaces";
 import { formatDateTime } from "@/lib/utils";
 
@@ -21,6 +16,12 @@ interface Props {
     status?: string;
   }>;
 }
+
+const STATUS_FILTERS = [
+  { label: "All", value: "" },
+  { label: "Active", value: "active" },
+  { label: "Suspended", value: "suspended" },
+] as const;
 
 export default async function OrbitWorkspacesPage({ searchParams }: Props) {
   const params = await searchParams;
@@ -58,154 +59,180 @@ export default async function OrbitWorkspacesPage({ searchParams }: Props) {
   };
 
   return (
-    <div>
-      <OrbitPageHeader
+    <div className="flex flex-col">
+      <SetPageHeader
         description="Inspect, suspend, or delete any workspace on the platform."
-        eyebrow="Orbit"
+        portalHref={null}
         title="Workspaces"
       />
 
       {/* Filters */}
-      <div className="mb-6 flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-ir-border px-4 py-3 sm:px-8">
         <form
           action="/orbit/workspaces"
           className="flex flex-wrap gap-2"
           method="GET"
         >
           {status && <input name="status" type="hidden" value={status} />}
-          <input
-            className="h-9 w-64 border border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            defaultValue={search}
-            name="search"
-            placeholder="Search name, slug, or owner…"
-          />
-          <button
-            className="h-9 border border-border bg-card px-3 text-xs font-semibold uppercase tracking-ui transition-colors hover:bg-accent"
-            type="submit"
-          >
+          <div className="relative">
+            <MagnifyingGlassIcon className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-ir-muted" />
+            <input
+              className="h-9 w-64 rounded-ir-input border border-ir-border bg-ir-surface pl-8 pr-3 text-sm text-ir-heading placeholder:text-ir-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+              defaultValue={search}
+              name="search"
+              placeholder="Search name, slug, or owner…"
+            />
+          </div>
+          <Button size="sm" type="submit" variant="outline">
             Search
-          </button>
+          </Button>
           {search && (
-            <Link
-              className="flex h-9 items-center border border-border bg-card px-3 text-xs font-semibold uppercase tracking-ui transition-colors hover:bg-accent"
-              href={buildUrl({ search: undefined, page: "1" })}
-            >
-              Clear
-            </Link>
+            <Button asChild size="sm" variant="ghost">
+              <Link href={buildUrl({ search: undefined, page: "1" })}>
+                Clear
+              </Link>
+            </Button>
           )}
         </form>
 
-        {/* Status filter */}
-        <div className="flex gap-1">
-          {(["", "active", "suspended"] as const).map((s) => (
-            <Link
-              className={`flex h-9 items-center border px-3 text-xs font-semibold uppercase tracking-ui transition-colors ${
-                (status ?? "") === s
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-border bg-card hover:bg-accent"
-              }`}
-              href={buildUrl({ status: s || undefined, page: "1" })}
-              key={s || "all"}
+        <div className="flex gap-1.5">
+          {STATUS_FILTERS.map(({ label, value }) => (
+            <Button
+              asChild
+              key={value || "all"}
+              size="sm"
+              variant={(status ?? "") === value ? "default" : "outline"}
             >
-              {s === "" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
-            </Link>
+              <Link href={buildUrl({ status: value || undefined, page: "1" })}>
+                {label}
+              </Link>
+            </Button>
           ))}
         </div>
       </div>
 
-      <div className="border border-border bg-card">
-        <div className="overflow-x-auto">
-          <Table className="sm:table-fixed">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="sm:w-[20%]">Name</TableHead>
-                <TableHead className="sm:w-[14%]">Slug</TableHead>
-                <TableHead className="sm:w-[22%]">Owner</TableHead>
-                <TableHead className="text-right sm:w-[7%]">Posts</TableHead>
-                <TableHead className="text-right sm:w-[8%]">Members</TableHead>
-                <TableHead className="sm:w-[18%]">Created</TableHead>
-                <TableHead className="sm:w-[11%]">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {workspaces.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    className="py-10 text-center text-muted-foreground"
-                    colSpan={7}
-                  >
-                    No workspaces found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                workspaces.map((ws) => (
-                  <TableRow key={ws.id}>
-                    <TableCell className="sm:max-w-0">
-                      <Link
-                        className="block truncate font-semibold hover:underline"
-                        href={`/orbit/workspaces/${ws.id}`}
-                      >
-                        {ws.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="font-mono text-muted-foreground text-xs sm:max-w-0">
-                      <span className="block truncate">/{ws.slug}</span>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs sm:max-w-0">
-                      <span className="block truncate">
-                        {ws.ownerEmail ?? "—"}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-sm">
-                      {ws.postCount}
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-sm">
-                      {ws.memberCount}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                      {formatDateTime(ws.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        className={ws.isSuspended ? undefined : "text-success"}
-                        variant={ws.isSuspended ? "destructive" : "default"}
-                      >
-                        {ws.isSuspended ? "Suspended" : "Active"}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-4 py-3">
-            <span className="text-xs text-muted-foreground">
-              Page {page} of {totalPages} · {total} workspaces
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {page > 1 && (
-                <Link
-                  className="border border-border bg-card px-3 py-1.5 text-xs font-semibold uppercase tracking-ui hover:bg-accent"
-                  href={buildUrl({ page: String(page - 1) })}
-                >
-                  ← Previous
-                </Link>
-              )}
-              {page < totalPages && (
-                <Link
-                  className="border border-border bg-card px-3 py-1.5 text-xs font-semibold uppercase tracking-ui hover:bg-accent"
-                  href={buildUrl({ page: String(page + 1) })}
-                >
-                  Next →
-                </Link>
-              )}
+      <PageBody>
+        <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+          {workspaces.length === 0 ? (
+            <EmptyState
+              message={
+                search || status
+                  ? "Try adjusting your search or filters."
+                  : "Workspaces will appear here as they're created."
+              }
+              title="No workspaces found"
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-ir-border">
+                    <th className="px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+                      Name
+                    </th>
+                    <th className="hidden px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted sm:table-cell">
+                      Slug
+                    </th>
+                    <th className="hidden px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted md:table-cell">
+                      Owner
+                    </th>
+                    <th className="px-4 py-2.5 text-right text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+                      Posts
+                    </th>
+                    <th className="hidden px-4 py-2.5 text-right text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted sm:table-cell">
+                      Members
+                    </th>
+                    <th className="hidden px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted lg:table-cell">
+                      Created
+                    </th>
+                    <th className="px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-ir-border">
+                  {workspaces.map((ws) => (
+                    <tr
+                      className="transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface"
+                      key={ws.id}
+                    >
+                      <td className="max-w-0 px-4 py-3">
+                        <Link
+                          className="block truncate font-semibold text-ir-heading hover:underline"
+                          href={`/orbit/workspaces/${ws.id}`}
+                        >
+                          {ws.name}
+                        </Link>
+                      </td>
+                      <td className="hidden max-w-0 px-4 py-3 font-mono text-xs text-ir-muted sm:table-cell">
+                        <span className="block truncate">/{ws.slug}</span>
+                      </td>
+                      <td className="hidden max-w-0 px-4 py-3 text-xs text-ir-muted md:table-cell">
+                        <span className="block truncate">
+                          {ws.ownerEmail ?? "—"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono text-sm text-ir-body">
+                        {ws.postCount}
+                      </td>
+                      <td className="hidden px-4 py-3 text-right font-mono text-sm text-ir-body sm:table-cell">
+                        {ws.memberCount}
+                      </td>
+                      <td className="hidden whitespace-nowrap px-4 py-3 text-xs text-ir-muted lg:table-cell">
+                        {formatDateTime(ws.createdAt)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge
+                          variant={ws.isSuspended ? "destructive" : "default"}
+                        >
+                          {ws.isSuspended ? "Suspended" : "Active"}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
-        )}
+          )}
+
+          {totalPages > 1 && (
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-ir-border px-4 py-3">
+              <span className="text-xs text-ir-muted">
+                Page {page} of {totalPages} · {total} workspaces
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {page > 1 && (
+                  <Button asChild size="sm" variant="outline">
+                    <Link href={buildUrl({ page: String(page - 1) })}>
+                      ← Previous
+                    </Link>
+                  </Button>
+                )}
+                {page < totalPages && (
+                  <Button asChild size="sm" variant="outline">
+                    <Link href={buildUrl({ page: String(page + 1) })}>
+                      Next →
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </PageBody>
+    </div>
+  );
+}
+
+function EmptyState({ title, message }: { title: string; message: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 px-4 py-16 text-center">
+      <div className="flex size-10 items-center justify-center rounded-ir-full bg-ir-muted-surface text-ir-muted">
+        <MagnifyingGlassIcon className="size-5" />
+      </div>
+      <div>
+        <p className="text-sm font-medium text-ir-heading">{title}</p>
+        <p className="mt-1 text-xs text-ir-muted">{message}</p>
       </div>
     </div>
   );

@@ -1,13 +1,7 @@
-import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
+import { GaugeIcon } from "@phosphor-icons/react/dist/ssr";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { PageBody } from "@/components/ui/page";
+import { SetPageHeader } from "@/components/workspace/topbar";
 import { getJobQueueStatus } from "@/lib/orbit/jobs";
 
 export const metadata = { title: "Job Queue" };
@@ -16,116 +10,129 @@ export default async function OrbitJobsPage() {
   const { active, failed, error } = await getJobQueueStatus();
 
   return (
-    <div>
-      <OrbitPageHeader
+    <div className="flex flex-col">
+      <SetPageHeader
         description="pg-boss background job status. Start the worker to populate."
-        eyebrow="Orbit"
+        portalHref={null}
         title="Job Queue"
       />
 
-      {error && (
-        <div className="mb-6 border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-warning">
-          {error}
-        </div>
-      )}
+      <PageBody>
+        {error && (
+          <div className="mb-4 rounded-ir-card border border-ir-warning/30 bg-ir-warning/5 px-4 py-3 text-sm text-ir-warning">
+            {error}
+          </div>
+        )}
 
-      {/* Active jobs */}
-      <div className="mb-6 border border-border bg-card">
-        <div className="border-b border-border px-4 py-3">
-          <h2 className="font-semibold text-sm">Active Jobs</h2>
+        {/* Active jobs */}
+        <div className="mb-4 rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+          <div className="border-b border-ir-border px-5 py-4">
+            <h2 className="text-sm font-semibold text-ir-heading">
+              Active Jobs
+            </h2>
+          </div>
+          {active.length === 0 ? (
+            <EmptyState message="No active jobs." />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-ir-border">
+                    <th className="px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+                      Queue name
+                    </th>
+                    <th className="px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+                      State
+                    </th>
+                    <th className="px-4 py-2.5 text-right text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+                      Count
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-ir-border">
+                  {active.map((job) => (
+                    <tr key={`${job.name}:${job.state}`}>
+                      <td className="px-4 py-3 font-mono text-sm text-ir-heading">
+                        {job.name}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge
+                          variant={
+                            job.state === "completed" ? "default" : "secondary"
+                          }
+                        >
+                          {job.state}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono text-ir-body">
+                        {job.count}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Queue name</TableHead>
-                <TableHead>State</TableHead>
-                <TableHead className="text-right">Count</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {active.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    className="py-6 text-center text-muted-foreground"
-                    colSpan={3}
-                  >
-                    No active jobs.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                active.map((job) => (
-                  <TableRow key={`${job.name}:${job.state}`}>
-                    <TableCell className="font-mono text-sm">
-                      {job.name}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        className={
-                          job.state === "completed"
-                            ? "text-success"
-                            : "text-warning"
-                        }
-                      >
-                        {job.state}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-mono">
-                      {job.count}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
 
-      {/* Failed jobs (last 24h) */}
-      <div className="border border-border bg-card">
-        <div className="border-b border-border px-4 py-3">
-          <h2 className="font-semibold text-sm">Failed Jobs (last 24h)</h2>
+        {/* Failed jobs (last 24h) */}
+        <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+          <div className="border-b border-ir-border px-5 py-4">
+            <h2 className="text-sm font-semibold text-ir-heading">
+              Failed Jobs (last 24h)
+            </h2>
+          </div>
+          {failed.length === 0 ? (
+            <EmptyState message="No failures in the last 24 hours." />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-ir-border">
+                    <th className="px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+                      Queue name
+                    </th>
+                    <th className="px-4 py-2.5 text-right text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+                      Count
+                    </th>
+                    <th className="px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+                      Last error
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-ir-border">
+                  {failed.map((job) => (
+                    <tr key={job.name}>
+                      <td className="px-4 py-3 font-mono text-sm text-ir-heading">
+                        {job.name}
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono text-ir-danger">
+                        {job.count}
+                      </td>
+                      <td className="max-w-0 px-4 py-3 font-mono text-xs text-ir-muted">
+                        <span className="block truncate">
+                          {job.lastError ?? "—"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
-        <div className="overflow-x-auto">
-          <Table className="sm:table-fixed">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="sm:w-[25%]">Queue name</TableHead>
-                <TableHead className="text-right sm:w-[12%]">Count</TableHead>
-                <TableHead className="sm:w-[63%]">Last error</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {failed.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    className="py-6 text-center text-muted-foreground"
-                    colSpan={3}
-                  >
-                    No failures in the last 24 hours.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                failed.map((job) => (
-                  <TableRow key={job.name}>
-                    <TableCell className="font-mono text-sm">
-                      {job.name}
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-destructive">
-                      {job.count}
-                    </TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground sm:max-w-0">
-                      <span className="block truncate">
-                        {job.lastError ?? "—"}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+      </PageBody>
+    </div>
+  );
+}
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 px-4 py-12 text-center">
+      <div className="flex size-10 items-center justify-center rounded-ir-full bg-ir-muted-surface text-ir-muted">
+        <GaugeIcon className="size-5" />
       </div>
+      <p className="text-sm text-ir-muted">{message}</p>
     </div>
   );
 }
