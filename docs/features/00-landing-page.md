@@ -8,6 +8,8 @@ Communicate IdeaRoads's value proposition to developers, indie makers, and produ
 
 The landing page lives at the site root and is the public face of the IdeaRoads product itself (not any single brand's workspace). It is a **Public** page: its audience is anyone, with no sign-in required (see [PLATFORM § Public vs Private Pages](../PLATFORM.md#7-public-vs-private-pages)). It is fast and mobile-responsive.
 
+This page is meant for the hosted IdeaRoads.com instance, not for self-hosted deployments — it's controlled by the `NEXT_PUBLIC_SHOW_LANDING_PAGE` environment variable. A self-hosted instance leaves it unset (the default), so `/` sends a logged-out visitor straight to `/signin` instead of showing marketing copy for a product they've already installed.
+
 ---
 
 ## Scope

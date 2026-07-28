@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { admin } from "better-auth/plugins/admin";
 import { bearer } from "better-auth/plugins/bearer";
 import { emailOTP } from "better-auth/plugins/email-otp";
@@ -12,7 +13,10 @@ import { db } from "@/lib/db";
 import { enqueueEmail } from "@/lib/email";
 import { magicLinkTemplate } from "@/lib/email/templates/magic-link";
 import { otpTemplate } from "@/lib/email/templates/otp";
+import { passwordResetTemplate } from "@/lib/email/templates/password-reset";
 import { env } from "@/lib/env";
+import { isFeatureEnabled } from "@/lib/orbit/feature-flags";
+import { isSmtpConfigured } from "@/lib/smtp/client";
 import { adminBaseUrl, adminHost, portalBaseUrl, portalHost } from "@/lib/urls";
 
 // Both application hosts are trusted request origins (CSRF/origin check). Under
@@ -110,6 +114,66 @@ export const auth = betterAuth({
   accountLinking: {
     enabled: true,
     trustedProviders: ["google", "magic-link", "email-otp"],
+  },
+  emailAndPassword: {
+    // Sign-IN with an existing password always works (e.g. the account created
+    // by the /setup first-run wizard). Self-serve REGISTRATION is gated
+    // separately below via the `password_auth` feature flag, not this static
+    // option — the flag is a runtime DB toggle (Orbit Admin → Feature Flags)
+    // and must take effect without a restart, which a build-time option here
+    // could not do.
+    enabled: true,
+    minPasswordLength: 8,
+    maxPasswordLength: 128,
+    // Only enforce verification when we can actually deliver the email —
+    // otherwise an SMTP-less self-host could never sign in.
+    requireEmailVerification: isSmtpConfigured(),
+    // A reset means the old password may be compromised — kill every existing
+    // session for that user.
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async ({ user, url }) => {
+      // Dev convenience, mirroring sendMagicLink: never log in production.
+      if (env.NODE_ENV !== "production") {
+        console.log(`[password-reset] recipient=${user.email} url=${url}`);
+      }
+
+      const { html, text } = await passwordResetTemplate({
+        email: user.email,
+        resetUrl: url,
+      });
+
+      await enqueueEmail({
+        to: user.email,
+        subject: `Reset your ${PRODUCT_NAME} password`,
+        html,
+        text,
+      });
+
+      await audit({
+        action: "auth.password_reset_requested",
+        actorEmail: user.email,
+        actorId: user.id,
+        description: `Password reset requested for ${user.email}`,
+        entityId: user.id,
+        entityType: "user",
+      });
+    },
+  },
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      // Self-serve email/password registration is an explicit opt-in, toggled
+      // by an Orbit Admin at /orbit/feature-flags (default: off). Enforced
+      // here — not just hidden in the UI — so the endpoint actually refuses
+      // the request when the flag is off.
+      if (
+        ctx.path === "/sign-up/email" &&
+        !(await isFeatureEnabled("password_auth"))
+      ) {
+        throw new APIError("FORBIDDEN", {
+          message: "Email + password sign-up is disabled on this instance.",
+        });
+      }
+    }),
   },
   plugins: [
     // Bearer-token auth is additive: cookies keep working exactly as

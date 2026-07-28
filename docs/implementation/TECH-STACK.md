@@ -21,7 +21,7 @@
 | Email Templates | React Email (components → HTML) |
 | Email Delivery | Nodemailer (configurable SMTP) |
 | Dev Email Testing | Mailtrap free tier / Mailhog (local) |
-| Auth | Better Auth (Magic Link + Google OAuth) |
+| Auth | Better Auth (Magic Link + Google OAuth; optional Email + Password, opt-in per instance) |
 | Encryption | AES-256-GCM (`lib/encrypt.ts`, for webhook secrets + API keys) |
 | Linting + Formatting | Biome (replaces ESLint + Prettier, faster) |
 | Super Admin Panel | Orbit Admin (custom built at `/orbit`) |
@@ -44,14 +44,15 @@
 
 - **Magic Link** — email a one-time login link via Nodemailer SMTP.
 - **Google OAuth** — one-click sign in / register.
-- Powered entirely by **Better Auth** (open-source). No email+password, no paid auth service.
+- **Email + Password** *(optional)* — Better Auth's `emailAndPassword` provider is always configured so an existing password account can always sign in, but self-serve *registration* (`/signup`, and the password field on `/signin`) is gated at runtime by the `password_auth` feature flag (`lib/orbit/feature-flags.ts`), off by default. The `/setup` first-run wizard bypasses this flag entirely — it inserts the first admin's user + credential-account rows directly (see `app/actions/setup.ts`), the same way `pnpm create:admin`-style bootstrap scripts do elsewhere in the ecosystem, so a brand-new instance never depends on SMTP or Google being configured first.
+- Powered entirely by **Better Auth** (open-source), no paid auth service.
 
 ---
 
 ## Key Design Decisions
 
-### No Email/Password Auth
-Better Auth with Magic Link only — users never manage passwords. Reduces security surface area and removes forgot/reset password flows entirely.
+### Passwordless by Default, Password Auth Opt-In
+Better Auth's Magic Link is the default and only method most deployments need — no passwords to manage, no forgot/reset flow to build. Self-hosted instances that want a lower-friction path (no SMTP/Google required) can turn on `password_auth` per-instance; it's a runtime DB feature flag, not a build-time option, so it can be toggled without a redeploy.
 
 ### No Redis
 pg-boss uses the same PostgreSQL instance for the background job queue. One less service to operate in production.

@@ -49,25 +49,43 @@ const URL_ERROR_MESSAGES: Record<string, string> = {
 
 interface AuthFormProps {
   googleEnabled: boolean;
+  /** Email + password sign-in — gated by the `password_auth` feature flag. */
+  passwordEnabled?: boolean;
+  /** Whether "Forgot password?" can actually deliver a reset email (SMTP). */
+  passwordResetEnabled?: boolean;
 }
 
-export function AuthForm({ googleEnabled }: AuthFormProps) {
+export function AuthForm({
+  googleEnabled,
+  passwordEnabled = false,
+  passwordResetEnabled = false,
+}: AuthFormProps) {
   return (
     <Suspense fallback={null}>
-      <AuthFormInner googleEnabled={googleEnabled} />
+      <AuthFormInner
+        googleEnabled={googleEnabled}
+        passwordEnabled={passwordEnabled}
+        passwordResetEnabled={passwordResetEnabled}
+      />
     </Suspense>
   );
 }
 
-function AuthFormInner({ googleEnabled }: AuthFormProps) {
+function AuthFormInner({
+  googleEnabled,
+  passwordEnabled,
+  passwordResetEnabled,
+}: AuthFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isEmbedded = useIsEmbedded();
   const { data: session, isPending } = useSession();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [magicLoading, setMagicLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const urlErrorCode = searchParams.get("error");
@@ -93,14 +111,12 @@ function AuthFormInner({ googleEnabled }: AuthFormProps) {
     return null;
   }
 
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function sendMagicLink() {
     setFormError(null);
-    setSubmitting(true);
-
+    setMagicLoading(true);
     const result = await signIn.magicLink({ callbackURL, email });
+    setMagicLoading(false);
 
-    setSubmitting(false);
     if (result.error) {
       setFormError(
         result.error.message ?? "Something went wrong. Please try again."
@@ -108,6 +124,29 @@ function AuthFormInner({ googleEnabled }: AuthFormProps) {
       return;
     }
     setSent(true);
+  }
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setFormError(null);
+
+    // Password auth disabled → the form's only job is to request a magic link.
+    if (!passwordEnabled) {
+      await sendMagicLink();
+      return;
+    }
+
+    setSubmitting(true);
+    const result = await signIn.email({ callbackURL, email, password });
+    setSubmitting(false);
+
+    if (result.error) {
+      setFormError(
+        result.error.message ?? "Something went wrong. Please try again."
+      );
+      return;
+    }
+    router.replace(callbackURL);
   }
 
   async function handleGoogleSignIn() {
@@ -168,7 +207,9 @@ function AuthFormInner({ googleEnabled }: AuthFormProps) {
           <p className="mt-1.5 text-sm text-ir-muted">
             {sent
               ? "Your sign-in link is on its way. Click it to continue."
-              : "Sign in or create a free account — no password needed."}
+              : passwordEnabled
+                ? "Sign in with your email and password."
+                : "Sign in or create a free account — no password needed."}
           </p>
 
           <div className="mt-6">
@@ -199,7 +240,7 @@ function AuthFormInner({ googleEnabled }: AuthFormProps) {
                   <>
                     <Button
                       className="w-full gap-2"
-                      disabled={submitting || googleLoading}
+                      disabled={submitting || googleLoading || magicLoading}
                       onClick={handleGoogleSignIn}
                       type="button"
                       variant="outline"
@@ -233,6 +274,34 @@ function AuthFormInner({ googleEnabled }: AuthFormProps) {
                       value={email}
                     />
                   </label>
+
+                  {passwordEnabled && (
+                    <label className="block" htmlFor="password">
+                      <div className="mb-1.5 flex items-center justify-between">
+                        <span className="text-sm font-semibold text-ir-heading">
+                          Password
+                        </span>
+                        {passwordResetEnabled && (
+                          <Link
+                            className="text-xs text-ir-muted underline hover:text-ir-heading hover:no-underline"
+                            href="/forgot-password"
+                          >
+                            Forgot password?
+                          </Link>
+                        )}
+                      </div>
+                      <Input
+                        autoComplete="current-password"
+                        id="password"
+                        onChange={(event) => setPassword(event.target.value)}
+                        placeholder="Enter your password"
+                        required
+                        type="password"
+                        value={password}
+                      />
+                    </label>
+                  )}
+
                   {formError && (
                     <p className="rounded-ir-sm bg-ir-danger/10 p-3 text-sm text-ir-danger">
                       {formError}
@@ -241,16 +310,48 @@ function AuthFormInner({ googleEnabled }: AuthFormProps) {
                   <div className="space-y-1.5">
                     <Button
                       className="w-full"
-                      disabled={submitting || googleLoading}
+                      disabled={submitting || googleLoading || magicLoading}
                       type="submit"
                     >
-                      {submitting ? "Sending…" : "Continue with email"}
+                      {passwordEnabled
+                        ? submitting
+                          ? "Signing in…"
+                          : "Sign in"
+                        : submitting
+                          ? "Sending…"
+                          : "Continue with email"}
                     </Button>
-                    <p className="text-center text-xs text-ir-muted">
-                      New here? We'll create your account automatically.
-                    </p>
+                    {passwordEnabled ? (
+                      <Button
+                        className="w-full"
+                        disabled={submitting || googleLoading || magicLoading}
+                        onClick={sendMagicLink}
+                        type="button"
+                        variant="ghost"
+                      >
+                        {magicLoading
+                          ? "Sending…"
+                          : "Email me a magic link instead"}
+                      </Button>
+                    ) : (
+                      <p className="text-center text-xs text-ir-muted">
+                        New here? We'll create your account automatically.
+                      </p>
+                    )}
                   </div>
                 </form>
+
+                {passwordEnabled && (
+                  <p className="text-center text-sm text-ir-muted">
+                    Don't have an account?{" "}
+                    <Link
+                      className="font-semibold text-ir-heading underline hover:no-underline"
+                      href="/signup"
+                    >
+                      Sign up
+                    </Link>
+                  </p>
+                )}
               </div>
             )}
           </div>

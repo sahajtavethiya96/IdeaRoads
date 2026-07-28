@@ -14,6 +14,8 @@ import { ProductTour } from "@/components/marketing/product-tour";
 import { PageTransition } from "@/components/motion/page-transition";
 import { LOGO_PATH, PRODUCT_NAME } from "@/config/platform";
 import { getCurrentSession } from "@/lib/authz";
+import { env } from "@/lib/env";
+import { redirectToSetupIfNeeded } from "@/lib/setup";
 import { portalBaseUrl } from "@/lib/urls";
 
 const TITLE = `${PRODUCT_NAME} — Collect feedback, ship faster, close the loop`;
@@ -42,6 +44,16 @@ export default async function HomePage() {
   const session = await getCurrentSession();
   if (session) {
     redirect("/post-auth");
+  }
+
+  // A brand-new self-hosted instance has no users yet — send visitors to the
+  // first-run setup wizard instead of the marketing page.
+  await redirectToSetupIfNeeded();
+
+  // Self-hosted deployments (the default) send logged-out visitors straight to
+  // sign-in — the marketing site is only for the hosted SaaS instance.
+  if (!env.NEXT_PUBLIC_SHOW_LANDING_PAGE) {
+    redirect("/signin");
   }
 
   return (

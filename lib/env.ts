@@ -23,6 +23,13 @@ const envSchema = z.object({
   // two applications' sessions — see docs/migration/01-portal-subdomain-auth.md.
   NEXT_PUBLIC_ADMIN_URL: z.url().optional(),
   NEXT_PUBLIC_PORTAL_URL: z.url().optional(),
+  // Self-hosted deployments default to sending logged-out visitors straight to
+  // sign-in instead of the SaaS marketing site. The hosted IdeaRoads instance
+  // sets this to "true" to serve the landing page at `/`.
+  NEXT_PUBLIC_SHOW_LANDING_PAGE: z.preprocess(
+    (v) => v === "true",
+    z.boolean().default(false)
+  ),
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),

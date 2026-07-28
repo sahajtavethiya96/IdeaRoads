@@ -93,6 +93,8 @@ Platform Settings is the platform's global configuration:
 
 Feature flags let an Orbit Admin turn platform-wide capabilities on or off without a deployment — for example Google sign-in, public roadmaps, public changelogs, and the changelog RSS feed. Each flag has a clear description and a simple on/off toggle. Turning a flag off disables that capability across the platform; for example, turning off Google sign-in removes that option from the sign-in page for every workspace.
 
+One of these flags, `password_auth`, turns on self-serve email + password registration (see [Feature 01 — Authentication](01-authentication.md)). It defaults to off, so an instance stays passwordless-only (Magic Link + Google) until an Orbit Admin explicitly opts in — signing in with an existing password (e.g. the account the `/setup` first-run wizard creates) always works regardless of this flag.
+
 ---
 
 ## Job Queue
