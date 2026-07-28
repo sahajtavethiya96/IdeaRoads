@@ -494,6 +494,13 @@ body {
 .ql-snow .ql-tooltip[data-mode="link"]::before {
   content: "Link URL:";
 }
+.ql-snow .ql-tooltip[data-mode="link"].ql-link-invalid::before {
+  color: hsl(var(--destructive));
+  content: "Enter a valid URL:";
+}
+.ql-snow .ql-tooltip.ql-link-invalid input[type="text"] {
+  border-color: hsl(var(--destructive));
+}
 
 /* Comment body rendered HTML */
 .comment-body {
