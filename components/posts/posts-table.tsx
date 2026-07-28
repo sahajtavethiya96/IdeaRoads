@@ -164,6 +164,7 @@ export function PostsTable({
     <BulkSelectionProvider allIds={posts.map((p) => p.id)}>
       {table}
       <BulkActionBar
+        categories={categories}
         posts={posts}
         workspaceId={workspaceId}
         workspaceStatuses={workspaceStatuses}

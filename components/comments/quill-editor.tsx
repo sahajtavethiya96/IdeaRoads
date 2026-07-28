@@ -6,6 +6,107 @@ import { useEffect, useRef, useState } from "react";
 
 type QuillInstance = InstanceType<typeof import("quill").default>;
 
+// Quill's snow theme renders its own toolbar buttons with no `title`
+// attribute, so hovering them shows nothing. Keyed by the CSS selector Quill
+// gives each button so a plain lookup + setAttribute covers all of them.
+const TOOLBAR_TOOLTIPS: Record<string, string> = {
+  ".ql-bold": "Bold",
+  ".ql-italic": "Italic",
+  ".ql-underline": "Underline",
+  ".ql-strike": "Strikethrough",
+  ".ql-blockquote": "Quote",
+  ".ql-code-block": "Code block",
+  ".ql-list[value='ordered']": "Numbered list",
+  ".ql-list[value='bullet']": "Bulleted list",
+  '.ql-indent[value="-1"]': "Decrease indent",
+  '.ql-indent[value="+1"]': "Increase indent",
+  ".ql-link": "Link",
+  ".ql-image": "Insert image",
+};
+
+function applyToolbarTooltips(toolbarEl: HTMLElement) {
+  for (const [selector, label] of Object.entries(TOOLBAR_TOOLTIPS)) {
+    toolbarEl.querySelector(selector)?.setAttribute("title", label);
+  }
+}
+
+const LINK_ALLOWED_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
+// A bare domain like "example.com" (no scheme) — required before we'll treat
+// schemeless input as a link rather than plain garbage text. Quill's own
+// sanitizer resolves a scheme-less string against the current page and
+// happily accepts it as a (broken) relative link otherwise.
+const BARE_DOMAIN_PATTERN = /^[\w-]+(\.[\w-]+)+(:\d+)?([/?#]\S*)?$/;
+
+// Validates (and normalizes) a URL typed into Quill's link tooltip. Returns
+// the URL to insert, or null if it doesn't look like a real link.
+function normalizeLinkUrl(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return null;
+  }
+  try {
+    const url = new URL(trimmed);
+    return LINK_ALLOWED_PROTOCOLS.has(url.protocol) ? trimmed : null;
+  } catch {
+    if (!BARE_DOMAIN_PATTERN.test(trimmed)) {
+      return null;
+    }
+    try {
+      return new URL(`https://${trimmed}`).href;
+    } catch {
+      return null;
+    }
+  }
+}
+
+interface QuillLinkTooltip {
+  edit: (mode?: string, preview?: string | null) => void;
+  root: HTMLElement;
+  save: () => void;
+  textbox: HTMLInputElement;
+}
+
+// Quill's own link tooltip accepts any typed text as-is (see
+// normalizeLinkUrl's comment above) — pressing Enter goes straight to the
+// tooltip's internal save(), bypassing the toolbar's `handlers.link` option
+// entirely. Wrapping save()/edit() on the live tooltip instance is the only
+// way to validate before insertion while keeping Quill's built-in floating
+// input UX (position, prefill-on-edit, etc.) intact.
+function installLinkValidation(quill: QuillInstance) {
+  const tooltip = (quill.theme as unknown as { tooltip?: QuillLinkTooltip })
+    .tooltip;
+  if (!tooltip) {
+    return;
+  }
+
+  const originalSave = tooltip.save.bind(tooltip);
+  tooltip.save = () => {
+    if (tooltip.root.getAttribute("data-mode") !== "link") {
+      originalSave();
+      return;
+    }
+    const normalized = normalizeLinkUrl(tooltip.textbox.value);
+    if (!normalized) {
+      tooltip.root.classList.add("ql-link-invalid");
+      tooltip.textbox.select();
+      return;
+    }
+    tooltip.root.classList.remove("ql-link-invalid");
+    tooltip.textbox.value = normalized;
+    originalSave();
+  };
+
+  const originalEdit = tooltip.edit.bind(tooltip);
+  tooltip.edit = (mode, preview) => {
+    tooltip.root.classList.remove("ql-link-invalid");
+    originalEdit(mode, preview);
+  };
+
+  tooltip.textbox.addEventListener("input", () => {
+    tooltip.root.classList.remove("ql-link-invalid");
+  });
+}
+
 interface HoveredImage {
   img: HTMLImageElement;
   left: number;
@@ -191,6 +292,12 @@ export default function QuillEditor({
       if (ariaLabelRef.current) {
         quill.root.setAttribute("aria-label", ariaLabelRef.current);
       }
+
+      const toolbarEl = wrapper.querySelector<HTMLElement>(".ql-toolbar");
+      if (toolbarEl) {
+        applyToolbarTooltips(toolbarEl);
+      }
+      installLinkValidation(quill);
 
       if (value && value !== "<p><br></p>") {
         quill.root.innerHTML = value;

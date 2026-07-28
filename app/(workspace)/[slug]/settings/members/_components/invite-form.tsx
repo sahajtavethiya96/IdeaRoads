@@ -16,10 +16,17 @@ import {
 
 interface InviteFormProps {
   canInviteAdmin: boolean;
+  // Hide the built-in eyebrow heading when the form is embedded somewhere
+  // that already provides its own title (e.g. a dialog's DialogTitle).
+  showHeading?: boolean;
   workspaceId: string;
 }
 
-export function InviteForm({ workspaceId, canInviteAdmin }: InviteFormProps) {
+export function InviteForm({
+  workspaceId,
+  canInviteAdmin,
+  showHeading = true,
+}: InviteFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"member" | "admin">("member");
@@ -60,9 +67,11 @@ export function InviteForm({ workspaceId, canInviteAdmin }: InviteFormProps) {
 
   return (
     <div>
-      <h2 className="mb-4 text-sm font-semibold tracking-eyebrow text-ir-muted uppercase">
-        Invite a Team Member
-      </h2>
+      {showHeading && (
+        <h2 className="mb-4 text-sm font-semibold tracking-eyebrow text-ir-muted uppercase">
+          Invite a Team Member
+        </h2>
+      )}
       <form className="space-y-4" onSubmit={onSubmit}>
         {generalError && (
           <p className="rounded-ir-sm bg-ir-danger/10 px-3 py-2 text-sm text-ir-danger">
