@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Comparison } from "@/components/marketing/comparison";
 import { FeaturesGrid } from "@/components/marketing/features-grid";
-import { FeedbackWidgetLauncher } from "@/components/marketing/feedback-widget-launcher";
-import { FeedbackWidgetSection } from "@/components/marketing/feedback-widget-section";
 import { FinalCta } from "@/components/marketing/final-cta";
 import { Footer } from "@/components/marketing/footer";
 import { Hero } from "@/components/marketing/hero";
@@ -16,7 +14,6 @@ import { LOGO_PATH, PRODUCT_NAME } from "@/config/platform";
 import { getCurrentSession } from "@/lib/authz";
 import { env } from "@/lib/env";
 import { redirectToSetupIfNeeded } from "@/lib/setup";
-import { portalBaseUrl } from "@/lib/urls";
 
 const TITLE = `${PRODUCT_NAME} — Collect feedback, ship faster, close the loop`;
 const DESCRIPTION =
@@ -67,13 +64,11 @@ export default async function HomePage() {
           <ProductTour />
           <FeaturesGrid />
           <LiveDemo />
-          {/* <FeedbackWidgetSection appUrl={portalBaseUrl()} /> */}
           <Comparison />
           <FinalCta />
         </main>
       </PageTransition>
       <Footer />
-      <FeedbackWidgetLauncher appUrl={portalBaseUrl()} />
     </div>
   );
 }

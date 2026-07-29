@@ -181,9 +181,9 @@ export function ManualRoadmapBoard({
   const totalItems = Object.values(cols).reduce((n, arr) => n + arr.length, 0);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       {(canManage || syncToggle) && (
-        <div className="flex flex-wrap items-center justify-between gap-3 px-6 pt-2 pb-4">
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 px-6 pt-2 pb-4">
           <div className="flex justify-start">{syncToggle}</div>
           <div className="flex justify-end">
             {canManage && (
@@ -196,7 +196,7 @@ export function ManualRoadmapBoard({
         </div>
       )}
 
-      <div className="px-6 pt-6 pb-12">
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 pt-6 pb-6">
         {statuses.length === 0 ? (
           <div className="rounded-ir-card border border-dashed border-ir-border px-4 py-16 text-center text-sm text-ir-muted">
             No roadmap columns yet.
@@ -211,7 +211,7 @@ export function ManualRoadmapBoard({
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid h-full auto-rows-fr grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {statuses.map((s) => {
               // Filter for DISPLAY only. performMove always reads the full,
               // unfiltered `cols`, and dragging is off while filtering, so the
@@ -219,26 +219,33 @@ export function ManualRoadmapBoard({
               const columnItems = (cols[s.id] ?? []).filter(matchesQuery);
               const isDropTarget = dropPosition?.columnId === s.id;
               return (
-                <div className="flex w-full min-w-0 flex-col" key={s.id}>
+                <div
+                  className="flex min-h-0 w-full min-w-0 flex-col"
+                  key={s.id}
+                >
                   <RoadmapStatusHeader
                     color={s.color}
                     count={columnItems.length}
                     name={s.name}
                   />
 
-                  {/* Drop zone. flex-1 (not just min-h-*) so it fills the
-                      column's full stretched height — see roadmap-column.tsx
-                      for why: without it, a short column's actual drop-zone
+                  {/* Drop zone. flex-1 + overflow-y-auto so it fills the
+                      column's full stretched height and scrolls internally
+                      while the header above stays put — see
+                      roadmap-column.tsx for why flex-1 (not just min-h-*)
+                      matters: without it, a short column's actual drop-zone
                       element (what useKanbanDrag hit-tests via
                       getBoundingClientRect) only wraps its own cards, leaving
                       empty space below that looks part of the column but
-                      isn't. Keyboard users reorder/move via the item Edit
-                      dialog's Column selector and the Manage-columns
-                      controls; drag is a pointer-only enhancement (see
-                      DraggableCard — it can only be started from each card's
-                      drag handle). */}
+                      isn't. overflow-y-auto also resets the flex item's
+                      automatic min-height to 0, so min-h-24 (not min-h-0)
+                      still acts as the real floor. Keyboard users
+                      reorder/move via the item Edit dialog's Column selector
+                      and the Manage-columns controls; drag is a
+                      pointer-only enhancement (see DraggableCard — it can
+                      only be started from each card's drag handle). */}
                   <div
-                    className={`flex min-h-24 flex-1 flex-col gap-2 rounded-ir-md p-1 transition-colors duration-150 ease-ir-standard ${
+                    className={`flex min-h-24 flex-1 flex-col gap-2 overflow-y-auto rounded-ir-md p-1 transition-colors duration-150 ease-ir-standard ${
                       isDropTarget && canManage
                         ? "bg-ir-primary-light/10 ring-1 ring-inset ring-ir-primary/30"
                         : ""
@@ -282,7 +289,7 @@ export function ManualRoadmapBoard({
                               }
                               onDragStart={() => handleDragStart(item.id)}
                             >
-                              {(dragControls) => (
+                              {(dragControls, wasDragged) => (
                                 <ManualRoadmapCard
                                   canManage={canManage}
                                   dragControls={dragControls}
@@ -294,6 +301,7 @@ export function ManualRoadmapBoard({
                                     setAddOpen(false);
                                   }}
                                   onView={setViewItem}
+                                  wasDragged={wasDragged}
                                 />
                               )}
                             </DraggableCard>

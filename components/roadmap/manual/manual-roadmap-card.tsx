@@ -30,6 +30,8 @@ interface ManualRoadmapCardProps {
   onDelete?: (item: BoardItem) => void;
   onEdit?: (item: BoardItem) => void;
   onView?: (item: BoardItem) => void;
+  // Tells a real drag apart from a plain click — see DraggableCard.
+  wasDragged?: () => boolean;
 }
 
 function formatLaunch(iso: string | null): string | null {
@@ -62,6 +64,7 @@ export function ManualRoadmapCard({
   onView,
   dragging,
   dragControls,
+  wasDragged,
 }: ManualRoadmapCardProps) {
   const launch = formatLaunch(item.launchDate);
   const descPreview = item.description ? htmlToText(item.description) : "";
@@ -69,8 +72,14 @@ export function ManualRoadmapCard({
   return (
     <div
       className={`group relative rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs transition-all duration-150 ease-ir-standard hover:border-ir-primary/30 hover:shadow-ir-sm ${
-        dragging ? "opacity-95 shadow-ir-lg" : ""
-      }`}
+        canManage ? "cursor-grab active:cursor-grabbing" : ""
+      } ${dragging ? "opacity-95 shadow-ir-lg" : ""}`}
+      // Starts the drag from anywhere on the card, not just the handle icon
+      // below — a plain press+release never crosses framer's movement
+      // threshold, so it never fires onDragStart and falls through to the
+      // title button's normal click. Only a real drag needs guarding (see
+      // wasDragged below), so this can't reintroduce click-vs-drag ambiguity.
+      onPointerDown={canManage ? (e) => dragControls?.start(e) : undefined}
     >
       {item.coverImage && (
         // Cover image is an arbitrary user-supplied external URL (like the
@@ -86,14 +95,14 @@ export function ManualRoadmapCard({
       <div className="p-3.5">
         <div className="flex items-start gap-2">
           {canManage && (
-            // relative z-10: the title button just below has its own
-            // after:inset-0 stretched-click overlay covering the whole
-            // card; without this the icon sits underneath it in paint
-            // order and never receives the pointerdown.
+            // Purely a visual affordance now — the whole card starts the
+            // drag (see the outer div's onPointerDown), so this doesn't need
+            // its own pointerdown handler. No z-index needed either since it
+            // no longer has to win a pointer-target race against the title
+            // button's stretched-click overlay.
             <DotsSixVerticalIcon
               aria-hidden
-              className="relative z-10 mt-0.5 size-4 shrink-0 cursor-grab text-ir-muted/50 group-hover:text-ir-muted active:cursor-grabbing"
-              onPointerDown={(e) => dragControls?.start(e)}
+              className="mt-0.5 size-4 shrink-0 text-ir-muted/50 group-hover:text-ir-muted"
             />
           )}
           <div className="min-w-0 flex-1">
@@ -103,7 +112,12 @@ export function ManualRoadmapCard({
                 detail route). */}
             <button
               className="cursor-pointer text-left text-sm leading-snug font-medium text-ir-heading after:absolute after:inset-0 after:content-[''] hover:text-ir-primary hover:underline focus-visible:underline focus-visible:outline-none"
-              onClick={() => onView?.(item)}
+              onClick={() => {
+                if (wasDragged?.()) {
+                  return;
+                }
+                onView?.(item);
+              }}
               type="button"
             >
               {item.title}

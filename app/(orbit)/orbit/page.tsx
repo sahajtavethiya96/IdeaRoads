@@ -1,3 +1,4 @@
+import { CaretRightIcon } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { PageBody } from "@/components/ui/page";
@@ -59,10 +60,11 @@ export default async function OrbitPage() {
                 Recent Workspaces
               </h2>
               <Link
-                className="text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading"
+                className="flex items-center gap-1 text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading"
                 href="/orbit/workspaces"
               >
-                View all →
+                View all
+                <CaretRightIcon className="size-2.5" />
               </Link>
             </div>
             <div className="divide-y divide-ir-border">
@@ -106,10 +108,11 @@ export default async function OrbitPage() {
                 Recent Users
               </h2>
               <Link
-                className="text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading"
+                className="flex items-center gap-1 text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading"
                 href="/orbit/users"
               >
-                View all →
+                View all
+                <CaretRightIcon className="size-2.5" />
               </Link>
             </div>
             <div className="divide-y divide-ir-border">
