@@ -19,14 +19,11 @@ import {
   updatePostStatusAction,
 } from "@/app/actions/posts";
 import { PostStatusBadge } from "@/components/posts/post-status-badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 
 interface WorkspaceStatus {
@@ -101,7 +98,6 @@ export default function StatusSelect({
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
-  const [notify, setNotify] = useState(false);
 
   // System statuses (currently just the protected "Draft" fallback) never get
   // their own picker entry — a post auto-migrated onto one displays as the
@@ -114,7 +110,6 @@ export default function StatusSelect({
   );
   const currentEffectiveValue =
     isDraft || isOnSystemDraftStatus ? DRAFT_VALUE : currentStatus;
-  const [pendingValue, setPendingValue] = useState(currentEffectiveValue);
 
   // Same deeply-nested-client-component problem useSectionPortalHref solves
   // in open-portal-button.tsx: derive the workspace slug from the URL
@@ -156,30 +151,20 @@ export default function StatusSelect({
   );
   const statusTriggerMinWidth = `${longestStatusLabel + 8}ch`;
 
-  function handleOpenChange(next: boolean) {
-    if (next) {
-      // Always start from the actual current state, never a stale staged
-      // pick left over from a popover that was closed without saving.
-      setPendingValue(currentEffectiveValue);
-      setNotify(false);
-    }
-    setOpen(next);
-  }
-
-  function handleSave() {
-    const value = pendingValue;
+  // Applies a picked status immediately — no staged value, no separate save
+  // step. The popover closes right away; the mutation runs in the background.
+  function handleSelect(value: string) {
+    setOpen(false);
 
     if (value === DRAFT_VALUE) {
       // Already draft — either unpublished, or auto-migrated onto the system
       // Draft status — so no unnecessary update.
       if (isDraft || isOnSystemDraftStatus) {
-        setOpen(false);
         return;
       }
       // Published → revert to draft, reusing the existing publish/draft flow.
       startTransition(async () => {
         await unpublishPostAction({ postId, workspaceId });
-        setOpen(false);
         router.refresh();
       });
       return;
@@ -191,15 +176,9 @@ export default function StatusSelect({
       // that status. Set the status first (only if it changed), then publish.
       startTransition(async () => {
         if (value !== currentStatus) {
-          await updatePostStatusAction({
-            postId,
-            workspaceId,
-            status: value,
-            notify,
-          });
+          await updatePostStatusAction({ postId, workspaceId, status: value });
         }
         await publishPostAction({ postId, workspaceId });
-        setOpen(false);
         router.refresh();
       });
       return;
@@ -207,17 +186,10 @@ export default function StatusSelect({
 
     // Published post: plain status change.
     if (value === currentStatus) {
-      setOpen(false);
       return;
     }
     startTransition(async () => {
-      await updatePostStatusAction({
-        postId,
-        workspaceId,
-        status: value,
-        notify,
-      });
-      setOpen(false);
+      await updatePostStatusAction({ postId, workspaceId, status: value });
       router.refresh();
     });
   }
@@ -239,7 +211,7 @@ export default function StatusSelect({
   }
 
   return (
-    <Popover onOpenChange={handleOpenChange} open={open}>
+    <Popover onOpenChange={setOpen} open={open}>
       <PopoverTrigger asChild>
         <button
           className="inline-flex h-7 items-center gap-1.5 rounded-ir-md border-0 px-2.5 py-4.5 text-xs font-medium"
@@ -267,68 +239,52 @@ export default function StatusSelect({
         onCloseAutoFocus={(e) => e.preventDefault()}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        {/* Status list — staged only, applied on Save */}
-        <RadioGroup
-          className="gap-0.5 p-2"
-          onValueChange={setPendingValue}
-          value={pendingValue}
-        >
+        {/* Status list — clicking an option applies it immediately */}
+        <div className="flex flex-col gap-0.5 p-2">
           {/* Draft (publication state) first, matching Upvoty. */}
-          {/* biome-ignore lint/a11y/noLabelWithoutControl: RadioGroupItem is a Radix custom control nested inside the label, which already associates it correctly */}
-          <label
+          <button
             className={cn(
-              "flex cursor-pointer items-center gap-2.5 rounded-ir-sm px-3 py-2 text-sm font-medium transition-colors duration-150 ease-ir-standard",
-              pendingValue === DRAFT_VALUE
+              "flex cursor-pointer items-center gap-2.5 rounded-ir-sm px-3 py-2 text-left text-sm font-medium transition-colors duration-150 ease-ir-standard disabled:cursor-not-allowed disabled:opacity-50",
+              currentEffectiveValue === DRAFT_VALUE
                 ? "bg-ir-primary-light/20 text-ir-primary"
                 : "text-ir-heading hover:bg-ir-muted-surface"
             )}
+            disabled={isPending}
+            onClick={() => handleSelect(DRAFT_VALUE)}
+            type="button"
           >
-            <RadioGroupItem value={DRAFT_VALUE} />
             <StatusIcon
               className="size-3.5 shrink-0"
               color="var(--ir-warning)"
               slug={DRAFT_VALUE}
             />
             Draft
-          </label>
+          </button>
 
           {activeStatuses.map((s) => {
-            const isSelected = pendingValue === s.slug;
+            const isSelected = currentEffectiveValue === s.slug;
             return (
-              // biome-ignore lint/a11y/noLabelWithoutControl: RadioGroupItem is a Radix custom control nested inside the label, which already associates it correctly
-              <label
+              <button
                 className={cn(
-                  "flex cursor-pointer items-center gap-2.5 rounded-ir-sm px-3 py-2 text-sm font-medium transition-colors duration-150 ease-ir-standard",
+                  "flex cursor-pointer items-center gap-2.5 rounded-ir-sm px-3 py-2 text-left text-sm font-medium transition-colors duration-150 ease-ir-standard disabled:cursor-not-allowed disabled:opacity-50",
                   isSelected
                     ? "bg-ir-primary-light/20 text-ir-primary"
                     : "text-ir-heading hover:bg-ir-muted-surface"
                 )}
+                disabled={isPending}
                 key={s.slug}
+                onClick={() => handleSelect(s.slug)}
+                type="button"
               >
-                <RadioGroupItem value={s.slug} />
                 <StatusIcon
                   className="size-3.5 shrink-0"
                   color={s.color}
                   slug={s.slug}
                 />
                 {s.name}
-              </label>
+              </button>
             );
           })}
-        </RadioGroup>
-
-        {/* Notify + Save */}
-        <div className="space-y-3 border-t border-ir-border p-3">
-          {/* biome-ignore lint/a11y/noLabelWithoutControl: Checkbox is a Radix custom control nested inside the label, which already associates it correctly */}
-          <Button
-            className="w-full"
-            disabled={isPending || pendingValue === currentEffectiveValue}
-            onClick={handleSave}
-            size="sm"
-            type="button"
-          >
-            {isPending ? "Saving…" : "Save Status"}
-          </Button>
         </div>
 
         {/* Edit Statuses */}

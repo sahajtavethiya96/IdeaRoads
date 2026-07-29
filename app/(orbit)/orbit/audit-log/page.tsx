@@ -111,7 +111,7 @@ export default async function OrbitAuditLogPage({ searchParams }: Props) {
   const hasFilters = q || type;
 
   return (
-    <div className="flex flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       <SetPageHeader
         description="Platform-level admin actions workspace suspension, role changes, impersonation, and auth events."
         portalHref={null}
@@ -121,7 +121,7 @@ export default async function OrbitAuditLogPage({ searchParams }: Props) {
       {/* Filter bar */}
       <form
         action="/orbit/audit-log"
-        className="flex flex-wrap items-center gap-2 border-b border-ir-border px-4 py-3 sm:px-8"
+        className="flex shrink-0 flex-wrap items-center gap-2 border-b border-ir-border px-4 py-3 sm:px-8"
         method="get"
       >
         <div className="relative">
@@ -159,10 +159,10 @@ export default async function OrbitAuditLogPage({ searchParams }: Props) {
         </span>
       </form>
 
-      <PageBody>
-        <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+      <PageBody className="flex min-h-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
           {logs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-3 px-4 py-16 text-center">
+            <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 py-16 text-center">
               <div className="flex size-10 items-center justify-center rounded-ir-full bg-ir-muted-surface text-ir-muted">
                 <MagnifyingGlassIcon className="size-5" />
               </div>
@@ -186,7 +186,7 @@ export default async function OrbitAuditLogPage({ searchParams }: Props) {
               )}
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="min-h-0 flex-1 overflow-auto">
               <table className="w-full text-sm">
                 <thead className="sticky top-0 z-10 border-b border-ir-border bg-ir-muted-surface/60 backdrop-blur-sm">
                   <tr>
@@ -298,7 +298,7 @@ export default async function OrbitAuditLogPage({ searchParams }: Props) {
 
           {/* Pagination */}
           {(prevUrl || nextUrl || totalCount > 0) && (
-            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-ir-border px-4 py-3">
+            <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-ir-border px-4 py-3">
               <span className="text-xs text-ir-muted">
                 {totalCount === 0
                   ? "No events"

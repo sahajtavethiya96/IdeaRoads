@@ -21,7 +21,6 @@ import {
   updateChangelogLabelAction,
   uploadChangelogCoverImageAction,
 } from "@/app/actions/changelog";
-import { ChangelogLabelBadge } from "@/components/changelog/changelog-label-badge";
 import { LinkedPostsSelector } from "@/components/changelog/linked-posts-selector";
 import { Button } from "@/components/ui/button";
 import {
@@ -744,9 +743,6 @@ export function ChangelogEditor({
           >
             <PlusIcon className="size-3.5" />
           </button>
-        </div>
-        <div className="mt-1">
-          <ChangelogLabelBadge label={label} size="md" />
         </div>
       </div>
 
