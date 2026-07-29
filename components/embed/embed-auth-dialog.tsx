@@ -26,9 +26,10 @@ export function EmbedAuthDialog({
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Sign in to continue</DialogTitle>
+          <DialogTitle>Verify your email</DialogTitle>
           <DialogDescription>
-            Signing in lets you vote, comment, and submit feedback.
+            Anyone can leave feedback — we only confirm your email so the team
+            can follow up. No account needed.
           </DialogDescription>
         </DialogHeader>
         <EmbedAuthPanel

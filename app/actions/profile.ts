@@ -26,6 +26,14 @@ import {
 import { deleteFile, uploadFile } from "@/lib/storage";
 import { countCharacters } from "@/lib/text-metrics";
 import { adminBaseUrl } from "@/lib/urls";
+import {
+  hasPassword,
+  needsPasswordSetup,
+  setUserPassword,
+  validatePassword,
+  verifyUserPassword,
+} from "@/lib/users/password";
+import { realNameOrEmpty } from "@/lib/users/profile-name";
 
 export interface ActionState {
   error?: string;
@@ -169,6 +177,153 @@ export async function updateNameAction(
 
   revalidatePath("/", "layout");
   return { success: "Name updated.", name };
+}
+
+export interface CompleteSetupState extends ActionState {
+  field?: "name" | "password";
+}
+
+/**
+ * Backs the finish-setup screen (app/complete-profile), which collects
+ * whichever of {display name, password} is still outstanding.
+ *
+ * What is required is re-derived here from the session and the database — the
+ * submitted form is never trusted for that. Otherwise a crafted POST omitting
+ * the password field would let someone walk past a step the server considers
+ * mandatory, or set a password on an account that should not have one.
+ */
+export async function completeSetupAction(
+  _state: CompleteSetupState,
+  formData: FormData
+): Promise<CompleteSetupState> {
+  const session = await requireSession();
+
+  const needsProfile = !realNameOrEmpty(session.user.name, session.user.email);
+  const needsPassword = await needsPasswordSetup(session.user.id);
+
+  if (!(needsProfile || needsPassword)) {
+    // Already complete (e.g. a duplicate submit, or another tab finished
+    // first) — treat as success so the client moves on rather than showing an
+    // error for something that is not wrong.
+    return { success: "Setup complete." };
+  }
+
+  const name = String(formData.get("name") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+  const confirmPassword = String(formData.get("confirmPassword") ?? "");
+
+  if (needsProfile) {
+    if (!name) {
+      return { error: "Name is required.", field: "name" };
+    }
+    if (countCharacters(name) > 100) {
+      return { error: "Name must be 100 characters or fewer.", field: "name" };
+    }
+  }
+
+  if (needsPassword) {
+    const problem = validatePassword(password, confirmPassword);
+    if (problem) {
+      return { error: problem, field: "password" };
+    }
+  }
+
+  // Both writes only happen after both fields validate, so a bad password
+  // never leaves a half-applied name change behind.
+  if (needsProfile) {
+    await db
+      .update(user)
+      .set({ name, updatedAt: new Date() })
+      .where(eq(user.id, session.user.id));
+
+    await audit({
+      action: "profile.name_updated",
+      actorEmail: session.user.email,
+      actorId: session.user.id,
+      description: "Set profile name during account setup",
+      entityId: session.user.id,
+      entityType: "user",
+      metadata: { name },
+    });
+  }
+
+  if (needsPassword) {
+    await setUserPassword(session.user.id, password);
+
+    await audit({
+      action: "profile.password_set",
+      actorEmail: session.user.email,
+      actorId: session.user.id,
+      description: "Set an account password during account setup",
+      entityId: session.user.id,
+      entityType: "user",
+      // Never record the password or any derivative of it.
+      metadata: { during: "setup" },
+    });
+  }
+
+  revalidatePath("/", "layout");
+  return { success: "Setup complete." };
+}
+
+/**
+ * Set or replace the signed-in user's password from account settings.
+ *
+ * Someone who signed in by magic link or Google has no password at all, and no
+ * way to get one (reset needs a credential row that does not exist), so this
+ * accepts a first password with no "current password" challenge. Once one
+ * exists, the current password IS required — otherwise anyone with a hijacked
+ * session could silently lock the real owner out.
+ */
+export async function updatePasswordAction(
+  _state: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const session = await requireSession();
+
+  const currentPassword = String(formData.get("currentPassword") ?? "");
+  const password = String(formData.get("password") ?? "");
+  const confirmPassword = String(formData.get("confirmPassword") ?? "");
+
+  const alreadyHasPassword = await hasPassword(session.user.id);
+
+  if (alreadyHasPassword) {
+    if (!currentPassword) {
+      return { error: "Enter your current password." };
+    }
+    const valid = await verifyUserPassword(session.user.id, currentPassword);
+    if (!valid) {
+      return { error: "Your current password is not correct." };
+    }
+  }
+
+  const problem = validatePassword(password, confirmPassword);
+  if (problem) {
+    return { error: problem };
+  }
+
+  await setUserPassword(session.user.id, password);
+
+  await audit({
+    action: alreadyHasPassword
+      ? "profile.password_changed"
+      : "profile.password_set",
+    actorEmail: session.user.email,
+    actorId: session.user.id,
+    description: alreadyHasPassword
+      ? "Changed account password"
+      : "Set an account password",
+    entityId: session.user.id,
+    entityType: "user",
+    metadata: { during: "settings" },
+  });
+
+  revalidatePath("/", "layout");
+  return {
+    success: alreadyHasPassword
+      ? "Password updated."
+      : "Password set. You can now sign in with your email and password.",
+  };
 }
 
 export async function changeEmailAction(

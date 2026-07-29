@@ -15,9 +15,13 @@ import { magicLinkTemplate } from "@/lib/email/templates/magic-link";
 import { otpTemplate } from "@/lib/email/templates/otp";
 import { passwordResetTemplate } from "@/lib/email/templates/password-reset";
 import { env } from "@/lib/env";
-import { isFeatureEnabled } from "@/lib/orbit/feature-flags";
 import { isSmtpConfigured } from "@/lib/smtp/client";
 import { adminBaseUrl, adminHost, portalBaseUrl, portalHost } from "@/lib/urls";
+import {
+  mayAuthenticate,
+  mayCreateAccount,
+  NO_SELF_SIGNUP_MESSAGE,
+} from "@/lib/users/registration";
 
 // Both application hosts are trusted request origins (CSRF/origin check). Under
 // the two-host split each host sets its OWN host-only session cookie, so signing
@@ -116,12 +120,12 @@ export const auth = betterAuth({
     trustedProviders: ["google", "magic-link", "email-otp"],
   },
   emailAndPassword: {
-    // Sign-IN with an existing password always works (e.g. the account created
-    // by the /setup first-run wizard). Self-serve REGISTRATION is gated
-    // separately below via the `password_auth` feature flag, not this static
-    // option — the flag is a runtime DB toggle (Orbit Admin → Feature Flags)
-    // and must take effect without a restart, which a build-time option here
-    // could not do.
+    // Sign-IN with an existing password always works — the account created by
+    // the /setup first-run wizard, and invited members who chose a password
+    // during setup. Self-serve REGISTRATION does not exist: /sign-up/email is
+    // refused in the `before` hook below, so this stays enabled purely to keep
+    // the sign-in half of the endpoint pair alive. The `password_auth` feature
+    // flag now only controls whether the UI offers the password field.
     enabled: true,
     minPasswordLength: 8,
     maxPasswordLength: 128,
@@ -161,17 +165,36 @@ export const auth = betterAuth({
   },
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
-      // Self-serve email/password registration is an explicit opt-in, toggled
-      // by an Orbit Admin at /orbit/feature-flags (default: off). Enforced
-      // here — not just hidden in the UI — so the endpoint actually refuses
-      // the request when the flag is off.
-      if (
-        ctx.path === "/sign-up/email" &&
-        !(await isFeatureEnabled("password_auth"))
-      ) {
+      // This instance has NO self-serve registration — accounts come from the
+      // /setup wizard or an invitation (see lib/users/registration.ts). The
+      // endpoint is refused outright rather than merely hidden in the UI.
+      if (ctx.path === "/sign-up/email") {
         throw new APIError("FORBIDDEN", {
-          message: "Email + password sign-up is disabled on this instance.",
+          message: NO_SELF_SIGNUP_MESSAGE,
         });
+      }
+
+      // Refuse an unknown address BEFORE anything is emailed, so nobody
+      // receives a magic link or a code that could only fail at the end.
+      // An existing account passes (it's an ordinary sign-in); so does an
+      // address with a live invitation waiting, which is exactly how an
+      // invited member gets their account created on first sign-in.
+      const emailPaths = [
+        "/sign-in/magic-link",
+        "/sign-in/email-otp",
+        "/email-otp/send-verification-otp",
+      ];
+      if (emailPaths.includes(ctx.path)) {
+        const email = (ctx.body as { email?: unknown } | undefined)?.email;
+        if (
+          typeof email === "string" &&
+          email.trim() &&
+          !(await mayAuthenticate(email))
+        ) {
+          throw new APIError("FORBIDDEN", {
+            message: NO_SELF_SIGNUP_MESSAGE,
+          });
+        }
       }
     }),
   },
@@ -267,6 +290,23 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
+        // The single chokepoint every sign-in method funnels through, and the
+        // only one that covers Google: with OAuth the email isn't known until
+        // the provider calls back, long after the `before` hook above ran with
+        // no email to check. Refusing here means no path — magic link, Google,
+        // email OTP, or a future one — can quietly mint an account.
+        //
+        // The /setup first-run wizard is deliberately unaffected: it inserts
+        // the first Orbit Admin with Drizzle directly (app/actions/setup.ts),
+        // never through Better Auth, so this hook never sees it. That is what
+        // keeps a brand-new instance bootstrappable.
+        before: async (newUser) => {
+          if (!(await mayCreateAccount(newUser.email))) {
+            throw new APIError("FORBIDDEN", {
+              message: NO_SELF_SIGNUP_MESSAGE,
+            });
+          }
+        },
         after: async (user) => {
           await audit({
             action: "user.created",

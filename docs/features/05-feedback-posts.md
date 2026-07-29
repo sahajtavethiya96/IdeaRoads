@@ -13,7 +13,7 @@ Anyone can read posts on a public board. Creating a post requires a **verified e
 ## Core Behaviour
 
 - A **signed-in User** can submit a post to a public board.
-- A **visitor with no account** can also submit to a public board on the Public Portal, after confirming their email with a one-time code. The post is attributed to that verified address (and the display name they optionally supply). Browsing needs no verification at all — only submitting does. Gated by the `guest_voting` feature flag.
+- A **visitor with no account** can also submit to a public board on the Public Portal, after confirming their email with a one-time code. The post is attributed to that verified address, which workspace members see for moderation; the byline everyone else reads is the display name they optionally supply, falling back to "User" — a verified email address is never published on a public board. Browsing needs no verification at all — only submitting does. Gated by the `guest_voting` feature flag.
 - Private and archived boards remain members-only; an unverified or accountless visitor can never reach them.
 - Each post lives at a clean, shareable URL: `/{ws-slug}/b/{board-slug}/p/{postId}-{slug}`. The trailing slug is derived from the title for readability; the post can always be resolved from the identifier in the URL.
 - The board post list defaults to **Trending** sort, which surfaces posts gaining votes recently ahead of older posts with the same total. It also offers **Newest** and **Top Voted** sorts.

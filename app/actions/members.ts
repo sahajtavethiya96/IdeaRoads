@@ -18,6 +18,7 @@ import { enqueueEmail } from "@/lib/email";
 import { MemberRemovedEmail } from "@/lib/email/components/member-removed";
 import { renderEmailTemplate } from "@/lib/email/renderer";
 import { adminBaseUrl } from "@/lib/urls";
+import { needsPasswordSetup } from "@/lib/users/password";
 import { realNameOrEmpty } from "@/lib/users/profile-name";
 import { maxMeaningfulLength } from "@/lib/validation/text-length";
 import {
@@ -174,7 +175,9 @@ export async function inviteMemberAction(input: {
 
 export async function acceptInviteAction(
   token: string
-): Promise<ActionResult<{ needsProfile: boolean; slug: string }>> {
+): Promise<
+  ActionResult<{ needsPassword: boolean; needsProfile: boolean; slug: string }>
+> {
   const session = await requireSession();
 
   const result = await acceptInvite({
@@ -214,9 +217,16 @@ export async function acceptInviteAction(
   // landing in the workspace — see app/complete-profile/page.tsx.
   const needsProfile = !realNameOrEmpty(session.user.name, session.user.email);
 
+  // Someone joining this way arrived via magic link, which creates an account
+  // with NO password. If the instance offers email + password sign-in they
+  // could never use it — and password reset can't help either, since it needs
+  // a credential row that doesn't exist yet. Collect one now, on the same
+  // screen as their name.
+  const needsPassword = await needsPasswordSetup(session.user.id);
+
   return {
     success: true,
-    data: { slug: result.workspaceSlug, needsProfile },
+    data: { slug: result.workspaceSlug, needsPassword, needsProfile },
   };
 }
 
@@ -224,7 +234,9 @@ export async function acceptInviteAction(
 
 export async function joinViaLinkAction(
   token: string
-): Promise<ActionResult<{ needsProfile: boolean; slug: string }>> {
+): Promise<
+  ActionResult<{ needsPassword: boolean; needsProfile: boolean; slug: string }>
+> {
   const session = await requireSession();
 
   const result = await joinViaLink({ token, userId: session.user.id });
@@ -261,9 +273,16 @@ export async function joinViaLinkAction(
   // landing in the workspace — see app/complete-profile/page.tsx.
   const needsProfile = !realNameOrEmpty(session.user.name, session.user.email);
 
+  // Someone joining this way arrived via magic link, which creates an account
+  // with NO password. If the instance offers email + password sign-in they
+  // could never use it — and password reset can't help either, since it needs
+  // a credential row that doesn't exist yet. Collect one now, on the same
+  // screen as their name.
+  const needsPassword = await needsPasswordSetup(session.user.id);
+
   return {
     success: true,
-    data: { slug: result.workspaceSlug, needsProfile },
+    data: { slug: result.workspaceSlug, needsPassword, needsProfile },
   };
 }
 

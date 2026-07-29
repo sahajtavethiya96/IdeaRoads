@@ -110,6 +110,7 @@ export default async function BoardPage({ params, searchParams }: Props) {
   const canParticipate = !!actor;
   // Only set for a guest — an account is identified by id, not email.
   const guestEmail = actor && !actor.id ? actor.email : undefined;
+  const guestName = actor && !actor.id ? actor.name : undefined;
 
   const board = await getBoardBySlug(workspace.id, boardSlug);
   if (!board) {
@@ -312,6 +313,7 @@ export default async function BoardPage({ params, searchParams }: Props) {
             changelogPublic={workspace.changelogPublic}
             currentPath={`/${slug}/b/${boardSlug}${embedQuery}`}
             guestEmail={guestEmail}
+            guestName={guestName}
             isMember={isMember}
             isSignedIn={isSignedIn}
             logoUrl={workspace.logoUrl}
@@ -442,7 +444,10 @@ export default async function BoardPage({ params, searchParams }: Props) {
                               workspaceStatuses={workspaceStatuses}
                             />
                             <span className="text-xs text-ir-muted">
-                              {post.authorName || post.authorEmail} ·{" "}
+                              {/* Name only — this board is public, and the
+                                  verified address behind an accountless post
+                                  is not the visitor's to publish. */}
+                              {post.authorName?.trim() || "User"} ·{" "}
                               <RelativeTime
                                 date={post.createdAt}
                                 options={{ addSuffix: true }}

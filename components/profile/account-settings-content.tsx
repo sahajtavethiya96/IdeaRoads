@@ -3,7 +3,10 @@ import { desc, eq } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
 import { session as sessionTable, user } from "@/db/schema";
 import { db } from "@/lib/db";
+import { isFeatureEnabled } from "@/lib/orbit/feature-flags";
+import { hasPassword } from "@/lib/users/password";
 import { AccountIdentityForms, DeleteAccountForm } from "./account-forms";
+import { PasswordForm } from "./password-form";
 import { type SessionRow, SessionsCard } from "./sessions-card";
 
 export async function AccountSettingsContent({
@@ -13,21 +16,24 @@ export async function AccountSettingsContent({
   userId: string;
   currentSessionToken: string;
 }) {
-  const [freshUser, sessions] = await Promise.all([
-    db.query.user.findFirst({ where: eq(user.id, userId) }),
-    db
-      .select({
-        createdAt: sessionTable.createdAt,
-        expiresAt: sessionTable.expiresAt,
-        id: sessionTable.id,
-        ipAddress: sessionTable.ipAddress,
-        token: sessionTable.token,
-        userAgent: sessionTable.userAgent,
-      })
-      .from(sessionTable)
-      .where(eq(sessionTable.userId, userId))
-      .orderBy(desc(sessionTable.createdAt)),
-  ]);
+  const [freshUser, sessions, passwordEnabled, userHasPassword] =
+    await Promise.all([
+      db.query.user.findFirst({ where: eq(user.id, userId) }),
+      db
+        .select({
+          createdAt: sessionTable.createdAt,
+          expiresAt: sessionTable.expiresAt,
+          id: sessionTable.id,
+          ipAddress: sessionTable.ipAddress,
+          token: sessionTable.token,
+          userAgent: sessionTable.userAgent,
+        })
+        .from(sessionTable)
+        .where(eq(sessionTable.userId, userId))
+        .orderBy(desc(sessionTable.createdAt)),
+      isFeatureEnabled("password_auth"),
+      hasPassword(userId),
+    ]);
 
   if (!freshUser) {
     return null;
@@ -58,6 +64,10 @@ export async function AccountSettingsContent({
           name={freshUser.name}
         />
       </section>
+
+      {/* Password — only when this instance offers email + password sign-in;
+          otherwise a password would be unusable and the section is noise. */}
+      {passwordEnabled && <PasswordForm hasPassword={userHasPassword} />}
 
       {/* Active sessions */}
       <SessionsCard sessions={sessionRows} />

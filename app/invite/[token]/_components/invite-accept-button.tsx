@@ -21,8 +21,10 @@ export function InviteAcceptButton({ token }: { token: string }) {
       return;
     }
     const target = `/${result.data.slug}`;
+    // A missing name OR a missing password both route through the same
+    // finish-setup screen — it renders whichever pieces are still outstanding.
     router.push(
-      result.data.needsProfile
+      result.data.needsProfile || result.data.needsPassword
         ? `/complete-profile?next=${encodeURIComponent(target)}`
         : target
     );

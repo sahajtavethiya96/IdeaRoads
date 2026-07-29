@@ -3,52 +3,28 @@
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth-client";
-import { setEmbedToken } from "@/lib/embed/token";
-
-function GoogleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-        fill="#4285F4"
-      />
-      <path
-        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-        fill="#34A853"
-      />
-      <path
-        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-        fill="#FBBC05"
-      />
-      <path
-        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-        fill="#EA4335"
-      />
-    </svg>
-  );
-}
+import { GUEST_NAME_MAX, GUEST_OTP_LENGTH } from "@/config/platform";
+import { setGuestToken } from "@/lib/embed/guest-token";
 
 interface EmbedAuthPanelProps {
   onAuthenticated: () => void;
 }
 
-const POPUP_CHECK_INTERVAL_MS = 500;
-const GOOGLE_CALLBACK_URL = "/embed-auth-complete";
-
 type Step = "email" | "otp";
 
-// In-place sign-in for the embed widget: a one-time code (never a link) plus
-// an optional Google popup — both resolve without ever navigating the
-// visitor away from the host page. The code is entered directly into this
-// panel, so unlike a magic-link email there's no second tab to lose track
-// of and no host to get wrong: /sign-in/email-otp returns a session in the
-// same response, synchronously.
+// In-place email verification for the embed widget.
+//
+// The widget is a PUBLIC feedback surface: anyone may leave feedback, and the
+// one-time code exists only to prove the address is real and reachable — it is
+// not a login. No account is created, which is why this posts to the portal's
+// accountless endpoints (/api/portal/otp/*) rather than Better Auth's sign-in
+// routes, and why there is no Google button or password anywhere here.
+//
+// Same two-step shape as the Public Portal's PortalVerifyPanel; the difference
+// is transport. The verified identity comes back as a signed token which is
+// stored and replayed on X-Portal-Guest, because the widget's iframe is
+// cross-site and browsers refuse to send the portal's SameSite=Lax cookie
+// there. See lib/embed/guest-token.ts.
 export function EmbedAuthPanel({ onAuthenticated }: EmbedAuthPanelProps) {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
@@ -57,111 +33,43 @@ export function EmbedAuthPanel({ onAuthenticated }: EmbedAuthPanelProps) {
   const [sendingCode, setSendingCode] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [resending, setResending] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [googleEnabled, setGoogleEnabled] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const popupRef = useRef<Window | null>(null);
+  // Counts down the resend cooldown the server enforces, so the button
+  // explains the wait instead of failing on click.
+  const [cooldown, setCooldown] = useState(0);
   const onAuthenticatedRef = useRef(onAuthenticated);
   onAuthenticatedRef.current = onAuthenticated;
 
   useEffect(() => {
-    let cancelled = false;
-    fetch("/api/embed/auth-config")
-      .then((res) => res.json())
-      .then((data) => {
-        if (!cancelled) {
-          setGoogleEnabled(!!data.googleEnabled);
-        }
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!googleLoading) {
+    if (cooldown <= 0) {
       return;
     }
-    const interval = setInterval(async () => {
-      const { data } = await authClient.getSession();
-      if (data?.session) {
-        clearInterval(interval);
-        onAuthenticatedRef.current();
-      }
-    }, POPUP_CHECK_INTERVAL_MS * 3);
-    return () => clearInterval(interval);
-  }, [googleLoading]);
+    const timer = setTimeout(() => setCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
 
-  // The Google popup is the only path left that can complete outside this
-  // component's direct control (its own window, its own redirect chain), so
-  // recheck immediately whenever the tab regains focus rather than waiting
-  // on the poll above.
-  useEffect(() => {
-    let cancelled = false;
-    async function checkSession() {
-      const { data } = await authClient.getSession();
-      if (!cancelled && data?.session) {
-        onAuthenticatedRef.current();
-      }
-    }
-    function onVisible() {
-      if (document.visibilityState === "visible") {
-        checkSession();
-      }
-    }
-    document.addEventListener("visibilitychange", onVisible);
-    window.addEventListener("focus", checkSession);
-    return () => {
-      cancelled = true;
-      document.removeEventListener("visibilitychange", onVisible);
-      window.removeEventListener("focus", checkSession);
-    };
-  }, []);
-
-  useEffect(() => () => popupRef.current?.close(), []);
-
-  // The Google popup relay: app/embed-auth-complete/page.tsx posts its
-  // session token back here once it detects a signed-in session, so the
-  // Google path captures a bearer token the same way the OTP path does
-  // below, instead of relying on the poll/focus-check above (which only
-  // confirms a cookie session exists — useless for the embed's own
-  // subsequent bearer-authenticated requests). Origin-checked: popup and
-  // this panel are both served from the portal origin, so comparing
-  // against this window's own origin is exact, not a loosened check.
-  useEffect(() => {
-    function onMessage(event: MessageEvent) {
-      if (event.origin !== window.location.origin) {
-        return;
-      }
-      const data = event.data;
-      if (
-        data?.source !== "idearoads-widget" ||
-        data.type !== "embed-auth-token" ||
-        typeof data.token !== "string"
-      ) {
-        return;
-      }
-      setEmbedToken(data.token);
-      onAuthenticatedRef.current();
-    }
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
-  }, []);
-
-  async function sendCode() {
+  async function sendCode(): Promise<boolean> {
     setFormError(null);
-    const result = await authClient.emailOtp.sendVerificationOtp({
-      email,
-      type: "sign-in",
-    });
-    if (result.error) {
-      setFormError(
-        result.error.message ?? "Something went wrong. Please try again."
-      );
+    try {
+      const res = await fetch("/api/portal/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setFormError(data?.error ?? "Something went wrong. Please try again.");
+        if (typeof data?.retryAfterSeconds === "number") {
+          setCooldown(data.retryAfterSeconds);
+        }
+        return false;
+      }
+      setCooldown(0);
+      return true;
+    } catch {
+      setFormError("Network error. Please try again.");
       return false;
     }
-    return true;
   }
 
   async function handleEmailSubmit(event: FormEvent<HTMLFormElement>) {
@@ -184,59 +92,36 @@ export function EmbedAuthPanel({ onAuthenticated }: EmbedAuthPanelProps) {
     event.preventDefault();
     setFormError(null);
     setVerifying(true);
-    const result = await authClient.signIn.emailOtp({
-      email,
-      otp,
-      name: name.trim() || undefined,
-    });
-    setVerifying(false);
-    if (result.error) {
-      setFormError(result.error.message ?? "Invalid code. Please try again.");
-      return;
-    }
-    if (result.data?.token) {
-      setEmbedToken(result.data.token);
-    }
-    onAuthenticatedRef.current();
-  }
 
-  async function handleGoogleSignIn() {
-    setFormError(null);
-    setGoogleLoading(true);
     try {
-      const res = await fetch("/api/auth/sign-in/social", {
+      const res = await fetch("/api/portal/otp/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          provider: "google",
-          callbackURL: GOOGLE_CALLBACK_URL,
+          code: otp,
+          email: email.trim(),
+          name: name.trim() || undefined,
         }),
       });
       const data = await res.json().catch(() => null);
-      if (!res.ok || !data?.url) {
-        setFormError("Google sign-in failed. Please try again.");
-        setGoogleLoading(false);
+
+      if (!res.ok) {
+        setFormError(data?.error ?? "That code is not correct.");
+        setVerifying(false);
         return;
       }
-      const popup = window.open(
-        data.url,
-        "ir-google-signin",
-        "width=480,height=640"
-      );
-      if (!popup) {
-        window.location.href = data.url;
-        return;
+
+      // The cookie that response sets never comes back from inside this
+      // cross-site iframe — this token is what actually carries the identity
+      // on every subsequent embed request.
+      if (typeof data?.token === "string") {
+        setGuestToken(data.token);
       }
-      popupRef.current = popup;
-      const closeCheck = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(closeCheck);
-          setGoogleLoading(false);
-        }
-      }, POPUP_CHECK_INTERVAL_MS);
+      onAuthenticatedRef.current();
     } catch {
-      setFormError("Google sign-in failed. Please try again.");
-      setGoogleLoading(false);
+      setFormError("Network error. Please try again.");
+    } finally {
+      setVerifying(false);
     }
   }
 
@@ -246,7 +131,8 @@ export function EmbedAuthPanel({ onAuthenticated }: EmbedAuthPanelProps) {
         <div className="text-center">
           <p className="text-sm font-medium text-ir-heading">Enter your code</p>
           <p className="mt-1 text-sm text-ir-muted">
-            We sent a 6-digit code to <strong>{email}</strong>.
+            We sent a {GUEST_OTP_LENGTH}-digit code to{" "}
+            <strong className="text-ir-heading">{email}</strong>.
           </p>
         </div>
 
@@ -259,39 +145,46 @@ export function EmbedAuthPanel({ onAuthenticated }: EmbedAuthPanelProps) {
               autoComplete="one-time-code"
               autoFocus
               className="text-center font-mono text-lg tracking-[0.3em]"
+              disabled={verifying}
               id="embed-auth-otp"
               inputMode="numeric"
-              maxLength={6}
+              maxLength={GUEST_OTP_LENGTH}
               onChange={(event) =>
                 setOtp(event.target.value.replace(/\D/g, ""))
               }
-              placeholder="000000"
+              placeholder={"0".repeat(GUEST_OTP_LENGTH)}
               required
               value={otp}
             />
           </label>
+
           <label className="block" htmlFor="embed-auth-name">
             <span className="mb-1.5 block text-sm font-medium text-ir-heading">
               Your name{" "}
-              <span className="font-normal text-ir-muted">
-                (only needed if you're new here)
-              </span>
+              <span className="font-normal text-ir-muted">(optional)</span>
             </span>
             <Input
               autoComplete="name"
+              disabled={verifying}
               id="embed-auth-name"
+              maxLength={GUEST_NAME_MAX}
               onChange={(event) => setName(event.target.value)}
               placeholder="Jane Doe"
               value={name}
             />
+            <span className="mt-1 block text-xs text-ir-muted">
+              Shown next to your feedback. Leave blank to stay anonymous.
+            </span>
           </label>
+
           {formError && <p className="text-sm text-ir-danger">{formError}</p>}
+
           <Button
             className="w-full"
-            disabled={verifying || otp.length < 6}
+            disabled={verifying || otp.length < GUEST_OTP_LENGTH}
             type="submit"
           >
-            {verifying ? "Verifying…" : "Verify code"}
+            {verifying ? "Verifying…" : "Verify email"}
           </Button>
         </form>
 
@@ -308,12 +201,16 @@ export function EmbedAuthPanel({ onAuthenticated }: EmbedAuthPanelProps) {
             Use a different email
           </button>
           <button
-            className="cursor-pointer font-medium text-ir-primary hover:underline disabled:opacity-50"
-            disabled={resending}
+            className="cursor-pointer font-medium text-ir-primary hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={resending || cooldown > 0}
             onClick={handleResend}
             type="button"
           >
-            {resending ? "Sending…" : "Resend code"}
+            {cooldown > 0
+              ? `Resend in ${cooldown}s`
+              : resending
+                ? "Sending…"
+                : "Resend code"}
           </button>
         </div>
       </div>
@@ -321,54 +218,41 @@ export function EmbedAuthPanel({ onAuthenticated }: EmbedAuthPanelProps) {
   }
 
   return (
-    <div className="space-y-4">
-      {googleEnabled && (
-        <>
-          <Button
-            className="w-full gap-2"
-            disabled={sendingCode || googleLoading}
-            onClick={handleGoogleSignIn}
-            type="button"
-            variant="outline"
-          >
-            <GoogleIcon className="size-4" />
-            {googleLoading ? "Waiting for Google…" : "Continue with Google"}
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-ir-border" />
-            <span className="text-xs font-semibold uppercase tracking-ui text-ir-muted">
-              or continue with email
-            </span>
-            <div className="h-px flex-1 bg-ir-border" />
-          </div>
-        </>
-      )}
+    <form className="space-y-3" onSubmit={handleEmailSubmit}>
+      <label className="block" htmlFor="embed-auth-email">
+        <span className="mb-1.5 block text-sm font-medium text-ir-heading">
+          Email
+        </span>
+        <Input
+          autoComplete="email"
+          autoFocus
+          disabled={sendingCode}
+          id="embed-auth-email"
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="you@example.com"
+          required
+          type="email"
+          value={email}
+        />
+      </label>
 
-      <form className="space-y-3" onSubmit={handleEmailSubmit}>
-        <label className="block" htmlFor="embed-auth-email">
-          <span className="mb-1.5 block text-sm font-medium text-ir-heading">
-            Email
-          </span>
-          <Input
-            autoComplete="email"
-            disabled={sendingCode || googleLoading}
-            id="embed-auth-email"
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="you@example.com"
-            required
-            type="email"
-            value={email}
-          />
-        </label>
-        {formError && <p className="text-sm text-ir-danger">{formError}</p>}
-        <Button
-          className="w-full"
-          disabled={sendingCode || googleLoading}
-          type="submit"
-        >
-          {sendingCode ? "Sending code…" : "Continue with email"}
-        </Button>
-      </form>
-    </div>
+      {formError && <p className="text-sm text-ir-danger">{formError}</p>}
+
+      <Button
+        className="w-full"
+        disabled={sendingCode || !email.trim() || cooldown > 0}
+        type="submit"
+      >
+        {cooldown > 0
+          ? `Try again in ${cooldown}s`
+          : sendingCode
+            ? "Sending code…"
+            : "Send verification code"}
+      </Button>
+
+      <p className="text-center text-xs text-ir-muted">
+        No account or password needed — we only confirm your email.
+      </p>
+    </form>
   );
 }

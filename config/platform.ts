@@ -32,6 +32,13 @@ export const MAX_MEMBERS_PER_WORKSPACE: number | null = null;
 export const INVITE_EXPIRY_DAYS = 7;
 export const INVITE_LINK_LABEL_MAX = 100;
 
+// Password rules. Kept here rather than in lib/users/password.ts because that
+// module pulls in the database and better-auth/crypto — importing it from a
+// client component to read a number would drag all of that into the browser
+// bundle. Mirrors `minPasswordLength` configured in lib/auth.ts.
+export const MIN_PASSWORD_LENGTH = 8;
+export const MAX_PASSWORD_LENGTH = 128;
+
 // Accountless participation on the Public Portal (Feature 01). A visitor proves
 // they control an email address with a one-time code and can then submit
 // feedback, vote, and comment — no account, no password, no session.

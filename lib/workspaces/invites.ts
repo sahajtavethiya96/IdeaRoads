@@ -11,6 +11,7 @@ import {
 import { user } from "@/db/schema/auth";
 import { db } from "@/lib/db";
 import { inviteTemplate } from "@/lib/email/templates/invite";
+import { env } from "@/lib/env";
 import { enqueueJob } from "@/lib/worker/enqueue";
 import { JOB_NAMES } from "@/lib/worker/job-types";
 
@@ -32,6 +33,15 @@ export async function createInvite(
   const inviteId = createId();
   const expiresAt = new Date(Date.now() + INVITE_EXPIRY_DAYS * 864e5);
   const inviteUrl = `${input.appUrl}/invite/${token}`;
+
+  // Never log the recipient or the invite URL in production — the URL is a live
+  // credential (anyone holding it can join the workspace) and the address is
+  // PII. The dev log lets you accept an invite locally without SMTP
+  // configured, mirroring [magic-link] in lib/auth.ts and [portal-otp] in
+  // lib/portal/verification.ts.
+  if (env.NODE_ENV !== "production") {
+    console.log(`[invite] recipient=${input.email} url=${inviteUrl}`);
+  }
 
   const { html, text } = await inviteTemplate({
     inviterName: input.inviterName,

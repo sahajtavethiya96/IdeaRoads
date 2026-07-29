@@ -1,21 +1,34 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { GUEST_IDENTITY_DAYS } from "@/config/platform";
 import { getCurrentSession } from "@/lib/authz";
 import { env } from "@/lib/env";
 import { isFeatureEnabled } from "@/lib/orbit/feature-flags";
 
-// Identity for an ACCOUNTLESS Public Portal visitor. Once they have proven
-// control of an email address (lib/portal/verification.ts), that address plus a
-// display name is carried in a signed cookie — there is no `user` row and no
-// Better Auth session behind it. The cookie IS the identity, so it is signed
-// with APP_SECRET: a visitor cannot hand-edit it into someone else's address.
+// Identity for an ACCOUNTLESS visitor. Once they have proven control of an
+// email address (lib/portal/verification.ts), that address plus a display name
+// is carried in a signed token — there is no `user` row and no Better Auth
+// session behind it. The token IS the identity, so it is signed with
+// APP_SECRET: a visitor cannot hand-edit it into someone else's address.
 //
 // Signing follows the same shape as lib/email/unsubscribe.ts —
 // base64url(payload) "." base64url(HMAC-SHA256(payload)) — widened from a bare
 // user id to a JSON payload carrying the email, name, and expiry.
+//
+// The token reaches the server two ways, because one transport cannot serve
+// both surfaces:
+//
+//   • Public Portal (top-level page) → an httpOnly cookie. Not readable by
+//     script, and sent automatically.
+//   • Embed widget (cross-site iframe) → the X-Portal-Guest header. A
+//     SameSite=Lax cookie is refused outright by browsers for requests made
+//     inside a third-party iframe — the same constraint that forced the embed
+//     onto bearer tokens for account auth (see the socialProviders/advanced
+//     notes in lib/auth.ts). The signature is what makes this safe to accept
+//     from a client-held header at all.
 
 const COOKIE_NAME = "ir_portal_guest";
+export const GUEST_HEADER = "x-portal-guest";
 const SEPARATOR = ".";
 
 export interface GuestIdentity {
@@ -92,13 +105,34 @@ export function parseGuestCookie(
   return { email: payload.email, name: payload.name ?? null };
 }
 
+/**
+ * Build a signed identity token for a client that cannot use the cookie —
+ * i.e. the embed widget, which stores it and sends it back on X-Portal-Guest.
+ * Same value the cookie carries, same signature, same expiry.
+ */
+export function createGuestToken(identity: GuestIdentity): string {
+  return serialize(identity, Date.now() + guestMaxAgeSeconds() * 1000);
+}
+
+function guestMaxAgeSeconds(): number {
+  return GUEST_IDENTITY_DAYS * 24 * 60 * 60;
+}
+
 export async function getGuestIdentity(): Promise<GuestIdentity | null> {
+  // Cookie first (Public Portal), then the header (embed widget). Both are
+  // signature-verified by parseGuestCookie, so neither is trusted on its face.
   const store = await cookies();
-  return parseGuestCookie(store.get(COOKIE_NAME)?.value);
+  const fromCookie = parseGuestCookie(store.get(COOKIE_NAME)?.value);
+  if (fromCookie) {
+    return fromCookie;
+  }
+
+  const requestHeaders = await headers();
+  return parseGuestCookie(requestHeaders.get(GUEST_HEADER) ?? undefined);
 }
 
 export async function setGuestIdentity(identity: GuestIdentity): Promise<void> {
-  const maxAgeSeconds = GUEST_IDENTITY_DAYS * 24 * 60 * 60;
+  const maxAgeSeconds = guestMaxAgeSeconds();
   const store = await cookies();
   store.set(
     COOKIE_NAME,
@@ -107,9 +141,10 @@ export async function setGuestIdentity(identity: GuestIdentity): Promise<void> {
       httpOnly: true,
       maxAge: maxAgeSeconds,
       path: "/",
-      // Lax, not None: this is the top-level Public Portal only. The embed widget
-      // runs cross-site in an iframe and keeps its own bearer-token auth, which
-      // this cookie deliberately does not participate in.
+      // Lax, not None: this is the top-level Public Portal. The embed widget
+      // runs cross-site in an iframe, where browsers refuse to send a Lax
+      // cookie at all — it uses the X-Portal-Guest header instead, carrying
+      // the same signed value (see createGuestToken).
       sameSite: "lax",
       secure: env.NODE_ENV === "production",
     }

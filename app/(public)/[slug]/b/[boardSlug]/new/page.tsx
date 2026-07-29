@@ -109,6 +109,7 @@ export default async function NewPostPage({ params, searchParams }: Props) {
           boards={publicBoards}
           changelogPublic={workspace.changelogPublic}
           guestEmail={actor && !actor.id ? actor.email : undefined}
+          guestName={actor && !actor.id ? actor.name : undefined}
           isMember={!!member}
           isSignedIn={!!session}
           logoUrl={workspace.logoUrl}

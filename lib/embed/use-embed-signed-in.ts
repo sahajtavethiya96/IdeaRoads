@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { embedFetch } from "@/lib/embed/fetch";
+import { getGuestToken, onGuestTokenChange } from "@/lib/embed/guest-token";
 import {
   clearEmbedToken,
   getEmbedToken,
@@ -57,6 +58,18 @@ export function useEmbedSignedIn(
     let cancelled = false;
 
     async function validate() {
+      // An accountless visitor who verified their email is "signed in" for
+      // every purpose the widget cares about — they may vote, comment, and
+      // post. The token is signature-verified server-side on each request, so
+      // its mere presence here only decides whether to show the verify dialog,
+      // never whether the action is allowed.
+      if (getGuestToken()) {
+        if (!cancelled) {
+          setSignedIn(true);
+        }
+        return;
+      }
+
       const token = getEmbedToken();
       if (!token) {
         if (!cancelled) {
@@ -85,10 +98,14 @@ export function useEmbedSignedIn(
 
     validate(); // this widget's own mount-time check
     const unsubscribe = onEmbedTokenChange(validate); // live sync from siblings
+    // Same live-sync for the accountless identity, so verifying in one widget
+    // instance updates every other one on the page without a reload.
+    const unsubscribeGuest = onGuestTokenChange(validate);
 
     return () => {
       cancelled = true;
       unsubscribe();
+      unsubscribeGuest();
     };
   }, [isEmbed, serverIsSignedIn]);
 
