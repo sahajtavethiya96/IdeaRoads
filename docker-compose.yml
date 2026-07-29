@@ -1,0 +1,78 @@
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-idearoads}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-idearoads}
+      POSTGRES_DB: ${POSTGRES_DB:-idearoads}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-idearoads} -d ${POSTGRES_DB:-idearoads}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    command: ["/app/node_modules/.bin/tsx", "scripts/migrate.ts"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    expose:
+      - "3000"
+    volumes:
+      - uploads:/app/public/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    command: ["/app/node_modules/.bin/tsx", "scripts/worker.ts"]
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  # Pinned to literal names (not just "pgdata"/"uploads") on purpose: Compose
+  # namespaces unnamed volumes as "<compose-project-name>_<volume-name>", and
+  # some deploy tools (observed with Dokploy) don't keep the project name
+  # stable across redeploys — that silently creates a NEW, empty volume each
+  # time, orphaning the old one (DB data or uploads) without any error. An
+  # upload appears to work right after it's made (same container, same
+  # volume still mounted) but is gone after the next redeploy, because the
+  # redeployed container mounted a fresh, empty volume instead of the one
+  # holding the file. Pinning guarantees every deploy reattaches to the same
+  # volume.
+  pgdata:
+    name: idearoads_pgdata
+  uploads:
+    name: idearoads_uploads
