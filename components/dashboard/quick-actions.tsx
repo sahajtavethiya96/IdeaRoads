@@ -41,7 +41,7 @@ export function QuickActions({
     ...(isAdminOrOwner
       ? [
           {
-            href: `/${workspaceSlug}/settings/members/invites`,
+            href: `/${workspaceSlug}/settings/members`,
             icon: UsersThree,
             label: "Invite Members",
           },

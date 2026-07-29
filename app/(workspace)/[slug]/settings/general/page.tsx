@@ -44,7 +44,6 @@ export default async function GeneralSettingsPage({ params }: Props) {
       isOwner={isOwner}
       portalUrl={portalBaseUrl()}
       roadmapPublic={workspace.roadmapPublic}
-      roadmapSyncEnabled={workspace.roadmapSyncEnabled}
       workspaceDescription={workspace.description ?? ""}
       workspaceId={workspace.id}
       workspaceLogoUrl={workspace.logoUrl ?? ""}

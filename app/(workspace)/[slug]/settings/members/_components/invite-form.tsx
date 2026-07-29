@@ -3,6 +3,7 @@
 import { SpinnerIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
+import { toast } from "sonner";
 import { inviteMemberAction } from "@/app/actions/members";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,23 +17,26 @@ import {
 
 interface InviteFormProps {
   canInviteAdmin: boolean;
+  onInvited?: () => void;
   workspaceId: string;
 }
 
-export function InviteForm({ workspaceId, canInviteAdmin }: InviteFormProps) {
+export function InviteForm({
+  workspaceId,
+  canInviteAdmin,
+  onInvited,
+}: InviteFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"member" | "admin">("member");
   const [submitting, setSubmitting] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setEmailError(null);
     setGeneralError(null);
-    setSuccess(false);
     setSubmitting(true);
 
     const result = await inviteMemberAction({
@@ -51,46 +55,36 @@ export function InviteForm({ workspaceId, canInviteAdmin }: InviteFormProps) {
       return;
     }
 
+    toast.success(`Invitation sent to ${email.trim()}`);
     setEmail("");
     setRole("member");
-    setSuccess(true);
     router.refresh();
-    setTimeout(() => setSuccess(false), 3000);
+    onInvited?.();
   }
 
   return (
     <div>
-      <h2 className="mb-4 text-sm font-semibold tracking-eyebrow text-ir-muted uppercase">
-        Invite a Team Member
-      </h2>
       <form className="space-y-4" onSubmit={onSubmit}>
         {generalError && (
           <p className="rounded-ir-sm bg-ir-danger/10 px-3 py-2 text-sm text-ir-danger">
             {generalError}
           </p>
         )}
-        {success && (
-          <p className="rounded-ir-sm bg-ir-success/10 px-3 py-2 text-sm text-ir-success">
-            Invitation sent.
-          </p>
-        )}
+        <div className="space-y-1">
+          <Input
+            autoComplete="off"
+            disabled={submitting}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setEmailError(null);
+            }}
+            placeholder="colleague@example.com"
+            type="email"
+            value={email}
+          />
+          {emailError && <p className="text-xs text-ir-danger">{emailError}</p>}
+        </div>
         <div className="flex flex-col gap-3 sm:flex-row">
-          <div className="flex-1 space-y-1">
-            <Input
-              autoComplete="off"
-              disabled={submitting}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setEmailError(null);
-              }}
-              placeholder="colleague@example.com"
-              type="email"
-              value={email}
-            />
-            {emailError && (
-              <p className="text-xs text-ir-danger">{emailError}</p>
-            )}
-          </div>
           {canInviteAdmin && (
             <Select
               disabled={submitting}
@@ -106,7 +100,11 @@ export function InviteForm({ workspaceId, canInviteAdmin }: InviteFormProps) {
               </SelectContent>
             </Select>
           )}
-          <Button disabled={submitting || !email.trim()} type="submit">
+          <Button
+            className="sm:ml-auto"
+            disabled={submitting || !email.trim()}
+            type="submit"
+          >
             {submitting ? (
               <span className="flex items-center gap-2">
                 <SpinnerIcon className="size-4 animate-spin" />

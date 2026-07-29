@@ -95,6 +95,9 @@ export default async function FeedbackPage({ params, searchParams }: Props) {
     search: searchQuery || undefined,
     includeUnapproved: true,
     drafts: draftsOpt,
+    // Merged feedback is folded into its destination — surfaced there via
+    // the "Merged feedback" section instead of as its own row here.
+    excludeMerged: true,
   };
 
   const [posts, totalCount, board, categories, workspaceStatuses] =
