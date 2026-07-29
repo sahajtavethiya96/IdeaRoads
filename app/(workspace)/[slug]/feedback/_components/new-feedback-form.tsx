@@ -170,169 +170,163 @@ export function NewFeedbackForm({
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
-      <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
-        <div className="border-b border-ir-border p-4 last:border-0">
-          <label
-            className="mb-1.5 block text-sm font-medium text-ir-heading"
-            htmlFor="feedback-title"
-          >
-            Title <span className="text-ir-danger">*</span>
-          </label>
-          <input
-            autoComplete="off"
-            className={`w-full rounded-ir-input border bg-ir-surface px-3 py-2 text-sm text-ir-body placeholder:text-ir-muted focus:outline-none focus:ring-2 focus:ring-ir-primary/40 disabled:opacity-50 ${
-              titleError ? "border-ir-danger" : "border-ir-border"
-            }`}
-            disabled={isPending}
-            id="feedback-title"
-            maxLength={150}
-            onChange={(e) => {
-              setTitle(e.target.value);
-              if (titleError) {
-                setTitleError(null);
-              }
-            }}
-            placeholder="Short, descriptive title"
-            type="text"
-            value={title}
-          />
-          {titleError && (
-            <p className="mt-1 text-xs text-ir-danger">{titleError}</p>
-          )}
-        </div>
-
-        <div className="border-b border-ir-border p-4 last:border-0">
-          <span className="mb-1.5 block text-sm font-medium text-ir-heading">
-            Description{" "}
-            <span className="text-xs font-normal text-ir-muted">
-              (optional)
-            </span>
-          </span>
-          <QuillEditor
-            disabled={isPending}
-            onChange={(html) => setBody(html)}
-            placeholder="Add more context…"
-            value={body}
-          />
-        </div>
-
-        {workspaceStatuses.length > 0 && (
-          <div className="border-b border-ir-border p-4 last:border-0">
-            <label
-              className="mb-1.5 block text-sm font-medium text-ir-heading"
-              htmlFor="feedback-status"
-            >
-              Status
-            </label>
-            <Select
-              disabled={isPending}
-              onValueChange={(v) => setStatus(v)}
-              value={status}
-            >
-              <SelectTrigger className="w-full" id="feedback-status">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {workspaceStatuses.map((s) => (
-                  <SelectItem key={s.slug} value={s.slug}>
-                    {s.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      <div>
+        <label
+          className="mb-1.5 block text-sm font-medium text-ir-heading"
+          htmlFor="feedback-title"
+        >
+          Title <span className="text-ir-danger">*</span>
+        </label>
+        <input
+          autoComplete="off"
+          className={`w-full rounded-ir-input border bg-ir-surface px-3 py-2 text-sm text-ir-body placeholder:text-ir-muted focus:outline-none focus:ring-2 focus:ring-ir-primary/40 disabled:opacity-50 ${
+            titleError ? "border-ir-danger" : "border-ir-border"
+          }`}
+          disabled={isPending}
+          id="feedback-title"
+          maxLength={150}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            if (titleError) {
+              setTitleError(null);
+            }
+          }}
+          placeholder="Short, descriptive title"
+          type="text"
+          value={title}
+        />
+        {titleError && (
+          <p className="mt-1 text-xs text-ir-danger">{titleError}</p>
         )}
-
-        <div className="border-b border-ir-border p-4 last:border-0">
-          <label
-            className="mb-1.5 block text-sm font-medium text-ir-heading"
-            htmlFor="feedback-category"
-          >
-            Category <span className="text-ir-danger">*</span>
-          </label>
-          {categories.length > 0 ? (
-            <Select
-              disabled={isPending}
-              onValueChange={setCategoryId}
-              value={categoryId}
-            >
-              <SelectTrigger className="w-full" id="feedback-category">
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : (
-            <p
-              className="rounded-ir-input border border-dashed border-ir-border px-3 py-2 text-sm text-ir-muted"
-              id="feedback-category"
-            >
-              No categories yet —{" "}
-              <Link
-                className="font-medium text-ir-primary hover:underline"
-                href={`/${workspaceSlug}/settings/categories`}
-                target="_blank"
-              >
-                create one
-              </Link>{" "}
-              to start organizing feedback.
-            </p>
-          )}
-        </div>
-
-        <div className="border-b border-ir-border p-4 last:border-0">
-          <span className="mb-1.5 block text-sm font-medium text-ir-heading">
-            Image{" "}
-            <span className="text-xs font-normal text-ir-muted">
-              (optional)
-            </span>
-          </span>
-          {imagePreviewUrl ? (
-            <div className="relative inline-block">
-              <ImagePreviewThumbnail
-                className="max-h-40 w-auto rounded-ir-md border border-ir-border object-contain"
-                src={imagePreviewUrl}
-              />
-              <button
-                aria-label="Remove image"
-                className="absolute -top-2 -right-2 flex size-6 cursor-pointer items-center justify-center rounded-ir-full border border-ir-border bg-ir-surface text-ir-danger shadow-ir-xs transition-opacity duration-150 hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-                disabled={isPending}
-                onClick={removeImage}
-                type="button"
-              >
-                <XIcon className="size-3.5" />
-              </button>
-            </div>
-          ) : (
-            <label
-              className={`flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-ir-input border border-dashed border-ir-border px-3 py-3 text-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:border-ir-primary/40 hover:text-ir-heading ${
-                isPending ? "pointer-events-none opacity-50" : ""
-              }`}
-            >
-              <ImageIcon className="size-4" />
-              Add an image
-              <input
-                accept="image/png,image/jpeg,image/webp,image/gif"
-                className="sr-only"
-                disabled={isPending}
-                onChange={handleImageChange}
-                ref={fileInputRef}
-                type="file"
-              />
-            </label>
-          )}
-          {imageError && (
-            <p className="mt-1 text-xs text-ir-danger">{imageError}</p>
-          )}
-        </div>
       </div>
 
-      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      <div>
+        <span className="mb-1.5 block text-sm font-medium text-ir-heading">
+          Description{" "}
+          <span className="text-xs font-normal text-ir-muted">(optional)</span>
+        </span>
+        <QuillEditor
+          disabled={isPending}
+          onChange={(html) => setBody(html)}
+          placeholder="Add more context…"
+          value={body}
+        />
+      </div>
+
+      {workspaceStatuses.length > 0 && (
+        <div>
+          <label
+            className="mb-1.5 block text-sm font-medium text-ir-heading"
+            htmlFor="feedback-status"
+          >
+            Status
+          </label>
+          <Select
+            disabled={isPending}
+            onValueChange={(v) => setStatus(v)}
+            value={status}
+          >
+            <SelectTrigger className="w-full" id="feedback-status">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {workspaceStatuses.map((s) => (
+                <SelectItem key={s.slug} value={s.slug}>
+                  {s.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      <div>
+        <label
+          className="mb-1.5 block text-sm font-medium text-ir-heading"
+          htmlFor="feedback-category"
+        >
+          Category <span className="text-ir-danger">*</span>
+        </label>
+        {categories.length > 0 ? (
+          <Select
+            disabled={isPending}
+            onValueChange={setCategoryId}
+            value={categoryId}
+          >
+            <SelectTrigger className="w-full" id="feedback-category">
+              <SelectValue placeholder="Select a category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <p
+            className="rounded-ir-input border border-dashed border-ir-border px-3 py-2 text-sm text-ir-muted"
+            id="feedback-category"
+          >
+            No categories yet —{" "}
+            <Link
+              className="font-medium text-ir-primary hover:underline"
+              href={`/${workspaceSlug}/settings/categories`}
+              target="_blank"
+            >
+              create one
+            </Link>{" "}
+            to start organizing feedback.
+          </p>
+        )}
+      </div>
+
+      <div>
+        <span className="mb-1.5 block text-sm font-medium text-ir-heading">
+          Image{" "}
+          <span className="text-xs font-normal text-ir-muted">(optional)</span>
+        </span>
+        {imagePreviewUrl ? (
+          <div className="relative inline-block">
+            <ImagePreviewThumbnail
+              className="max-h-40 w-auto rounded-ir-md border border-ir-border object-contain"
+              src={imagePreviewUrl}
+            />
+            <button
+              aria-label="Remove image"
+              className="absolute -top-2 -right-2 flex size-6 cursor-pointer items-center justify-center rounded-ir-full border border-ir-border bg-ir-surface text-ir-danger shadow-ir-xs transition-opacity duration-150 hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+              disabled={isPending}
+              onClick={removeImage}
+              type="button"
+            >
+              <XIcon className="size-3.5" />
+            </button>
+          </div>
+        ) : (
+          <label
+            className={`flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-ir-input border border-dashed border-ir-border px-3 py-3 text-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:border-ir-primary/40 hover:text-ir-heading ${
+              isPending ? "pointer-events-none opacity-50" : ""
+            }`}
+          >
+            <ImageIcon className="size-4" />
+            Add an image
+            <input
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              className="sr-only"
+              disabled={isPending}
+              onChange={handleImageChange}
+              ref={fileInputRef}
+              type="file"
+            />
+          </label>
+        )}
+        {imageError && (
+          <p className="mt-1 text-xs text-ir-danger">{imageError}</p>
+        )}
+      </div>
+
+      <div className="flex flex-col-reverse gap-2 border-t border-ir-border pt-4 sm:flex-row sm:justify-end">
         <Button
           disabled={isPending}
           onClick={() => router.push(`/${workspaceSlug}/feedback`)}

@@ -7,9 +7,7 @@ import {
   inArray,
   isNull,
   notInArray,
-  or,
   sql,
-  type SQL,
 } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { boards, postStatusChanges, posts, votes } from "@/db/schema";
@@ -367,12 +365,7 @@ export async function listWorkspacePosts(
     conditions.push(eq(posts.authorId, authorId));
   }
   if (search?.trim()) {
-    const term = `%${search.trim()}%`;
-    conditions.push(
-      // or() with 2+ args is always defined; the union type is only for the
-      // zero-arg case, which can't happen here.
-      or(ilike(posts.title, term), ilike(posts.authorName, term)) as SQL
-    );
+    conditions.push(ilike(posts.title, `%${search.trim()}%`));
   }
 
   const orderByCols =
@@ -493,12 +486,7 @@ export async function countWorkspacePostsFiltered(
     conditions.push(eq(posts.authorId, authorId));
   }
   if (search?.trim()) {
-    const term = `%${search.trim()}%`;
-    conditions.push(
-      // or() with 2+ args is always defined; the union type is only for the
-      // zero-arg case, which can't happen here.
-      or(ilike(posts.title, term), ilike(posts.authorName, term)) as SQL
-    );
+    conditions.push(ilike(posts.title, `%${search.trim()}%`));
   }
 
   const [{ value }] = await db

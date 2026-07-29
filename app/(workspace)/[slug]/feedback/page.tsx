@@ -173,7 +173,6 @@ export default async function FeedbackPage({ params, searchParams }: Props) {
             }
             postHref={(post) => `/${slug}/feedback/${post.id}`}
             posts={posts}
-            showBoardColumn={false}
             workspaceId={workspace.id}
             workspaceStatuses={workspaceStatuses}
           />

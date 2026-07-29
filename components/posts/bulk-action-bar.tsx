@@ -5,7 +5,6 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { updatePostCategoryAction } from "@/app/actions/categories";
 import {
   deletePostAction,
   publishPostAction,
@@ -22,12 +21,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface Category {
-  color: string;
-  id: string;
-  name: string;
-}
-
 interface WorkspaceStatus {
   color: string;
   id: string;
@@ -37,7 +30,6 @@ interface WorkspaceStatus {
 }
 
 interface BulkActionBarProps {
-  categories: Category[];
   // Only enough per-post data to decide which bulk actions apply — draft
   // status for the Publish button. Structurally compatible with the fuller
   // PostsTableRow the caller already has.
@@ -51,7 +43,6 @@ interface BulkActionBarProps {
 // already-supported publish/status/delete flows (same as each row's own menu).
 export function BulkActionBar({
   posts,
-  categories,
   workspaceId,
   workspaceStatuses,
 }: BulkActionBarProps) {
@@ -85,6 +76,7 @@ export function BulkActionBar({
       if (okCount < draftIds.length) {
         toast.error(`${draftIds.length - okCount} could not be published`);
       }
+      clearSelection();
       router.refresh();
     });
   }
@@ -103,24 +95,7 @@ export function BulkActionBar({
       if (okCount < ids.length) {
         toast.error(`${ids.length - okCount} could not be updated`);
       }
-      router.refresh();
-    });
-  }
-
-  function handleCategoryChange(categoryId: string) {
-    startTransition(async () => {
-      const results = await Promise.all(
-        ids.map((postId) =>
-          updatePostCategoryAction({ postId, workspaceId, categoryId })
-        )
-      );
-      const okCount = results.filter((r) => r.success).length;
-      if (okCount > 0) {
-        toast.success(`Updated category on ${okCount} of ${ids.length}`);
-      }
-      if (okCount < ids.length) {
-        toast.error(`${ids.length - okCount} could not be updated`);
-      }
+      clearSelection();
       router.refresh();
     });
   }
@@ -183,24 +158,6 @@ export function BulkActionBar({
                   ))}
               </SelectContent>
             </Select>
-            {categories.length > 0 && (
-              <Select
-                disabled={isPending}
-                onValueChange={handleCategoryChange}
-                value=""
-              >
-                <SelectTrigger size="sm">
-                  <SelectValue placeholder="Set category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
             <Button
               disabled={isPending}
               onClick={() => setDeleteOpen(true)}

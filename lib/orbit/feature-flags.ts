@@ -78,6 +78,6 @@ export const DEFAULT_FEATURE_FLAGS: Array<{
   {
     key: "password_auth",
     description: "Email + password sign-up (self-serve registration)",
-    isEnabled: true,
+    isEnabled: false,
   },
 ];
