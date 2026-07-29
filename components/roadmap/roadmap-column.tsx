@@ -55,23 +55,26 @@ export function RoadmapColumn({
   const hasMore = posts.length > visibleCount;
 
   return (
-    <div className="flex w-full min-w-0 flex-col">
+    <div className="flex min-h-0 w-full min-w-0 flex-col">
       <RoadmapStatusHeader color={color} count={posts.length} name={name} />
 
-      {/* Drop zone. flex-1 (not just min-h-*) so it fills the column's full
-          stretched height — the grid row stretches every column to match its
+      {/* Drop zone. flex-1 + overflow-y-auto so it fills the column's full
+          stretched height and scrolls internally while the header above
+          stays put — the grid row stretches every column to match its
           tallest sibling (CSS grid's default align-items: stretch), so
           without flex-1 a short column's actual drop-zone element only wraps
           its own cards, leaving empty space below that looks part of the
           column but sits outside the div useKanbanDrag hit-tests against
           (getBoundingClientRect on this exact ref). That's what made only the
-          top of a column register drops. Keyboard/non-pointer users change
+          top of a column register drops. overflow-y-auto also resets the
+          flex item's automatic min-height to 0, so min-h-16 (not min-h-0)
+          still acts as the real floor. Keyboard/non-pointer users change
           status via the post's own status control elsewhere (e.g. All
           Feedback) — drag here is a pointer-only enhancement, matching the
-          manual roadmap board (see DraggableCard — it can only be started
-          from each card's drag handle). */}
+          manual roadmap board (see DraggableCard — it can be started from
+          anywhere on the card, see RoadmapPostCard). */}
       <div
-        className={`flex min-h-16 flex-1 flex-col gap-2 rounded-ir-md p-1 transition-colors duration-150 ease-ir-standard ${
+        className={`flex min-h-16 flex-1 flex-col gap-2 overflow-y-auto rounded-ir-md p-1 transition-colors duration-150 ease-ir-standard ${
           isDropTarget && canManage
             ? "bg-ir-primary-light/10 ring-1 ring-inset ring-ir-primary/30"
             : ""
@@ -104,7 +107,7 @@ export function RoadmapColumn({
                     onDragEnd={() => onDragEndPost?.()}
                     onDragStart={() => onDragStartPost?.(post)}
                   >
-                    {(dragControls) => (
+                    {(dragControls, wasDragged) => (
                       <RoadmapPostCard
                         canManage={canManage}
                         dragControls={dragControls}
@@ -113,6 +116,7 @@ export function RoadmapColumn({
                         isSignedIn={isSignedIn}
                         post={post}
                         useWorkspaceLinks={useWorkspaceLinks}
+                        wasDragged={wasDragged}
                         workspaceSlug={workspaceSlug}
                       />
                     )}

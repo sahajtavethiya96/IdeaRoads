@@ -46,7 +46,10 @@ export type SubmitFeedbackInput = z.infer<typeof submitFeedbackSchema>;
 
 export interface FeedbackActor {
   email: string;
-  id: string;
+  // Null for an accountless Public Portal visitor who has verified their email
+  // (lib/portal/guest-identity.ts). The post is then attributed by
+  // authorEmail/authorName alone — posts.authorId has always been nullable.
+  id: string | null;
   name: string | null;
 }
 
@@ -103,7 +106,11 @@ export async function submitFeedback(
     };
   }
 
-  const actorMember = await getWorkspaceMember(input.workspaceId, actor.id);
+  // A guest has no account and therefore can never be a member — which is
+  // exactly what confines them to public, non-archived boards below.
+  const actorMember = actor.id
+    ? await getWorkspaceMember(input.workspaceId, actor.id)
+    : null;
   if (!boardRow.isPublic && !actorMember) {
     return { ok: false, error: "This board is private." };
   }

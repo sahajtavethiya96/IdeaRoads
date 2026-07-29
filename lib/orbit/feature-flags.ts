@@ -66,7 +66,12 @@ export const DEFAULT_FEATURE_FLAGS: Array<{
 }> = [
   {
     key: "guest_voting",
-    description: "Allow guests to vote with email only",
+    // Master switch for accountless participation on the Public Portal: a
+    // visitor verifies an email with a one-time code and can then submit
+    // feedback, vote, and comment without an account. Enforced in
+    // getPortalActor (lib/portal/guest-identity.ts), so turning it off reverts
+    // the portal to accounts-only everywhere at once.
+    description: "Allow guests to submit feedback, vote, and comment by email",
     isEnabled: true,
   },
   {

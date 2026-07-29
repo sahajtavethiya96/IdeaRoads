@@ -6,13 +6,15 @@
 
 Feedback posts are the core unit of IdeaRoads. A post is a single piece of customer feedback — a feature request, bug report, or idea — submitted to a board. Every post has a title, an optional description, a status, a vote count, and a comment count.
 
-Anyone can read posts on a public board. Creating a post requires signing in — feedback authors are always signed-in Users. The team (Brand Admin and Team Members) handles posts day to day — pinning, changing status, moving between boards, merging duplicates, deleting, and approving. The author of a post can edit or delete their own post within the limits below. Posts inherit the visibility of the board they belong to.
+Anyone can read posts on a public board. Creating a post requires a **verified email**, not necessarily an account: on the Public Portal a visitor fills in the form, and is asked to confirm their email with a 6-digit code at submit time (their draft is preserved while they do). Inside the admin app and the embed widget, authors are signed-in Users as before. The team (Brand Admin and Team Members) handles posts day to day — pinning, changing status, moving between boards, merging duplicates, deleting, and approving. A post's author can edit or delete their own post within the limits below, provided they have an account — accountless submissions are final for their author, though the team can still edit and moderate them. Posts inherit the visibility of the board they belong to.
 
 ---
 
 ## Core Behaviour
 
-- A **signed-in User** can submit a post to a public board. Browsing a public board needs no account, but creating feedback requires signing in first.
+- A **signed-in User** can submit a post to a public board.
+- A **visitor with no account** can also submit to a public board on the Public Portal, after confirming their email with a one-time code. The post is attributed to that verified address (and the display name they optionally supply). Browsing needs no verification at all — only submitting does. Gated by the `guest_voting` feature flag.
+- Private and archived boards remain members-only; an unverified or accountless visitor can never reach them.
 - Each post lives at a clean, shareable URL: `/{ws-slug}/b/{board-slug}/p/{postId}-{slug}`. The trailing slug is derived from the title for readability; the post can always be resolved from the identifier in the URL.
 - The board post list defaults to **Trending** sort, which surfaces posts gaining votes recently ahead of older posts with the same total. It also offers **Newest** and **Top Voted** sorts.
 - **Pinned posts** always appear at the top of the list, regardless of the active sort.

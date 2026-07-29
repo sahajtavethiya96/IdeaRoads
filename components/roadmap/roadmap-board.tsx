@@ -106,50 +106,61 @@ export function RoadmapBoard({
   }
 
   return (
-    <div className="px-6 pb-12">
+    <div className="flex min-h-0 flex-1 flex-col">
       {canManage && columns.length > 0 && (
-        <p className="mt-4 mb-2 text-xs text-ir-muted">
+        <p className="shrink-0 px-6 pt-4 pb-2 text-xs text-ir-muted">
           Drag a card into another column to change its status.
         </p>
       )}
 
-      {columns.length === 0 ? (
-        <div className="mt-4 rounded-ir-card border border-dashed border-ir-border px-4 py-16 text-center text-sm text-ir-muted">
-          No roadmap columns yet. Add feedback statuses to populate the roadmap.
-        </div>
-      ) : (
-        // Responsive grid: 1 column on mobile, 2 on tablet, 3 on desktop —
-        // a 4th+ column wraps to a new row instead of squeezing into one.
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {columns.map((col) => (
-            <RoadmapColumn
-              canManage={canManage}
-              color={col.color}
-              columnRef={registerColumn(col.id)}
-              draggingId={draggingId}
-              embedQuery={embedQuery}
-              isDropTarget={dropPosition?.columnId === col.id}
-              isFiltering={isFiltering}
-              isSignedIn={isSignedIn}
-              key={col.id}
-              name={col.name}
-              onDrag={handleDrag}
-              onDragEndPost={() =>
-                handleDragEnd((pos) => {
-                  const targetCol = columns.find((c) => c.id === pos.columnId);
-                  if (targetCol) {
-                    performMove(col.id, targetCol);
-                  }
-                })
-              }
-              onDragStartPost={(post) => handleDragStart(post.id)}
-              posts={cols[col.id] ?? []}
-              useWorkspaceLinks={useWorkspaceLinks}
-              workspaceSlug={workspaceSlug}
-            />
-          ))}
-        </div>
-      )}
+      {/* min-h-0 + overflow-y-auto so this area scrolls independently of the
+          page — each column's own header stays put above its own scrolling
+          card list (see RoadmapColumn) instead of the whole board scrolling
+          as one long page. h-full + auto-rows-fr on the grid below give every
+          column the same bounded height to scroll within (CSS grid's stretch
+          alignment makes that height genuinely definite, not just visual). */}
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 pt-6 pb-6">
+        {columns.length === 0 ? (
+          <div className="rounded-ir-card border border-dashed border-ir-border px-4 py-16 text-center text-sm text-ir-muted">
+            No roadmap columns yet. Add feedback statuses to populate the
+            roadmap.
+          </div>
+        ) : (
+          // Responsive grid: 1 column on mobile, 2 on tablet, 3 on desktop —
+          // a 4th+ column wraps to a new row instead of squeezing into one.
+          <div className="grid h-full auto-rows-fr grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {columns.map((col) => (
+              <RoadmapColumn
+                canManage={canManage}
+                color={col.color}
+                columnRef={registerColumn(col.id)}
+                draggingId={draggingId}
+                embedQuery={embedQuery}
+                isDropTarget={dropPosition?.columnId === col.id}
+                isFiltering={isFiltering}
+                isSignedIn={isSignedIn}
+                key={col.id}
+                name={col.name}
+                onDrag={handleDrag}
+                onDragEndPost={() =>
+                  handleDragEnd((pos) => {
+                    const targetCol = columns.find(
+                      (c) => c.id === pos.columnId
+                    );
+                    if (targetCol) {
+                      performMove(col.id, targetCol);
+                    }
+                  })
+                }
+                onDragStartPost={(post) => handleDragStart(post.id)}
+                posts={cols[col.id] ?? []}
+                useWorkspaceLinks={useWorkspaceLinks}
+                workspaceSlug={workspaceSlug}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { createPostAction, uploadPostImageAction } from "@/app/actions/posts";
 import { EmbedAuthDialog } from "@/components/embed/embed-auth-dialog";
+import { PortalVerifyDialog } from "@/components/portal/portal-verify-dialog";
 import { Button } from "@/components/ui/button";
 import { ImagePreviewThumbnail } from "@/components/ui/image-preview-thumbnail";
 import {
@@ -340,6 +341,15 @@ export default function NewPostForm({
     });
 
     if (!result.success) {
+      // The verification cookie can lapse between page load and submit (30-day
+      // expiry, or "Not you?" in another tab). Reopen the prompt instead of
+      // stranding the visitor behind an error — the draft is still on screen
+      // and resubmits itself once they verify again.
+      if (result.code === "UNAUTHENTICATED") {
+        setSignedIn(false);
+        setAuthOpen(true);
+        return;
+      }
       if (result.field === "title") {
         setTitleError(result.error);
       } else {
@@ -373,13 +383,11 @@ export default function NewPostForm({
 
     // Gate before touching the image upload at all, so a pre-auth attempt
     // never uploads anything — the resubmit after auth uploads exactly once.
+    // Both surfaces resolve identity in place: account sign-in inside the
+    // embed, accountless email verification on the Public Portal. The typed
+    // draft stays mounted throughout, so nothing is lost either way.
     if (!signedIn) {
-      if (isEmbed) {
-        setAuthOpen(true);
-        return;
-      }
-      // Unreachable in practice: the non-embed page redirects signed-out
-      // visitors to /signin before this component ever mounts.
+      setAuthOpen(true);
       return;
     }
 
@@ -691,10 +699,17 @@ export default function NewPostForm({
         </form>
       </div>
 
-      {isEmbed && (
+      {isEmbed ? (
         <EmbedAuthDialog
           onAuthenticated={handleAuthenticated}
           onOpenChange={setAuthOpen}
+          open={authOpen}
+        />
+      ) : (
+        <PortalVerifyDialog
+          action="post"
+          onOpenChange={setAuthOpen}
+          onVerified={handleAuthenticated}
           open={authOpen}
         />
       )}

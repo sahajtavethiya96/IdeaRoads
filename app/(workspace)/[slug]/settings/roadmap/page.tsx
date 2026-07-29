@@ -82,7 +82,7 @@ export default async function WorkspaceRoadmapPage({
 
     return (
       <ManualRoadmapProvider>
-        <div className="flex flex-col">
+        <div className="flex min-h-0 flex-1 flex-col">
           <SetPageHeader
             actions={
               isAdmin ? (
@@ -127,7 +127,7 @@ export default async function WorkspaceRoadmapPage({
   const totalPosts = columns.reduce((n, c) => n + c.posts.length, 0);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       <SetPageHeader
         beforeActions={
           <ListSearch
@@ -146,7 +146,7 @@ export default async function WorkspaceRoadmapPage({
         title="Roadmap"
       />
       {isAdmin && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-border px-4 py-4 sm:px-8">
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-border px-4 py-4 sm:px-8">
           <RoadmapSyncToggle enabled={true} workspaceId={workspace.id} />
           <div className="flex items-center gap-2 rounded-ir-md border border-ir-warning/30 bg-ir-warning/10 px-3 py-2 text-xs font-medium text-ir-warning">
             <InfoIcon className="size-3.5 shrink-0" />
@@ -154,16 +154,14 @@ export default async function WorkspaceRoadmapPage({
           </div>
         </div>
       )}
-      <div className="flex-1">
-        <RoadmapBoard
-          canManage={true}
-          columns={columns}
-          isSignedIn={true}
-          useWorkspaceLinks={true}
-          workspaceId={workspace.id}
-          workspaceSlug={slug}
-        />
-      </div>
+      <RoadmapBoard
+        canManage={true}
+        columns={columns}
+        isSignedIn={true}
+        useWorkspaceLinks={true}
+        workspaceId={workspace.id}
+        workspaceSlug={slug}
+      />
     </div>
   );
 }

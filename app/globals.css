@@ -282,6 +282,45 @@ body {
   background: hsl(var(--muted));
 }
 
+/* Toolbar button tooltips — Quill's snow theme renders these buttons as
+   plain DOM nodes outside React, so they can't use the app's Radix-based
+   Tooltip component. This reproduces its look (ir-heading bubble, ir-surface
+   text, shadow-ir-md) with pure CSS instead of a native `title` attribute,
+   which shows in OS styling after a ~1s delay. */
+.ql-snow.ql-toolbar button[data-tooltip],
+.ql-snow .ql-toolbar button[data-tooltip] {
+  position: relative;
+}
+.ql-snow.ql-toolbar button[data-tooltip]::after,
+.ql-snow .ql-toolbar button[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  z-index: 50;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-ir-sm);
+  background: var(--ir-text-heading);
+  color: var(--ir-surface);
+  font-size: 0.75rem;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: var(--shadow-ir-md);
+  opacity: 0;
+  transform: translateX(-50%) scale(0.95);
+  transition:
+    opacity 0.1s ease,
+    transform 0.1s ease;
+  pointer-events: none;
+}
+.ql-snow.ql-toolbar button[data-tooltip]:hover::after,
+.ql-snow .ql-toolbar button[data-tooltip]:hover::after,
+.ql-snow.ql-toolbar button[data-tooltip]:focus-visible::after,
+.ql-snow .ql-toolbar button[data-tooltip]:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
 /* SVGs inside buttons */
 .ql-snow .ql-toolbar button svg,
 .ql-snow.ql-toolbar button svg {

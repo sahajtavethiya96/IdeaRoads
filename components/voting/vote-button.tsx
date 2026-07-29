@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EmbedAuthDialog } from "@/components/embed/embed-auth-dialog";
 import { useIsEmbed } from "@/components/embed/use-is-embed";
+import { PortalVerifyDialog } from "@/components/portal/portal-verify-dialog";
 import { embedFetch } from "@/lib/embed/fetch";
 import { useEmbedVoteState } from "@/lib/embed/personalization-context";
 import { useEmbedSignedIn } from "@/lib/embed/use-embed-signed-in";
@@ -18,6 +19,9 @@ interface VoteButtonProps {
   initialCount: number;
   initialHasVoted: boolean;
   isArchived?: boolean;
+  // True when the viewer may vote right now — a signed-in account OR an
+  // accountless portal visitor who has already verified their email. Anyone
+  // else is prompted to verify in place rather than sent to /signin.
   isSignedIn: boolean;
   postId: string;
 }
@@ -100,7 +104,7 @@ export default function VoteButton({
         // that on its own. Rather than leave the visitor stuck behind a
         // generic error until they manually reload, treat 401 as "actually
         // signed out" and reopen the in-place prompt right away.
-        if (res.status === 401 && isEmbed) {
+        if (res.status === 401) {
           setSignedIn(false);
           setAuthOpen(true);
           return;
@@ -131,14 +135,11 @@ export default function VoteButton({
     }
 
     if (!signedIn) {
-      if (isEmbed) {
-        // Stay in the widget — sign in in place, then vote automatically.
-        setAuthOpen(true);
-        return;
-      }
-      // Voting requires sign-in — send the visitor to sign in, then back here.
-      const next = encodeURIComponent(window.location.pathname);
-      router.push(`/signin?next=${next}`);
+      // Stay where they are — verify in place, then vote automatically. In the
+      // widget that's the account-based embed sign-in; on the Public Portal
+      // it's accountless email verification. Either way the visitor never
+      // leaves the page and never loses their click.
+      setAuthOpen(true);
       return;
     }
 
@@ -151,10 +152,17 @@ export default function VoteButton({
     castVote();
   }
 
-  const authDialog = isEmbed && (
+  const authDialog = isEmbed ? (
     <EmbedAuthDialog
       onAuthenticated={handleAuthenticated}
       onOpenChange={setAuthOpen}
+      open={authOpen}
+    />
+  ) : (
+    <PortalVerifyDialog
+      action="vote"
+      onOpenChange={setAuthOpen}
+      onVerified={handleAuthenticated}
       open={authOpen}
     />
   );

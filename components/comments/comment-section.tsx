@@ -7,6 +7,10 @@ import type { CommentData, ReplyData } from "./types";
 
 interface CommentSectionProps {
   canModerate: boolean;
+  // May the viewer write a comment? True for a signed-in account and for an
+  // accountless portal visitor who has verified their email. Defaults to
+  // isSignedIn so callers without accountless participation are unaffected.
+  canParticipate?: boolean;
   currentUserId: string | null;
   isLocked: boolean;
   isSignedIn: boolean;
@@ -16,6 +20,7 @@ interface CommentSectionProps {
 export default async function CommentSection({
   postId,
   isSignedIn,
+  canParticipate,
   isLocked,
   currentUserId,
   canModerate,
@@ -91,6 +96,7 @@ export default async function CommentSection({
       <div className="px-5 py-4">
         <CommentThread
           canModerate={canModerate}
+          canParticipate={canParticipate ?? isSignedIn}
           initialComments={allComments}
           isLocked={isLocked}
           isSignedIn={isSignedIn}

@@ -83,6 +83,10 @@ interface PostDetailContentProps {
   backLabel: string;
   boardHref: string;
   boardIsArchived: boolean;
+  // Whether the viewer may vote and comment: a signed-in account, or an
+  // accountless Public Portal visitor who has verified their email. Defaults
+  // to isSignedIn, so the admin route is unaffected.
+  canParticipate?: boolean;
   categories: Category[];
   currentUserId: string | null;
   defaultEditing?: boolean;
@@ -134,6 +138,7 @@ export function PostDetailContent({
   boardIsArchived,
   isEmbed = false,
   isSignedIn,
+  canParticipate = isSignedIn,
   isMember,
   isPublicPortal = false,
   isAdminOrOwner,
@@ -268,7 +273,7 @@ export function PostDetailContent({
                 initialCount={post.upvotes}
                 initialHasVoted={votedByUser}
                 isArchived={boardIsArchived}
-                isSignedIn={isSignedIn}
+                isSignedIn={canParticipate}
                 postId={post.id}
               />
               {isMember && (
@@ -430,6 +435,7 @@ export function PostDetailContent({
           <div className="mt-6">
             <CommentSection
               canModerate={isAdminOrOwner}
+              canParticipate={canParticipate}
               currentUserId={currentUserId}
               isLocked={post.isLocked}
               isSignedIn={isSignedIn}

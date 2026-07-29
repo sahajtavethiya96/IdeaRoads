@@ -1,17 +1,23 @@
 import { and, eq, sql } from "drizzle-orm";
 import { posts, votes } from "@/db/schema";
 import { db } from "@/lib/db";
+import type { VoteActor } from "@/lib/voting/cast";
 
 export async function removeVote(
   postId: string,
-  voter: { userId: string }
+  voter: Pick<VoteActor, "userEmail" | "userId">
 ): Promise<void> {
-  const { userId } = voter;
-  if (!userId) {
+  const { userId, userEmail } = voter;
+  if (!(userId || userEmail)) {
     return;
   }
 
-  const condition = and(eq(votes.postId, postId), eq(votes.userId, userId));
+  // Mirrors castVote's matching exactly, so a vote is always removable by the
+  // same identity that could not re-cast it: userId for an account, the
+  // verified email for a guest.
+  const condition = userId
+    ? and(eq(votes.postId, postId), eq(votes.userId, userId))
+    : and(eq(votes.postId, postId), eq(votes.userEmail, userEmail));
 
   await db.transaction(async (tx) => {
     const [deleted] = await tx

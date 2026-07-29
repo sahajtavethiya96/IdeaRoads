@@ -22,6 +22,7 @@ import {
   parseEmbedParams,
 } from "@/lib/embed/style";
 import { resolveBackTarget } from "@/lib/navigation/back-target";
+import { getPortalActor } from "@/lib/portal/guest-identity";
 import { getPost, getPostBySlug, listStatusHistory } from "@/lib/posts/queries";
 import { hasUserVoted } from "@/lib/voting";
 import { getActiveWorkspaceStatuses } from "@/lib/workspace-statuses/queries";
@@ -81,6 +82,12 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
     ? await getWorkspaceMember(workspace.id, session.user.id)
     : null;
   const isSignedIn = !!session;
+
+  // A signed-in account OR an accountless visitor who has verified their
+  // email. Voting and commenting key off this; member-only affordances
+  // (moderation, assignment, edit/delete) stay on isSignedIn/isMember.
+  const actor = await getPortalActor();
+  const canParticipate = !!actor;
   const isMember = !!member;
 
   const board = await getBoardBySlug(workspace.id, boardSlug);
@@ -118,7 +125,14 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
 
   const [votedByUser, categories, statusHistory, allBoards, members] =
     await Promise.all([
-      session ? hasUserVoted(post.id, { userId: session.user.id }) : false,
+      // Guests are matched by verified email — without this their own vote
+      // would render as un-cast and a second click would look like an un-vote.
+      actor
+        ? hasUserVoted(post.id, {
+            userId: actor.id ?? undefined,
+            userEmail: actor.id ? undefined : actor.email,
+          })
+        : false,
       getActiveCategoriesForWorkspace(workspace.id),
       listStatusHistory(post.id),
       listBoardsForWorkspace(workspace.id),
@@ -203,6 +217,7 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
             boards={publicBoards}
             changelogPublic={workspace.changelogPublic}
             currentPath={`/${slug}/b/${boardSlug}/p/${postSlug}${embedQuery}`}
+            guestEmail={actor && !actor.id ? actor.email : undefined}
             isMember={isMember}
             isSignedIn={isSignedIn}
             logoUrl={workspace.logoUrl}
@@ -225,6 +240,7 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
             backLabel={back.label}
             boardHref={back.href}
             boardIsArchived={board.isArchived}
+            canParticipate={canParticipate}
             categories={categories}
             currentUserId={session?.user.id ?? null}
             embedQuery={embedQuery}

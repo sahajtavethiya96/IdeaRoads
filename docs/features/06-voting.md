@@ -6,13 +6,16 @@
 
 Voting is how the people who use a brand's feedback portal signal what matters most to them. Every piece of feedback carries a vote count, and that count drives the default **Trending** sort and surfaces the most-wanted feedback to the team. Voting turns a long list of feedback into a clear, demand-ranked picture of what customers actually want.
 
-A **User** must be signed in to vote. Anyone can browse a brand's public boards without an account, but casting a vote requires signing in first. Each signed-in User can vote once on each piece of feedback, and can remove that vote at any time.
+Voting requires an identified voter, but not necessarily an account. Anyone can browse a brand's public boards freely; the first click on a vote button prompts for an email address and a 6-digit confirmation code, after which the vote is cast automatically. A signed-in User votes with their account as before. Either way, one voter gets one vote per piece of feedback and can remove it at any time.
+
+Votes are de-duplicated by **user id** for accounts and by **verified email** for accountless voters — and email matching applies regardless of whether an account exists, so someone who voted while signed in cannot vote again by returning as a guest with the same address. What it cannot prevent is one person using several real mailboxes; see [01-authentication.md](01-authentication.md) for that trade-off. Accountless voting is gated by the `guest_voting` feature flag.
 
 ---
 
 ## Core Behaviour
 
-- A **signed-in User** can vote on a piece of feedback. Voting requires signing in — a visitor who is not signed in is prompted to sign in before they can vote.
+- A **signed-in User** can vote on a piece of feedback.
+- A **visitor with no account** can vote on the Public Portal once they confirm their email with a one-time code. The prompt appears in place, on the board — they are never navigated away, and the vote they clicked is cast for them as soon as they verify.
 - **One vote per User per piece of feedback.** A User cannot vote twice on the same feedback.
 - Voting is a **toggle**: a User can cast a vote and later remove it. Removing a vote is always done by the voter.
 - Vote counts are shown on every feedback card and on the feedback detail page, so the demand behind each item is visible at a glance.
@@ -42,7 +45,7 @@ A visitor who is not signed in can still browse boards and read feedback, but cl
 
 Signed-in Users get a **"My Votes"** filter on the board, which shows only the feedback they have voted on. This lets a customer quickly return to the ideas they care about and track their progress.
 
-The filter relies on having an account to attribute votes to. Because voting requires signing in, every voter is a signed-in User and the filter is available to them.
+The filter attributes votes to whoever is voting — an account by user id, an accountless visitor by verified email. It is therefore available to both, and hidden only from a visitor who has not identified themselves at all.
 
 ---
 

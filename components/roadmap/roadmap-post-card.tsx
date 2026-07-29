@@ -22,6 +22,8 @@ interface RoadmapPostCardProps {
   isSignedIn: boolean;
   post: RoadmapPost;
   useWorkspaceLinks?: boolean;
+  // Tells a real drag apart from a plain click — see DraggableCard.
+  wasDragged?: () => boolean;
   workspaceSlug: string;
 }
 
@@ -34,6 +36,7 @@ export function RoadmapPostCard({
   dragControls,
   isDragging,
   embedQuery = "",
+  wasDragged,
 }: RoadmapPostCardProps) {
   // Carry the roadmap as the navigation origin so the detail page's Back button
   // returns here instead of the board / All Feedback. Read by both post-detail
@@ -58,20 +61,24 @@ export function RoadmapPostCard({
     // `relative` anchors the title's stretched-link overlay to the whole card.
     <div
       className={`group relative rounded-ir-card border border-ir-border bg-ir-surface p-4 shadow-ir-xs transition-all duration-150 ease-ir-standard hover:border-ir-primary/30 hover:shadow-ir-sm ${
-        isDragging ? "opacity-95 shadow-ir-lg" : ""
-      }`}
+        canManage ? "cursor-grab active:cursor-grabbing" : ""
+      } ${isDragging ? "opacity-95 shadow-ir-lg" : ""}`}
+      // Starts the drag from anywhere on the card, not just the handle icon
+      // below — a plain press+release never crosses framer's movement
+      // threshold, so it never fires onDragStart and falls through to the
+      // title link's normal click. Only a real drag needs guarding (see
+      // wasDragged below), so this can't reintroduce click-vs-drag ambiguity.
+      onPointerDown={canManage ? (e) => dragControls?.start(e) : undefined}
     >
       <div className="flex items-start gap-3">
         {canManage && (
-          // relative z-10: without this, the title Link's after:inset-0
-          // overlay (below) stretches over the whole card and sits above
-          // this icon in paint order, silently swallowing the pointerdown
-          // before it ever reaches onPointerDown — same reason VoteButton
-          // needs the same treatment just below.
+          // Purely a visual affordance now — the whole card starts the drag
+          // (see the outer div's onPointerDown), so this doesn't need its
+          // own pointerdown handler or the z-10 it used to need to win a
+          // pointer-target race against the title link's stretched overlay.
           <DotsSixVerticalIcon
             aria-hidden
-            className="relative z-10 mt-1.5 size-4 shrink-0 cursor-grab text-ir-muted/50 group-hover:text-ir-muted active:cursor-grabbing"
-            onPointerDown={(e) => dragControls?.start(e)}
+            className="mt-1.5 size-4 shrink-0 text-ir-muted/50 group-hover:text-ir-muted"
           />
         )}
 
@@ -100,10 +107,20 @@ export function RoadmapPostCard({
                 overlay stretches over the whole card, making the entire card
                 clickable with one real <Link> — keyboard nav, focus, middle-
                 click and "open in new tab" all keep working, and there is no
-                second/duplicate click handler. */}
+                second/duplicate click handler. draggable={false}: anchors are
+                natively draggable, and this overlay covers most of the card,
+                so without it the browser's own link-drag (not our
+                framer-motion one) hijacks the gesture the instant a
+                whole-card drag starts over it. */}
             <Link
               className="text-sm leading-snug font-medium text-ir-heading underline-offset-2 transition-colors after:absolute after:inset-0 after:content-[''] group-hover:text-ir-primary group-hover:underline focus-visible:outline-none focus-visible:underline"
+              draggable={false}
               href={postHref}
+              onClick={(e) => {
+                if (wasDragged?.()) {
+                  e.preventDefault();
+                }
+              }}
             >
               {post.title}
             </Link>

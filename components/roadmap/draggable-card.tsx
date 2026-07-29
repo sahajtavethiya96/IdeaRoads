@@ -6,10 +6,12 @@ import {
   useDragControls,
   useReducedMotion,
 } from "framer-motion";
-import type { ReactNode } from "react";
+import { type ReactNode, useRef } from "react";
 
 interface DraggableCardProps {
-  children: (dragControls: DragControls) => ReactNode;
+  // Second arg lets the card tell a real drag apart from a plain click — see
+  // wasDragged below.
+  children: (dragControls: DragControls, wasDragged: () => boolean) => ReactNode;
   dragEnabled: boolean;
   isDragging: boolean;
   itemId: string;
@@ -18,11 +20,14 @@ interface DraggableCardProps {
   onDragStart: () => void;
 }
 
-// Wraps a roadmap card in framer-motion's drag gesture. Drag can only be
-// *initiated* via dragControls.start() from the card's own drag-handle icon
-// (dragListener={false} here disables starting a drag from anywhere else on
-// the card) — never from clicking its title/link/buttons, so there's no
-// click-vs-drag ambiguity to guard against elsewhere.
+// Wraps a roadmap card in framer-motion's drag gesture. Drag is *initiated*
+// via dragControls.start() (dragListener={false} disables framer's own
+// anywhere-on-the-element listener so the card decides where a drag can
+// start from — see ManualRoadmapCard, which wires it to a pointerdown on the
+// whole card). A plain click never reaches the threshold that fires
+// onDragStart below, so it resolves as a normal click on whatever was
+// pressed; only a real, moved drag needs guarding against — that's what
+// wasDragged() is for.
 //
 // On release the card springs back to its own slot (dragSnapToOrigin); the
 // caller's onDragEnd then relocates it via the same performMove/state-update
@@ -39,6 +44,11 @@ export function DraggableCard({
 }: DraggableCardProps) {
   const dragControls = useDragControls();
   const shouldReduceMotion = useReducedMotion();
+  // Set the instant a real drag starts (past framer's movement threshold),
+  // cleared a frame after it ends — late enough that the browser's own click
+  // event (fired right after pointerup, before the next frame) can still see
+  // it and skip opening the card's detail view.
+  const draggedRef = useRef(false);
 
   return (
     <motion.div
@@ -50,14 +60,22 @@ export function DraggableCard({
       dragMomentum={false}
       dragSnapToOrigin
       onDrag={(_, info) => onDrag({ x: info.point.x, y: info.point.y })}
-      onDragEnd={onDragEnd}
-      onDragStart={onDragStart}
+      onDragEnd={() => {
+        onDragEnd();
+        requestAnimationFrame(() => {
+          draggedRef.current = false;
+        });
+      }}
+      onDragStart={() => {
+        draggedRef.current = true;
+        onDragStart();
+      }}
       style={{ cursor: isDragging ? "grabbing" : undefined }}
       whileDrag={
         shouldReduceMotion ? { zIndex: 30 } : { scale: 1.02, zIndex: 30 }
       }
     >
-      {children(dragControls)}
+      {children(dragControls, () => draggedRef.current)}
     </motion.div>
   );
 }

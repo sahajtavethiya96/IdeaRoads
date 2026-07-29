@@ -10,9 +10,14 @@ export class CommentDeleteError extends Error {
   }
 }
 
+// `requesterId` is null for an accountless Public Portal visitor. Guest
+// comments are final — a guest can delete nothing, including their own — so
+// the authorship test below requires BOTH sides to be non-null. Without that,
+// null === null would hold and every guest could delete every other guest's
+// comment. Workspace members retain full moderation over guest comments.
 export async function deleteComment(
   commentId: string,
-  requesterId: string,
+  requesterId: string | null,
   requesterRole: string
 ): Promise<void> {
   const comment = await db
@@ -30,7 +35,8 @@ export async function deleteComment(
   // authors may always remove their own. Workspace membership is verified by the
   // caller (the DELETE route), so a non-empty role here means a workspace member.
   const isWorkspaceMember = requesterRole.length > 0;
-  const isAuthor = comment.authorId === requesterId;
+  const isAuthor =
+    !!requesterId && !!comment.authorId && comment.authorId === requesterId;
 
   if (!isWorkspaceMember && !isAuthor) {
     throw new CommentDeleteError(

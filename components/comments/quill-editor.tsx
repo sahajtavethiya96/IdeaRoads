@@ -6,9 +6,13 @@ import { useEffect, useRef, useState } from "react";
 
 type QuillInstance = InstanceType<typeof import("quill").default>;
 
-// Quill's snow theme renders its own toolbar buttons with no `title`
-// attribute, so hovering them shows nothing. Keyed by the CSS selector Quill
-// gives each button so a plain lookup + setAttribute covers all of them.
+// Quill's snow theme renders its own toolbar buttons with no accessible name
+// or hover label. Keyed by the CSS selector Quill gives each button so a
+// plain lookup + setAttribute covers all of them. `data-tooltip` drives the
+// CSS-only tooltip in globals.css (styled to match the app's Tooltip
+// component); native `title` tooltips are OS-styled and have a ~1s hover
+// delay, which reads as "not working" next to the rest of the app's instant,
+// on-brand tooltips.
 const TOOLBAR_TOOLTIPS: Record<string, string> = {
   ".ql-bold": "Bold",
   ".ql-italic": "Italic",
@@ -26,7 +30,9 @@ const TOOLBAR_TOOLTIPS: Record<string, string> = {
 
 function applyToolbarTooltips(toolbarEl: HTMLElement) {
   for (const [selector, label] of Object.entries(TOOLBAR_TOOLTIPS)) {
-    toolbarEl.querySelector(selector)?.setAttribute("title", label);
+    const button = toolbarEl.querySelector(selector);
+    button?.setAttribute("aria-label", label);
+    button?.setAttribute("data-tooltip", label);
   }
 }
 

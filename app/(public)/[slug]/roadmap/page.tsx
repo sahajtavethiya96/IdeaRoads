@@ -24,6 +24,7 @@ import {
   embedWrapperProps,
   parseEmbedParams,
 } from "@/lib/embed/style";
+import { getGuestIdentity } from "@/lib/portal/guest-identity";
 import { getDerivedRoadmap } from "@/lib/roadmap/derived";
 import { getManualRoadmap } from "@/lib/roadmap/manual";
 import type { RoadmapSort } from "@/lib/roadmap/queries";
@@ -75,6 +76,10 @@ export default async function RoadmapPage({ params, searchParams }: Props) {
   const embedWrapper = embedWrapperProps(embedParams);
 
   const session = await getCurrentSession();
+  // Read-only here — the roadmap has no accountless participation of its own,
+  // but a visitor who verified on a board must not look signed-out when they
+  // navigate here.
+  const guest = session ? null : await getGuestIdentity();
 
   const workspace = await getWorkspaceBySlug(slug);
   if (!workspace) {
@@ -146,19 +151,16 @@ export default async function RoadmapPage({ params, searchParams }: Props) {
 
   // The public portal never redirects into the workspace app — everyone here
   // (including signed-in members browsing the public roadmap) goes through
-  // the public submission flow, signing in first if needed. Inside the
-  // embed, always go straight to the form — it handles a signed-out guest
-  // itself (in-place auth at submit time) rather than bouncing them to
-  // /signin before they can even start typing.
+  // the public submission flow. Always go straight to the form: both the
+  // embed and the Public Portal resolve identity in place at submit time
+  // rather than bouncing anyone to /signin before they can start typing.
   // Prefer the board this embed instance is configured for (if it's still a
   // valid target) over an arbitrary first board, so "+ Feedback" from the
   // embedded roadmap submits to the same board the widget shows elsewhere.
   const feedbackBoard =
     activeBoards.find((b) => b.slug === embedParams.board) ?? activeBoards[0];
   const feedbackHref = feedbackBoard
-    ? isSignedIn || isEmbed
-      ? `/${slug}/b/${feedbackBoard.slug}/new${embedQuery}`
-      : `/signin?next=${encodeURIComponent(`/${slug}/b/${feedbackBoard.slug}/new${embedQuery}`)}`
+    ? `/${slug}/b/${feedbackBoard.slug}/new${embedQuery}`
     : null;
   // Inside the widget's modal (panel mode), "new post" isn't a separate page
   // at all — it's the Categories/Form/Success shell living on the board
@@ -204,6 +206,7 @@ export default async function RoadmapPage({ params, searchParams }: Props) {
             boards={publicBoards}
             changelogPublic={workspace.changelogPublic}
             currentPath={`/${slug}/roadmap`}
+            guestEmail={guest?.email}
             isMember={isMember}
             isSignedIn={isSignedIn}
             logoUrl={workspace.logoUrl}

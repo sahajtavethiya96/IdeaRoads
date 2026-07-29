@@ -44,7 +44,8 @@ export interface SendStatusChangeEmailPayload {
 export interface SendNewPostAlertPayload {
   adminEmail: string;
   adminUserId: string;
-  authorId: string;
+  // Null when an accountless Public Portal visitor submitted the feedback.
+  authorId: string | null;
   authorName: string;
   boardName: string;
   boardSlug: string;

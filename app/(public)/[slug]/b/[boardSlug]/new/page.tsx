@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { EmbedNav } from "@/components/embed/embed-nav";
 import { EmbedResizeReporter } from "@/components/embed/resize-reporter";
 import { PoweredByBadge } from "@/components/portal/powered-by-badge";
@@ -12,6 +12,7 @@ import {
   embedWrapperProps,
   parseEmbedParams,
 } from "@/lib/embed/style";
+import { getPortalActor } from "@/lib/portal/guest-identity";
 import {
   getWorkspaceBySlug,
   getWorkspaceMember,
@@ -49,16 +50,14 @@ export default async function NewPostPage({ params, searchParams }: Props) {
   const embedQuery = buildEmbedQuery(embedParams);
   const embedWrapper = embedWrapperProps(embedParams);
 
-  // Submitting feedback requires a signed-in User. Outside the embed, send
-  // visitors to sign in before rendering anything. Inside the embed, render
-  // the form for guests too — it handles sign-in in place at submit time,
-  // so a signed-out visitor's draft is never lost to a redirect.
+  // The form renders for everyone, identified or not. Identity is established
+  // in place at SUBMIT time — accountless email verification on the Public
+  // Portal, account sign-in inside the embed — so a visitor never loses a
+  // draft to a redirect and never meets a sign-up wall before they have even
+  // started typing.
   const session = await getCurrentSession();
-  if (!session && !isEmbed) {
-    redirect(
-      `/signin?next=${encodeURIComponent(`/${slug}/b/${boardSlug}/new${embedQuery}`)}`
-    );
-  }
+  const actor = await getPortalActor();
+  const canParticipate = !!actor;
 
   const workspace = await getWorkspaceBySlug(slug);
   if (!workspace) {
@@ -109,8 +108,9 @@ export default async function NewPostPage({ params, searchParams }: Props) {
         <PortalHeader
           boards={publicBoards}
           changelogPublic={workspace.changelogPublic}
+          guestEmail={actor && !actor.id ? actor.email : undefined}
           isMember={!!member}
-          isSignedIn={true}
+          isSignedIn={!!session}
           logoUrl={workspace.logoUrl}
           roadmapPublic={workspace.roadmapPublic}
           slug={slug}
@@ -129,7 +129,7 @@ export default async function NewPostPage({ params, searchParams }: Props) {
           categories={categories}
           embedQuery={embedQuery}
           isEmbed={isEmbed}
-          isSignedIn={!!session}
+          isSignedIn={canParticipate}
           workspaceId={workspace.id}
           workspaceSlug={slug}
         />

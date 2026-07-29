@@ -29,6 +29,7 @@ import {
   embedWrapperProps,
   parseEmbedParams,
 } from "@/lib/embed/style";
+import { getPortalActor } from "@/lib/portal/guest-identity";
 import { countBoardPostsFiltered, listBoardPosts } from "@/lib/posts/queries";
 import { getActiveWorkspaceStatuses } from "@/lib/workspace-statuses/queries";
 import {
@@ -101,6 +102,15 @@ export default async function BoardPage({ params, searchParams }: Props) {
   const isSignedIn = !!session;
   const isMember = !!member;
 
+  // A signed-in account OR an accountless visitor who has already verified
+  // their email. Participation affordances (vote, submit, comment, the "my
+  // votes"/"my posts" filters) key off this; member-only affordances still
+  // key off isSignedIn/isMember.
+  const actor = await getPortalActor();
+  const canParticipate = !!actor;
+  // Only set for a guest — an account is identified by id, not email.
+  const guestEmail = actor && !actor.id ? actor.email : undefined;
+
   const board = await getBoardBySlug(workspace.id, boardSlug);
   if (!board) {
     notFound();
@@ -118,8 +128,8 @@ export default async function BoardPage({ params, searchParams }: Props) {
   const validStatus = status ?? "";
   const validCategoryId = category ?? "";
   const searchQuery = q ?? "";
-  const myVotesActive = isSignedIn && myVotes === "true";
-  const mineActive = isSignedIn && mine === "1";
+  const myVotesActive = canParticipate && myVotes === "true";
+  const mineActive = canParticipate && mine === "1";
   const PAGE_SIZE = 20;
   const currentPage = Math.max(1, Number(page ?? 1));
 
@@ -197,6 +207,7 @@ export default async function BoardPage({ params, searchParams }: Props) {
     categoryId: validCategoryId || undefined,
     search: searchQuery || undefined,
     userId: session?.user.id,
+    guestEmail,
     myVotes: myVotesActive,
     onlyMine: mineActive,
     includeUnapproved: false,
@@ -260,14 +271,12 @@ export default async function BoardPage({ params, searchParams }: Props) {
     return `/${slug}/b/${boardSlug}${qs ? `?${qs}` : ""}`;
   }
 
-  // Inside the embed, always go straight to the form — it handles a
-  // signed-out guest itself (in-place auth at submit time) rather than
-  // bouncing them to /signin before they can even start typing.
+  // Always go straight to the form. Both the embed and the Public Portal
+  // handle an unidentified visitor in place (verify at submit time) rather
+  // than bouncing them to /signin before they can even start typing.
   const newPostHref = board.isArchived
     ? undefined
-    : isSignedIn || isEmbed
-      ? `/${slug}/b/${boardSlug}/new${embedQuery}`
-      : `/signin?next=${encodeURIComponent(`/${slug}/b/${boardSlug}/new${embedQuery}`)}`;
+    : `/${slug}/b/${boardSlug}/new${embedQuery}`;
 
   return (
     <EmbedPersonalizationProvider
@@ -302,6 +311,7 @@ export default async function BoardPage({ params, searchParams }: Props) {
             boards={publicBoards}
             changelogPublic={workspace.changelogPublic}
             currentPath={`/${slug}/b/${boardSlug}${embedQuery}`}
+            guestEmail={guestEmail}
             isMember={isMember}
             isSignedIn={isSignedIn}
             logoUrl={workspace.logoUrl}
@@ -355,7 +365,7 @@ export default async function BoardPage({ params, searchParams }: Props) {
                 activeSort={validSort}
                 activeStatus={validStatus}
                 myVotesActive={myVotesActive}
-                showMyVotes={isSignedIn}
+                showMyVotes={canParticipate}
                 workspaceStatuses={publicWorkspaceStatuses}
               />
 
@@ -454,7 +464,7 @@ export default async function BoardPage({ params, searchParams }: Props) {
                             initialCount={post.upvotes}
                             initialHasVoted={post.hasVoted}
                             isArchived={board.isArchived}
-                            isSignedIn={isSignedIn}
+                            isSignedIn={canParticipate}
                             postId={post.id}
                           />
                         </div>
@@ -492,7 +502,7 @@ export default async function BoardPage({ params, searchParams }: Props) {
               categories={categories}
               embedQuery={embedQuery}
               isMine={mineActive}
-              isSignedIn={isSignedIn}
+              isSignedIn={canParticipate}
               newPostHref={isPanel ? undefined : newPostHref}
               slug={slug}
             />

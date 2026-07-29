@@ -8,7 +8,19 @@ Self-hosted instances can additionally turn on **Email + Password** sign-in — 
 
 The **same sign-in serves all four product roles**: a Platform Admin, a Brand Admin, a Team Member, and a User all sign in through the same screen. Where they land afterwards depends on what their account already has, not on a different login. (For the role model, see [../PLATFORM.md](../PLATFORM.md).)
 
-Anyone can browse a brand's public boards, roadmap, and changelog without an account. **Creating feedback, voting, commenting, and following the roadmap all require signing in first** — there is no anonymous participation.
+Anyone can browse a brand's public boards, roadmap, and changelog without an account.
+
+**On the Public Portal, participation needs a verified email — not an account.** A visitor who submits feedback, votes, or comments is asked for their email address, sent a 6-digit code, and is on their way as soon as they enter it. No password, no signup form, and no user account is created; the verified address is remembered in their browser for 30 days. This is what makes a shared portal link usable by customers who will never sign up for anything.
+
+Two things still require a real account: **following the roadmap** (it delivers ongoing email, tied to notification preferences a guest cannot hold) and everything on the **admin side** — dashboards, moderation, settings. Signing in is also still offered on the portal, and a signed-in account always takes precedence over guest verification.
+
+An Orbit Admin can turn accountless participation off instance-wide with the `guest_voting` feature flag (**Platform → Feature Flags**, on by default). With it off, the portal reverts to requiring sign-in for all three actions.
+
+### What accountless participation costs
+
+Votes are de-duplicated by verified email, so one address is one vote — but someone with several working mailboxes can cast several votes. Verification raises the effort; it does not make ballot-stuffing impossible. This is inherent to letting people participate without accounts. Brands that need stronger vote integrity should turn the flag off.
+
+Guests are also, deliberately, more limited than account holders: their comments are **final** (no edit or delete — workspace members can still moderate them), they cannot react to comments, and they get no profile page. They do receive email when their feedback gets a comment or changes status.
 
 ---
 
