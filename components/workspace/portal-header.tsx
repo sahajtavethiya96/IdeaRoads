@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { GuestIdentityBadge } from "@/components/portal/guest-identity-badge";
+import { PortalSignInButton } from "@/components/portal/portal-sign-in-button";
 import { Button } from "@/components/ui/button";
 import { SquareAvatar } from "@/components/ui/square-avatar";
 import { PortalMobileNav } from "@/components/workspace/portal-mobile-nav";
+import { isFeatureEnabled } from "@/lib/orbit/feature-flags";
 
 interface Board {
   id: string;
@@ -15,10 +17,11 @@ interface PortalHeaderProps {
   boards: Board[];
   changelogPublic: boolean;
   currentPath?: string;
-  // Email an accountless visitor has verified, when there is no account.
+  // Identity an accountless visitor has verified, when there is no account.
   // Shown in place of the sign-in button so they can see who they are posting
-  // as and correct it.
+  // as and correct it — the name when they gave one, the address otherwise.
   guestEmail?: string | null;
+  guestName?: string | null;
   isMember?: boolean;
   isSignedIn: boolean;
   logoUrl?: string | null;
@@ -38,7 +41,7 @@ interface PortalHeaderProps {
  * a link back to their admin dashboard; visitors get a sign-in link.
  * Participation (vote/comment/submit) is gated elsewhere.
  */
-export function PortalHeader({
+export async function PortalHeader({
   slug,
   workspaceName,
   logoUrl,
@@ -47,6 +50,7 @@ export function PortalHeader({
   changelogPublic,
   isSignedIn,
   guestEmail,
+  guestName,
   isMember = false,
   userImage,
   userName,
@@ -69,6 +73,10 @@ export function PortalHeader({
   // 404s/bounces to the Workspace host since the Portal session cookie it
   // just received doesn't carry over there.
   const signInHref = `/signin?next=${encodeURIComponent(currentPath || homeHref)}`;
+  // With accountless participation off, email verification buys a visitor
+  // nothing, so the button goes back to being a plain link to /signin — the
+  // same master switch getPortalActor reads.
+  const guestVerification = await isFeatureEnabled("guest_voting");
 
   return (
     <header className="sticky top-0 z-20 border-b border-ir-border bg-ir-surface/90 backdrop-blur-sm">
@@ -137,10 +145,15 @@ export function PortalHeader({
               </Link>
             </>
           ) : guestEmail ? (
-            <GuestIdentityBadge email={guestEmail} />
+            <GuestIdentityBadge email={guestEmail} name={guestName} />
+          ) : guestVerification ? (
+            /* Verifies an email in place instead of routing to the app's
+               login screen — accounts here are invitation-only, so a customer
+               sent to /signin has nothing to sign in with. */
+            <PortalSignInButton signInHref={signInHref} />
           ) : (
             <Button asChild size="sm">
-              <Link href={signInHref}>Sign In / Sign Up</Link>
+              <Link href={signInHref}>Sign In</Link>
             </Button>
           )}
         </div>

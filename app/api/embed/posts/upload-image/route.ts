@@ -1,15 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getCurrentSession } from "@/lib/authz";
-import { uploadPostImage } from "@/lib/posts/upload-image";
+import { getPortalActor } from "@/lib/portal/guest-identity";
+import { guestUploadKey, uploadPostImage } from "@/lib/posts/upload-image";
 
-// Bearer-authenticated equivalent of uploadPostImageAction
+// Header-authenticated equivalent of uploadPostImageAction
 // (app/actions/posts.ts) for the embed widget — see app/api/embed/posts
 // for why this exists as a Route Handler rather than reusing the action.
 export async function POST(req: NextRequest) {
-  const session = await getCurrentSession();
-  if (!session) {
+  const actor = await getPortalActor();
+  if (!actor) {
     return NextResponse.json(
-      { error: "Your session has expired. Please sign in again." },
+      { error: "Verify your email to attach an image." },
       { status: 401 }
     );
   }
@@ -17,7 +17,9 @@ export async function POST(req: NextRequest) {
   const formData = await req.formData();
   const file = formData.get("image");
   const result = await uploadPostImage(
-    session.user.id,
+    // A guest has no id; the derived key keeps their uploads grouped without
+    // putting their email in a publicly readable image URL.
+    actor.id ?? guestUploadKey(actor.email),
     file instanceof File ? file : null
   );
 

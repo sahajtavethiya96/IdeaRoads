@@ -8,6 +8,7 @@ import { ADMIN_ROLE, WORKSPACE_MEMBER } from "@/config/platform";
 import { getCurrentSession } from "@/lib/authz";
 import { getWorkspaceBoard } from "@/lib/boards/queries";
 import { getUnreadCount } from "@/lib/notifications/queries";
+import { needsPasswordSetup } from "@/lib/users/password";
 import {
   getUserWorkspaces,
   getWorkspaceBySlug,
@@ -51,6 +52,18 @@ export default async function WorkspaceLayout({
   const member = await getWorkspaceMember(workspace.id, session.user.id);
   if (!member) {
     notFound();
+  }
+
+  // A member who joined by invite has no password (magic link never sets one)
+  // and, while email + password sign-in is enabled, no way to obtain one —
+  // reset needs a credential row that does not exist yet. Finish that setup
+  // before letting them into the workspace, so they cannot end up locked out
+  // of the very sign-in method the instance advertises. Enforced here rather
+  // than only at the invite-accept redirect, which a typed URL would bypass.
+  // Google-linked members are exempt (they already have a way in) — see
+  // needsPasswordSetup.
+  if (await needsPasswordSetup(session.user.id)) {
+    redirect(`/complete-profile?next=${encodeURIComponent(`/${slug}`)}`);
   }
 
   const isOrbitAdmin = session.user.role === ADMIN_ROLE;

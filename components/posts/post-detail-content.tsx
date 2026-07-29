@@ -155,6 +155,10 @@ export function PostDetailContent({
 }: PostDetailContentProps) {
   const isAuthor = !!currentUserId && post.authorId === currentUserId;
   const canEdit = isAuthor || isAdminOrOwner;
+  // The address behind an accountless post is moderation data, not a public
+  // byline — only workspace members fall back to it when no name was given.
+  const authorLabel =
+    post.authorName?.trim() || (isMember ? post.authorEmail : "User");
   const statusMap = new Map(workspaceStatuses.map((s) => [s.slug, s.name]));
 
   return (
@@ -253,9 +257,7 @@ export function PostDetailContent({
                     workspaceId={workspaceId}
                   />
                 )}
-                <span className="text-xs text-ir-muted">
-                  by {post.authorName || post.authorEmail}
-                </span>
+                <span className="text-xs text-ir-muted">by {authorLabel}</span>
                 <span className="text-xs text-ir-muted">
                   {format(post.createdAt, "MMM d, yyyy")}
                 </span>

@@ -207,6 +207,7 @@ export default async function RoadmapPage({ params, searchParams }: Props) {
             changelogPublic={workspace.changelogPublic}
             currentPath={`/${slug}/roadmap`}
             guestEmail={guest?.email}
+            guestName={guest?.name}
             isMember={isMember}
             isSignedIn={isSignedIn}
             logoUrl={workspace.logoUrl}

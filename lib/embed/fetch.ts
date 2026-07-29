@@ -1,5 +1,6 @@
 "use client";
 
+import { clearGuestToken, getGuestToken } from "@/lib/embed/guest-token";
 import {
   clearEmbedToken,
   getEmbedToken,
@@ -32,6 +33,16 @@ export async function embedFetch(
     }
   }
 
+  // Accountless identity for a visitor who only verified an email — the
+  // widget's normal path now (see lib/embed/guest-token.ts). Sent alongside,
+  // not instead of, the bearer token: a real signed-in account still wins
+  // server-side (getPortalActor prefers the session), so a workspace member
+  // testing their own widget keeps acting as themselves.
+  const guestToken = getGuestToken();
+  if (guestToken) {
+    headers.set("X-Portal-Guest", guestToken);
+  }
+
   const response = await fetch(input, { ...init, headers });
 
   if (EMBED_BEARER_ENABLED) {
@@ -46,6 +57,10 @@ export async function embedFetch(
       // sign-in dialog; the draft is preserved by the existing
       // sessionStorage draft mechanism, unrelated to this token.
       clearEmbedToken();
+      // Same reasoning for the guest identity: a 401 while holding one means
+      // it expired (or the instance turned accountless participation off), so
+      // stop replaying it and let the visitor verify again.
+      clearGuestToken();
     }
   }
 

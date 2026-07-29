@@ -333,25 +333,18 @@ function AuthFormInner({
                           ? "Sending…"
                           : "Email me a magic link instead"}
                       </Button>
-                    ) : (
-                      <p className="text-center text-xs text-ir-muted">
-                        New here? We'll create your account automatically.
-                      </p>
-                    )}
+                    ) : null}
                   </div>
                 </form>
 
-                {passwordEnabled && (
-                  <p className="text-center text-sm text-ir-muted">
-                    Don't have an account?{" "}
-                    <Link
-                      className="font-semibold text-ir-heading underline hover:no-underline"
-                      href="/signup"
-                    >
-                      Sign up
-                    </Link>
-                  </p>
-                )}
+                {/* There is no self-serve sign-up on this instance: accounts
+                    come from the /setup wizard or an invitation. Say so
+                    plainly, rather than leaving people hunting for a
+                    registration link that does not exist. */}
+                <p className="text-center text-xs text-ir-muted">
+                  Accounts are created by invitation. Ask an admin to invite you
+                  if you don't have one yet.
+                </p>
               </div>
             )}
           </div>

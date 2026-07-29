@@ -164,6 +164,7 @@ export default async function PublicChangelogIndexPage({
             changelogPublic={workspace.changelogPublic}
             currentPath={`/${slug}/changelog`}
             guestEmail={guest?.email}
+            guestName={guest?.name}
             isMember={!!member}
             isSignedIn={isSignedIn}
             logoUrl={workspace.logoUrl}

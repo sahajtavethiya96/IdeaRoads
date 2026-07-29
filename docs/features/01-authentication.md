@@ -2,9 +2,13 @@
 
 ## Overview
 
-IdeaRoads is passwordless by default. People sign in with a **Magic Link** (a one-time link sent to their email) or with **Google**, and a first-time sign-in with either method automatically creates an account — there is no separate registration step for them.
+**There is no self-serve registration.** An account exists for exactly two reasons: the first-run `/setup` wizard created the first Orbit Admin, or a Brand Admin invited the person. Anyone else who tries to sign in — by magic link, Google, or one-time code — is told *"No account found for that email. Accounts on this instance are created by invitation."* and no account is created.
 
-Self-hosted instances can additionally turn on **Email + Password** sign-in — an Orbit Admin opts in per-instance from **Platform → Feature Flags** (`password_auth`, off by default). This exists mainly so a self-hoster isn't forced to configure SMTP or Google OAuth before anyone can sign in: the `/setup` first-run wizard always creates the very first Orbit Admin with a password, regardless of this flag. When the flag is off (the default, and the current behavior of the hosted IdeaRoads instance), `/signup` and the password field on `/signin` simply don't appear — nothing changes from the passwordless experience described below.
+This is enforced at the auth layer (`lib/users/registration.ts`), not merely by hiding a form: the `/sign-up/email` endpoint refuses outright, the email-based endpoints refuse an unknown address *before* sending anything, and a final check on user creation catches Google, whose email is only known at callback time. Without it, anyone reaching `/signin` could type any address, click the emailed link, and land in onboarding as the Brand Admin of a workspace they created themselves.
+
+**How an invited person gets their account:** a live invitation whitelists that email address. Their first magic-link sign-in is allowed to create the account, and accepting the invite consumes the invitation.
+
+People sign in with a **Magic Link**, with **Google**, or — once they have set one — with **email + password**. An Orbit Admin can hide the password field per-instance from **Platform → Feature Flags** (`password_auth`); that flag now controls only the sign-IN field, since registration is gone entirely.
 
 The **same sign-in serves all four product roles**: a Platform Admin, a Brand Admin, a Team Member, and a User all sign in through the same screen. Where they land afterwards depends on what their account already has, not on a different login. (For the role model, see [../PLATFORM.md](../PLATFORM.md).)
 
@@ -12,9 +16,11 @@ Anyone can browse a brand's public boards, roadmap, and changelog without an acc
 
 **On the Public Portal, participation needs a verified email — not an account.** A visitor who submits feedback, votes, or comments is asked for their email address, sent a 6-digit code, and is on their way as soon as they enter it. No password, no signup form, and no user account is created; the verified address is remembered in their browser for 30 days. This is what makes a shared portal link usable by customers who will never sign up for anything.
 
-Two things still require a real account: **following the roadmap** (it delivers ongoing email, tied to notification preferences a guest cannot hold) and everything on the **admin side** — dashboards, moderation, settings. Signing in is also still offered on the portal, and a signed-in account always takes precedence over guest verification.
+**The portal's Sign In button verifies an email — it does not open the app's login screen.** Clicking it opens the same one-time-code prompt the mid-page actions use, so a customer identifies themselves without leaving the board. Accounts on this instance are invitation-only, so sending a customer to `/signin` would land them on a screen they have nothing to sign in with. Workspace members who do have an account reach `/signin` from a secondary link at the bottom of that prompt.
 
-An Orbit Admin can turn accountless participation off instance-wide with the `guest_voting` feature flag (**Platform → Feature Flags**, on by default). With it off, the portal reverts to requiring sign-in for all three actions.
+Two things still require a real account: **following the roadmap** (it delivers ongoing email, tied to notification preferences a guest cannot hold) and everything on the **admin side** — dashboards, moderation, settings. A signed-in account always takes precedence over guest verification.
+
+An Orbit Admin can turn accountless participation off instance-wide with the `guest_voting` feature flag (**Platform → Feature Flags**, on by default). With it off, the portal reverts to requiring sign-in for all three actions, and the header's Sign In button goes back to linking straight to `/signin`.
 
 ### What accountless participation costs
 
@@ -26,20 +32,30 @@ Guests are also, deliberately, more limited than account holders: their comments
 
 ## Sign-in Methods
 
+All three methods sign an **existing or invited** person in. None of them will register a stranger.
+
 | Method | What the person does |
 |---|---|
-| **Magic Link** | Enters their email, receives a one-time sign-in link, clicks it, and is signed in. A new account is created automatically on first use. |
-| **Google** | Clicks "Continue with Google", approves on Google's screen, and is signed in. A new account is created automatically on first use. |
-| **Email + Password** *(optional)* | Only offered when an Orbit Admin has enabled the `password_auth` feature flag. Visits `/signup` to create an account with a name, email, and password, then signs in from `/signin` with that email and password. Unlike the other two methods, this one requires an explicit registration step. |
+| **Magic Link** | Enters their email and receives a one-time sign-in link. Unknown addresses are refused before any email is sent, so nobody gets a link that could only fail. |
+| **Google** | Clicks "Continue with Google" and approves on Google's screen. If the resulting email has neither an account nor an invitation, sign-in is refused and no account is created. |
+| **Email + Password** | Available once the person has a password. Invited members choose one during setup (see below); anyone can set or change one from account settings. The field is hidden when `password_auth` is off. |
 
-Magic Link and Google live on the sign-in screen for every deployment. The "Continue with Google" option appears only when Google sign-in is enabled; the password field and the "Sign up" link appear only when `password_auth` is enabled.
+The "Continue with Google" option appears only when Google sign-in is configured and enabled.
 
 Product facts:
 
-- Magic Link and Google both create an account automatically on first sign-in — no separate signup form for either.
-- Email + password is opt-in per instance and off by default; when off, nothing about the passwordless experience changes.
-- When password sign-in is enabled, forgot-password / reset-password is available too — but only once SMTP is configured, since the reset link has to be emailed.
-- Signing IN with an existing password always works, even while `password_auth` is off — that flag only gates self-serve *registration* (`/signup` and the password field's visibility). This is what lets the `/setup` first-run wizard create a password-based Orbit Admin on a brand-new instance before any other sign-in method is configured.
+- No sign-up page exists. `/signup` redirects to `/signin`, and the endpoint behind it is refused server-side.
+- An invited person's first magic-link sign-in creates their account — that is the only path that brings a new account into existence after `/setup`.
+- Magic-link and Google sign-in still work normally for everyone who already has an account.
+- Forgot-password / reset-password only helps someone who already has a password, since the reset needs an existing credential. Invited members therefore set their password during setup rather than relying on reset.
+
+### Setting a password
+
+Magic link and Google create an account with **no password**, and password reset cannot help — it needs a credential record that does not exist yet. So:
+
+- An invited member is asked to choose a password on the finish-setup screen, right after accepting the invitation and alongside their display name. This is required (enforced in the workspace layout, not just the redirect), so they cannot end up locked out of a sign-in method the instance advertises.
+- People who signed in with **Google are exempt** — they already have a working way in. They can still set a password from account settings if they want one.
+- Everyone can set or change a password under **Account Settings → Password**. Changing an existing one requires the current password; setting a first one does not, because there is nothing to challenge.
 
 ---
 
@@ -49,8 +65,8 @@ IdeaRoads exposes clean, predictable URLs for the sign-in experience:
 
 | Page | Purpose |
 |---|---|
-| `/signin` | Sign in or sign up (Magic Link + Google), plus password sign-in when `password_auth` is enabled |
-| `/signup` | Password registration form when `password_auth` is enabled; otherwise sends people to `/signin` |
+| `/signin` | Sign in (Magic Link + Google), plus password sign-in when `password_auth` is enabled |
+| `/signup` | Always redirects to `/signin` — there is no self-serve registration. Kept so old links and bookmarks don't 404 |
 | `/forgot-password` | Request a password-reset email — only reachable when `password_auth` is enabled and SMTP is configured |
 | `/reset-password` | Set a new password from the emailed reset link |
 | `/setup` | First-run wizard on a brand-new instance (empty `user` table): creates the first Orbit Admin and the first workspace. Redirects to `/signin` once the instance has any user. |
@@ -137,11 +153,12 @@ Any signed-in person can manage their own account:
 
 ## Acceptance Criteria
 
-- A person can always sign in with a Magic Link or with Google.
-- Email + password sign-in exists only when an Orbit Admin has enabled the `password_auth` feature flag; while it's off (the default), `/signup` sends people to `/signin` and no password field appears anywhere.
-- When `password_auth` is enabled, `/signup` becomes a real registration form, and a password field (plus "Forgot password?" once SMTP is configured) appears on `/signin`.
-- Magic Link and Google both create an account automatically on first sign-in; there is no separate registration form for either.
-- Signing in with an existing password always works regardless of the `password_auth` flag — only self-serve registration is gated.
+- A person **who already has an account, or a live invitation,** can sign in with a Magic Link or with Google.
+- A person with neither is refused on every method, with a message telling them accounts are created by invitation — and **no account row is created**.
+- The refusal happens before any email is sent, so nobody receives a magic link or code that could only fail.
+- `/signup` always redirects to `/signin`, and `/sign-up/email` is refused server-side.
+- Email + password sign-in appears only when an Orbit Admin has enabled the `password_auth` feature flag; that flag no longer has anything to do with registration.
+- An invited member must set a password before entering the workspace (unless they signed in with Google); anyone can set or change one from account settings.
 - A brand-new instance with no users is routed to `/setup` instead of `/signin`; completing it creates the first Orbit Admin and first workspace, and `/setup` becomes unreachable (redirects to `/signin`) afterwards.
 - The same sign-in serves all four roles (Orbit Admin, Brand Admin, Team Member, User).
 - After signing in, a person with no workspace reaches onboarding.

@@ -1,6 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { isFeatureEnabled } from "@/lib/orbit/feature-flags";
-import { setGuestIdentity } from "@/lib/portal/guest-identity";
+import {
+  createGuestToken,
+  setGuestIdentity,
+} from "@/lib/portal/guest-identity";
 import { verifyGuestOtp, verifyOtpSchema } from "@/lib/portal/verification";
 
 /**
@@ -48,6 +51,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       email: result.data.email,
       name: result.data.name,
+      // The same signed identity as the cookie, returned in the body for the
+      // embed widget: its iframe is cross-site, so the browser will not send
+      // that cookie back. It stores this and replays it on X-Portal-Guest.
+      // Harmless for the Public Portal, which ignores it and uses the cookie.
+      token: createGuestToken(result.data),
     });
   } catch (err) {
     console.error("[POST /api/portal/otp/verify]", err);

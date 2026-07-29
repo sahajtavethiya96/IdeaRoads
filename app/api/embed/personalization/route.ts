@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { WORKSPACE_MEMBER } from "@/config/platform";
-import { getCurrentSession } from "@/lib/authz";
 import { getOwnChangelogCommentIds } from "@/lib/changelog-comments/queries";
 import {
   getOwnReactedEmojisForChangelogEntry,
@@ -10,6 +9,7 @@ import {
 import { getOwnCommentIds } from "@/lib/comments/queries";
 import { getOwnReactedEmojisForPosts } from "@/lib/comments/reactions";
 import { getNotificationPreferences } from "@/lib/notifications/queries";
+import { getPortalActor } from "@/lib/portal/guest-identity";
 import { getVotedPostIds } from "@/lib/voting/list";
 import { getWorkspaceMember } from "@/lib/workspaces/queries";
 
@@ -29,10 +29,18 @@ import { getWorkspaceMember } from "@/lib/workspaces/queries";
 // changelog reactions/subscription, moderator role) add a param + a field
 // without touching what's already here.
 export async function GET(req: NextRequest) {
-  const session = await getCurrentSession();
-  if (!session) {
+  // Usually an accountless visitor who verified their email (actor.id null),
+  // identified by the signed X-Portal-Guest token; a real session still wins.
+  const actor = await getPortalActor();
+  if (!actor) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
+
+  // Everything below except votes is account-only by construction: guests
+  // cannot own comments (theirs are final), cannot react, hold no notification
+  // preferences, and are never workspace members. Those blocks are skipped for
+  // them and return their empty defaults rather than being faked.
+  const userId = actor.id;
 
   const workspaceId = req.nextUrl.searchParams.get("workspaceId");
   const postIdsParam = req.nextUrl.searchParams.get("postIds");
@@ -53,8 +61,11 @@ export async function GET(req: NextRequest) {
   let votedPostIds: string[] = [];
   if (workspaceId && postIdsParam) {
     const requested = new Set(postIdsParam.split(",").filter(Boolean));
+    // The one field that works for both: votes are attributed by user id for
+    // an account and by verified email for a guest.
     const allVoted = await getVotedPostIds(workspaceId, {
-      userId: session.user.id,
+      userId: userId ?? undefined,
+      userEmail: userId ? undefined : actor.email,
     });
     votedPostIds = allVoted.filter((id) => requested.has(id));
   }
@@ -65,11 +76,11 @@ export async function GET(req: NextRequest) {
   // without needing two separate response fields.
   const reactedEmojisById = new Map<string, string[]>();
 
-  if (includeCommentOwnership && postIdsParam) {
+  if (userId && includeCommentOwnership && postIdsParam) {
     const postIds = postIdsParam.split(",").filter(Boolean);
     const [ownIds, reactedEmojis] = await Promise.all([
-      getOwnCommentIds(postIds, session.user.id),
-      getOwnReactedEmojisForPosts(postIds, session.user.id),
+      getOwnCommentIds(postIds, userId),
+      getOwnReactedEmojisForPosts(postIds, userId),
     ]);
     for (const id of ownIds) {
       ownCommentIds.add(id);
@@ -78,12 +89,12 @@ export async function GET(req: NextRequest) {
       reactedEmojisById.set(id, emojis);
     }
   }
-  if (changelogEntryId) {
+  if (userId && changelogEntryId) {
     const [ownIds, commentReactedEmojis, entryReactedEmojis] =
       await Promise.all([
-        getOwnChangelogCommentIds(changelogEntryId, session.user.id),
-        getOwnReactedEmojisForChangelogEntry(changelogEntryId, session.user.id),
-        getOwnReactedEntryEmojis(changelogEntryId, session.user.id),
+        getOwnChangelogCommentIds(changelogEntryId, userId),
+        getOwnReactedEmojisForChangelogEntry(changelogEntryId, userId),
+        getOwnReactedEntryEmojis(changelogEntryId, userId),
       ]);
     for (const id of ownIds) {
       ownCommentIds.add(id);
@@ -95,11 +106,11 @@ export async function GET(req: NextRequest) {
       reactedEmojisById.set(changelogEntryId, entryReactedEmojis);
     }
   }
-  if (changelogEntryIdsParam) {
+  if (userId && changelogEntryIdsParam) {
     const changelogEntryIds = changelogEntryIdsParam.split(",").filter(Boolean);
     const batch = await getOwnReactedEntryEmojisBatch(
       changelogEntryIds,
-      session.user.id
+      userId
     );
     for (const [id, emojis] of batch) {
       reactedEmojisById.set(id, emojis);
@@ -107,15 +118,15 @@ export async function GET(req: NextRequest) {
   }
 
   let subscribedChangelog: boolean | null = null;
-  if (includeSubscription) {
-    const prefs = await getNotificationPreferences(session.user.id);
+  if (userId && includeSubscription) {
+    const prefs = await getNotificationPreferences(userId);
     // Opt-out model, same default used server-side in changelog/page.tsx.
     subscribedChangelog = prefs?.emailChangelog ?? true;
   }
 
   let isModerator = false;
-  if (includeModerator && workspaceId) {
-    const member = await getWorkspaceMember(workspaceId, session.user.id);
+  if (userId && includeModerator && workspaceId) {
+    const member = await getWorkspaceMember(workspaceId, userId);
     isModerator = !!member && member.role !== WORKSPACE_MEMBER;
   }
 

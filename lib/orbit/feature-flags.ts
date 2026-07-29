@@ -82,7 +82,11 @@ export const DEFAULT_FEATURE_FLAGS: Array<{
   { key: "google_auth", description: "Google OAuth sign-in", isEnabled: true },
   {
     key: "password_auth",
-    description: "Email + password sign-up (self-serve registration)",
+    // Self-serve REGISTRATION no longer exists on this instance at all — it is
+    // removed in code, not toggled (see lib/users/registration.ts). This flag
+    // now controls only whether the password field is offered for signing IN,
+    // which invited members use after choosing a password during setup.
+    description: "Email + password sign-in",
     isEnabled: true,
   },
 ];

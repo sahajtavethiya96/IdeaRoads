@@ -218,6 +218,7 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
             changelogPublic={workspace.changelogPublic}
             currentPath={`/${slug}/b/${boardSlug}/p/${postSlug}${embedQuery}`}
             guestEmail={actor && !actor.id ? actor.email : undefined}
+            guestName={actor && !actor.id ? actor.name : undefined}
             isMember={isMember}
             isSignedIn={isSignedIn}
             logoUrl={workspace.logoUrl}

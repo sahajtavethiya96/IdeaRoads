@@ -1,32 +1,18 @@
 import { redirect } from "next/navigation";
-import { AuthShell } from "@/app/(auth)/_components/auth-shell";
-import { SignupForm } from "@/app/(auth)/_components/signup-form";
-import { isFeatureEnabled } from "@/lib/orbit/feature-flags";
 import { redirectToSetupIfNeeded } from "@/lib/setup";
-import { isSmtpConfigured } from "@/lib/smtp/client";
 
 export const metadata = {
   title: "Sign up",
 };
 
-// Self-serve email + password registration is off by default (Feature 01 /
-// PLATFORM.md — magic link + Google only). When an Orbit Admin enables the
-// `password_auth` feature flag, this page renders a real signup form; while
-// it's off, /signup keeps its original behavior of forwarding to /signin.
+// There is no self-serve registration on this instance. Accounts come from the
+// first-run /setup wizard (the first Orbit Admin) or from an invitation sent by
+// a Brand Admin — enforced at the auth layer in lib/users/registration.ts, not
+// merely by hiding this page.
+//
+// The route is kept rather than deleted so existing links, bookmarks, and
+// search results land somewhere sensible instead of a 404.
 export default async function SignupPage() {
   await redirectToSetupIfNeeded();
-
-  const passwordEnabled = await isFeatureEnabled("password_auth");
-  if (!passwordEnabled) {
-    redirect("/signin");
-  }
-
-  return (
-    <AuthShell
-      subtitle="Create your account with an email and password."
-      title="Create your account"
-    >
-      <SignupForm requiresEmailVerification={isSmtpConfigured()} />
-    </AuthShell>
-  );
+  redirect("/signin");
 }
