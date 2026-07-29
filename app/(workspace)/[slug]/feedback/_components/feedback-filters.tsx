@@ -105,7 +105,7 @@ export function FeedbackFilters({
             className="w-full sm:max-w-sm"
             defaultValue={activeSearch}
             onSearch={(value) => updateParam({ q: value || null })}
-            placeholder="Search feedback…"
+            placeholder="Search feedback or author…"
           />
         </div>
 

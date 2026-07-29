@@ -5,7 +5,6 @@
   "private": true,
   "packageManager": "pnpm@11.6.0",
   "scripts": {
-    "dev": "rm -rf .next && concurrently -n next,worker -c blue,yellow \"next dev --turbopack\" \"tsx --watch scripts/worker.ts\"",
     "dev:next": "rm -rf .next && next dev --turbopack",
     "build": "next build",
     "start": "next start",
