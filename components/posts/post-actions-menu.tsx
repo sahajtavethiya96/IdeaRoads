@@ -222,10 +222,10 @@ export function PostActionsMenu({
           <Button
             aria-label="Feedback actions"
             className="text-ir-muted hover:text-ir-heading"
-            size="icon-xs"
+            size="icon-sm"
             variant="ghost"
           >
-            <DotsThreeIcon className="size-4" weight="bold" />
+            <DotsThreeIcon className="size-5" weight="bold" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44">

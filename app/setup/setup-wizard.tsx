@@ -97,15 +97,17 @@ export function SetupWizard({ appHost }: SetupWizardProps) {
   if (step === "workspace") {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-ir-primary-light/20 px-4 py-10">
-        <StepWorkspace
-          appHost={appHost}
-          error={workspaceError}
-          onSubmit={handleWorkspaceSubmit}
-          submitting={creatingWorkspace}
-          workspaceName={
-            name.trim() ? `${name.trim()}'s Workspace` : "My Workspace"
-          }
-        />
+        <div className="w-full max-w-md rounded-ir-xl border border-ir-border bg-ir-surface p-8 shadow-ir-lg">
+          <StepWorkspace
+            appHost={appHost}
+            error={workspaceError}
+            onSubmit={handleWorkspaceSubmit}
+            submitting={creatingWorkspace}
+            workspaceName={
+              name.trim() ? `${name.trim()}'s Workspace` : "My Workspace"
+            }
+          />
+        </div>
       </main>
     );
   }

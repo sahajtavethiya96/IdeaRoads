@@ -5,6 +5,16 @@ import { listFeatureFlags } from "@/lib/orbit/feature-flags";
 
 export const metadata = { title: "Feature Flags" };
 
+// Flags only store a snake_case `key` in the db — humanize it for display so
+// the row reads like a name ("Google Auth"), with the raw key kept alongside
+// as a small code badge for anyone who needs the exact identifier.
+function humanizeFlagKey(key: string): string {
+  return key
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 export default async function FeatureFlagsPage() {
   const flags = await listFeatureFlags();
 
@@ -39,9 +49,14 @@ export default async function FeatureFlagsPage() {
                 key={flag.key}
               >
                 <div className="min-w-0 flex-1">
-                  <p className="font-mono text-sm font-semibold text-ir-heading">
-                    {flag.key}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold text-ir-heading">
+                      {humanizeFlagKey(flag.key)}
+                    </p>
+                    <span className="rounded-ir-xs bg-ir-muted-surface px-1.5 py-0.5 font-mono text-2xs text-ir-muted">
+                      {flag.key}
+                    </span>
+                  </div>
                   <p className="mt-0.5 text-xs text-ir-muted">
                     {flag.description}
                   </p>
