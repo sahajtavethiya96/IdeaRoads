@@ -12,9 +12,14 @@ export class CommentUpdateError extends Error {
 // Edit a comment's body. Only the comment's own author may edit it — unlike
 // delete, editing someone else's words is never allowed, not even for
 // moderators. Deleted comments can't be edited.
+//
+// Guest (accountless) comments are final and cannot be edited: their authorId
+// is null, and `requesterId` is null for a guest, so a plain `!==` comparison
+// would make null === null true and let ANY guest edit ANY other guest's
+// comment. Both sides are therefore explicitly required to be non-null below.
 export async function updateComment(
   commentId: string,
-  requesterId: string,
+  requesterId: string | null,
   body: string
 ): Promise<void> {
   const comment = await db
@@ -30,7 +35,7 @@ export async function updateComment(
   if (comment.isDeleted) {
     throw new CommentUpdateError("This comment has been deleted.");
   }
-  if (comment.authorId !== requesterId) {
+  if (!(requesterId && comment.authorId) || comment.authorId !== requesterId) {
     throw new CommentUpdateError("You can only edit your own comment.");
   }
 

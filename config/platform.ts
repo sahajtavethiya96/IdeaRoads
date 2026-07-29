@@ -32,6 +32,20 @@ export const MAX_MEMBERS_PER_WORKSPACE: number | null = null;
 export const INVITE_EXPIRY_DAYS = 7;
 export const INVITE_LINK_LABEL_MAX = 100;
 
+// Accountless participation on the Public Portal (Feature 01). A visitor proves
+// they control an email address with a one-time code and can then submit
+// feedback, vote, and comment — no account, no password, no session.
+export const GUEST_OTP_LENGTH = 6;
+export const GUEST_OTP_EXPIRY_MINUTES = 10;
+// Bounds brute force against the 6-digit space; the row is destroyed once
+// exceeded, so a fresh code must be requested.
+export const GUEST_OTP_MAX_ATTEMPTS = 5;
+export const GUEST_OTP_RESEND_COOLDOWN_SECONDS = 60;
+// How long a verified email stays remembered in the visitor's browser before
+// they are asked to confirm the address again.
+export const GUEST_IDENTITY_DAYS = 30;
+export const GUEST_NAME_MAX = 80;
+
 // Default board created with every new workspace
 export const DEFAULT_BOARD_NAME = "Feature Requests";
 export const DEFAULT_BOARD_SLUG = "feature-requests";

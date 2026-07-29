@@ -8,8 +8,8 @@ import {
   isNull,
   notInArray,
   or,
-  sql,
   type SQL,
+  sql,
 } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { boards, postStatusChanges, posts, votes } from "@/db/schema";
@@ -68,6 +68,10 @@ export async function listBoardPosts(
     categoryId?: string;
     search?: string;
     userId?: string;
+    // Verified email of an accountless Public Portal visitor, used only when
+    // there is no `userId`. Without it their own votes would never light up
+    // and every already-voted post would look un-voted to them.
+    guestEmail?: string;
     myVotes?: boolean;
     onlyMine?: boolean;
     includeUnapproved?: boolean;
@@ -82,6 +86,7 @@ export async function listBoardPosts(
     categoryId,
     search,
     userId,
+    guestEmail,
     myVotes,
     onlyMine,
     includeUnapproved = false,
@@ -89,6 +94,14 @@ export async function listBoardPosts(
     limit,
     offset = 0,
   } = opts;
+
+  // An account is identified by id, a verified guest by email. Everything
+  // vote-related below keys off whichever is present.
+  const voterCondition = userId
+    ? eq(votes.userId, userId)
+    : guestEmail
+      ? eq(votes.userEmail, guestEmail)
+      : null;
 
   // Merged posts are hidden from active lists (Feature 05). Drafts are never
   // shown on the public board/portal — they live only in the admin feedback
@@ -125,17 +138,23 @@ export async function listBoardPosts(
     conditions.push(ilike(posts.title, `%${search.trim()}%`));
   }
 
-  if (myVotes && userId) {
+  if (myVotes && voterCondition) {
     const votedPostIds = db
       .select({ id: votes.postId })
       .from(votes)
-      .where(eq(votes.userId, userId));
+      .where(voterCondition);
 
     conditions.push(inArray(posts.id, votedPostIds));
   }
 
-  if (onlyMine && userId) {
-    conditions.push(eq(posts.authorId, userId));
+  if (onlyMine) {
+    // A guest's posts carry a null authorId, so they are matched by the
+    // verified author email instead.
+    if (userId) {
+      conditions.push(eq(posts.authorId, userId));
+    } else if (guestEmail) {
+      conditions.push(eq(posts.authorEmail, guestEmail));
+    }
   }
 
   // Trending = most votes in the last 7 days (a correlated count), tie-broken
@@ -152,12 +171,12 @@ export async function listBoardPosts(
         ? [desc(posts.isPinned), desc(recentVotes), desc(posts.upvotes)]
         : [desc(posts.isPinned), desc(posts.createdAt)];
 
-  if (userId) {
+  if (voterCondition) {
     // LEFT JOIN to get hasVoted per post
     const userVoteAlias = db
       .select({ postId: votes.postId, id: votes.id })
       .from(votes)
-      .where(eq(votes.userId, userId))
+      .where(voterCondition)
       .as("user_vote");
 
     const votedQuery = db
@@ -260,6 +279,9 @@ export async function countBoardPostsFiltered(
     categoryId?: string;
     search?: string;
     userId?: string;
+    // See listBoardPosts — identifies an accountless verified visitor so the
+    // "my votes" / "my posts" counts match the list they page through.
+    guestEmail?: string;
     myVotes?: boolean;
     onlyMine?: boolean;
     includeUnapproved?: boolean;
@@ -271,11 +293,18 @@ export async function countBoardPostsFiltered(
     categoryId,
     search,
     userId,
+    guestEmail,
     myVotes,
     onlyMine,
     includeUnapproved = false,
     excludeStatuses,
   } = opts;
+
+  const voterCondition = userId
+    ? eq(votes.userId, userId)
+    : guestEmail
+      ? eq(votes.userEmail, guestEmail)
+      : null;
 
   const conditions = [
     eq(posts.boardId, boardId),
@@ -297,15 +326,19 @@ export async function countBoardPostsFiltered(
   if (search?.trim()) {
     conditions.push(ilike(posts.title, `%${search.trim()}%`));
   }
-  if (myVotes && userId) {
+  if (myVotes && voterCondition) {
     const votedPostIds = db
       .select({ id: votes.postId })
       .from(votes)
-      .where(eq(votes.userId, userId));
+      .where(voterCondition);
     conditions.push(inArray(posts.id, votedPostIds));
   }
-  if (onlyMine && userId) {
-    conditions.push(eq(posts.authorId, userId));
+  if (onlyMine) {
+    if (userId) {
+      conditions.push(eq(posts.authorId, userId));
+    } else if (guestEmail) {
+      conditions.push(eq(posts.authorEmail, guestEmail));
+    }
   }
 
   const [{ value }] = await db
@@ -561,7 +594,9 @@ export async function createPost(input: {
   title: string;
   body?: string | null;
   categoryId?: string | null;
-  authorId: string;
+  // Null for an accountless Public Portal visitor — the column has always been
+  // nullable, and authorEmail (NOT NULL) is what attributes the post.
+  authorId: string | null;
   authorName: string | null;
   authorEmail: string;
   imageUrl?: string | null;

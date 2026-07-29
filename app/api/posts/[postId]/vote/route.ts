@@ -1,11 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { audit } from "@/lib/audit";
-import { getCurrentSession } from "@/lib/authz";
+import { getPortalActor } from "@/lib/portal/guest-identity";
 import { isPostAccessible } from "@/lib/posts/access";
 import { getPost } from "@/lib/posts/queries";
 import {
   castVote,
   removeVote,
+  type VoteActor,
   VoteBlockedError,
   VoteNotFoundError,
 } from "@/lib/voting";
@@ -16,11 +17,15 @@ interface Params {
 
 export async function POST(_req: NextRequest, { params }: Params) {
   const { postId } = await params;
-  const session = await getCurrentSession();
+  // A signed-in account OR an accountless Public Portal visitor who has
+  // verified their email — `actor.id` is null for the latter.
+  const actor = await getPortalActor();
 
-  // Voting requires a signed-in User — there is no anonymous/guest voting.
-  if (!session) {
-    return NextResponse.json({ error: "Sign in to vote." }, { status: 401 });
+  if (!actor) {
+    return NextResponse.json(
+      { error: "Verify your email to vote." },
+      { status: 401 }
+    );
   }
 
   // Get post to find workspaceId
@@ -29,28 +34,37 @@ export async function POST(_req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Post not found." }, { status: 404 });
   }
 
-  // Private-board posts are reachable only by workspace members.
-  if (!(await isPostAccessible(post, session.user.id))) {
+  // Private-board posts are reachable only by workspace members. A guest
+  // passes null, which correctly fails for private, draft, and unapproved
+  // posts — accountless voting is confined to public, published ones.
+  if (!(await isPostAccessible(post, actor.id))) {
     return NextResponse.json({ error: "Post not found." }, { status: 404 });
   }
 
   try {
-    const voter = { userId: session.user.id };
+    const voter: VoteActor = {
+      userEmail: actor.email,
+      userId: actor.id,
+      userName: actor.name,
+    };
 
     const existingVote = await import("@/lib/voting/list").then((m) =>
-      m.hasUserVoted(postId, voter)
+      m.hasUserVoted(postId, {
+        userId: actor.id ?? undefined,
+        userEmail: actor.id ? undefined : actor.email,
+      })
     );
 
     const vote = await castVote(postId, post.workspaceId, voter);
 
     audit({
       action: "vote.created",
-      actorId: session.user.id,
-      actorEmail: session.user.email,
+      actorId: actor.id,
+      actorEmail: actor.email,
       entityType: "post",
       entityId: postId,
       description: `Voted on: ${post.title}`,
-      metadata: { workspaceId: post.workspaceId },
+      metadata: { workspaceId: post.workspaceId, isGuest: !actor.id },
     });
 
     // Refetch updated vote count
@@ -76,12 +90,11 @@ export async function POST(_req: NextRequest, { params }: Params) {
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
   const { postId } = await params;
-  const session = await getCurrentSession();
+  const actor = await getPortalActor();
 
-  // Removing a vote requires a signed-in User — there is no guest vote removal.
-  if (!session) {
+  if (!actor) {
     return NextResponse.json(
-      { error: "Sign in to manage your vote." },
+      { error: "Verify your email to manage your vote." },
       { status: 401 }
     );
   }
@@ -92,20 +105,20 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   }
 
   // Private-board posts are reachable only by workspace members.
-  if (!(await isPostAccessible(post, session.user.id))) {
+  if (!(await isPostAccessible(post, actor.id))) {
     return NextResponse.json({ error: "Post not found." }, { status: 404 });
   }
 
-  await removeVote(postId, { userId: session.user.id });
+  await removeVote(postId, { userEmail: actor.email, userId: actor.id });
 
   audit({
     action: "vote.removed",
-    actorId: session.user.id,
-    actorEmail: session.user.email,
+    actorId: actor.id,
+    actorEmail: actor.email,
     entityType: "post",
     entityId: postId,
     description: `Removed vote from: ${post.title}`,
-    metadata: { workspaceId: post.workspaceId },
+    metadata: { workspaceId: post.workspaceId, isGuest: !actor.id },
   });
 
   return new NextResponse(null, { status: 204 });

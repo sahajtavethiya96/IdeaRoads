@@ -85,6 +85,13 @@
       "when": 1785300000000,
       "tag": "0029_account_password",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1785400000000,
+      "tag": "0030_portal_guest_verification",
+      "breakpoints": true
     }
   ]
 }

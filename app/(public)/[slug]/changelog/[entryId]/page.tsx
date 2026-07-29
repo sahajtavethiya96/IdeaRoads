@@ -27,6 +27,7 @@ import {
   embedWrapperProps,
   parseEmbedParams,
 } from "@/lib/embed/style";
+import { getGuestIdentity } from "@/lib/portal/guest-identity";
 import { portalBaseUrl } from "@/lib/urls";
 import {
   getWorkspaceBySlug,
@@ -93,6 +94,9 @@ export default async function PublicChangelogEntryPage({
   }
 
   const session = await getCurrentSession();
+  // Read-only — keeps a visitor who verified on a board from appearing
+  // signed-out when they navigate here.
+  const guest = session ? null : await getGuestIdentity();
   const member = session
     ? await getWorkspaceMember(workspace.id, session.user.id)
     : null;
@@ -161,6 +165,7 @@ export default async function PublicChangelogEntryPage({
             boards={publicBoards}
             changelogPublic={workspace.changelogPublic}
             currentPath={`/${slug}/changelog/${entryId}`}
+            guestEmail={guest?.email}
             isMember={!!member}
             isSignedIn={isSignedIn}
             logoUrl={workspace.logoUrl}

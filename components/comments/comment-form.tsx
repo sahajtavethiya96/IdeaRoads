@@ -1,11 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { EmbedAuthDialog } from "@/components/embed/embed-auth-dialog";
 import { useIsEmbed } from "@/components/embed/use-is-embed";
+import { PortalVerifyDialog } from "@/components/portal/portal-verify-dialog";
 import { Button } from "@/components/ui/button";
 import { embedFetch } from "@/lib/embed/fetch";
 import { useEmbedSignedIn } from "@/lib/embed/use-embed-signed-in";
@@ -42,7 +42,6 @@ export default function CommentForm({
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const [signedIn, setSignedIn] = useEmbedSignedIn(isEmbed, isSignedIn);
   const [authOpen, setAuthOpen] = useState(false);
-  const pathname = usePathname();
 
   // Mirrors of the latest content so the Enter-to-submit handler always reads
   // the current value (not a stale render's state).
@@ -102,7 +101,7 @@ export default function CommentForm({
         // leaving the visitor stuck behind a generic error — the draft stays
         // intact (it's tracked in refs/state, not reset here) and resubmits
         // automatically once they're signed in again.
-        if (res.status === 401 && isEmbed) {
+        if (res.status === 401) {
           setSignedIn(false);
           setAuthOpen(true);
           return;
@@ -145,38 +144,37 @@ export default function CommentForm({
   }
 
   if (!signedIn) {
+    // No-ops if the box was empty (a manual prompt); resubmits the draft
+    // automatically if this reopened after a 401 mid-submit.
+    const handleAuthenticated = () => {
+      setSignedIn(true);
+      router.refresh();
+      submit();
+    };
+
     return (
       <>
         <p className="py-2 text-sm text-ir-muted">
-          {isEmbed ? (
-            <button
-              className="cursor-pointer font-medium text-ir-primary hover:underline"
-              onClick={() => setAuthOpen(true)}
-              type="button"
-            >
-              Sign in
-            </button>
-          ) : (
-            <Link
-              className="font-medium text-ir-primary hover:underline"
-              href={`/signin?next=${encodeURIComponent(pathname)}`}
-            >
-              Sign in
-            </Link>
-          )}{" "}
+          <button
+            className="cursor-pointer font-medium text-ir-primary transition-opacity duration-150 ease-ir-standard hover:underline"
+            onClick={() => setAuthOpen(true)}
+            type="button"
+          >
+            {isEmbed ? "Sign in" : "Verify your email"}
+          </button>{" "}
           to join the conversation.
         </p>
-        {isEmbed && (
+        {isEmbed ? (
           <EmbedAuthDialog
-            onAuthenticated={() => {
-              setSignedIn(true);
-              router.refresh();
-              // No-ops if the box was empty (a manual "Sign in" click);
-              // resubmits the draft automatically if this reopened after a
-              // 401 mid-submit.
-              submit();
-            }}
+            onAuthenticated={handleAuthenticated}
             onOpenChange={setAuthOpen}
+            open={authOpen}
+          />
+        ) : (
+          <PortalVerifyDialog
+            action="comment"
+            onOpenChange={setAuthOpen}
+            onVerified={handleAuthenticated}
             open={authOpen}
           />
         )}

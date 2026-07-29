@@ -42,8 +42,12 @@ export async function createComment(
   const { body, parentId, authorId, authorEmail, authorName, authorAvatar } =
     input;
 
-  // Commenting requires a signed-in User — there is no anonymous/guest commenting.
-  if (!authorId) {
+  // Commenting requires either a signed-in account OR an accountless Public
+  // Portal visitor who has verified their email (lib/portal/guest-identity.ts).
+  // An unidentified caller is still refused — comments.authorId is nullable,
+  // but authorEmail is what attributes and moderates a guest comment, so
+  // neither may be missing.
+  if (!(authorId || authorEmail)) {
     throw new CommentBlockedError("You must be signed in to comment.");
   }
 
@@ -307,26 +311,33 @@ export async function sendCommentNotifications(
       }).catch(() => {});
     }
   } else {
-    // Top-level comment: notify post author
-    if (!post.authorId || post.authorId === comment.authorId) {
-      return;
-    }
-    if (!post.authorEmail) {
+    // Top-level comment: notify post author. An accountless author has no
+    // authorId but always has an authorEmail (the column is NOT NULL), so they
+    // are still reachable by email — mirroring the reply branch above, which
+    // has always handled guests. Don't self-notify: matched by id for an
+    // account, by email for a guest.
+    const isSelfComment = post.authorId
+      ? post.authorId === comment.authorId
+      : !!post.authorEmail && post.authorEmail === comment.authorEmail;
+    if (isSelfComment || !post.authorEmail) {
       return;
     }
 
-    const postAuthorUser = await db
-      .select({ name: user.name })
-      .from(user)
-      .where(eq(user.id, post.authorId))
-      .limit(1)
-      .then((r) => r[0] ?? null);
+    const postAuthorUser = post.authorId
+      ? await db
+          .select({ name: user.name })
+          .from(user)
+          .where(eq(user.id, post.authorId))
+          .limit(1)
+          .then((r) => r[0] ?? null)
+      : null;
 
-    // Honour the post author's email-notification preference / unsubscribe choice.
-    const emailEnabled = await isEmailNotificationEnabled(
-      post.authorId,
-      "emailNewComment"
-    );
+    // Honour the post author's email-notification preference / unsubscribe
+    // choice. A guest can hold no preference row (its PK is a FK to `user`),
+    // so they default to enabled — same as the reply branch.
+    const emailEnabled = post.authorId
+      ? await isEmailNotificationEnabled(post.authorId, "emailNewComment")
+      : true;
 
     if (emailEnabled) {
       try {
@@ -338,7 +349,11 @@ export async function sendCommentNotifications(
             commenterName,
             commentBody: bodyPreview,
             workspaceName: workspace.name,
-            unsubscribeUrl: buildUnsubscribeUrl(post.authorId),
+            // Unsubscribe tokens are HMACs over a user id, so a guest gets
+            // none — their only "unsubscribe" is not posting again.
+            unsubscribeUrl: post.authorId
+              ? buildUnsubscribeUrl(post.authorId)
+              : null,
           })
         );
 

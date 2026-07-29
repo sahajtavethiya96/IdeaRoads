@@ -17,14 +17,26 @@ export class VoteNotFoundError extends Error {
   }
 }
 
+/**
+ * Whoever is casting the vote. `userId` is null for an accountless Public
+ * Portal visitor who has verified their email (lib/portal/guest-identity.ts) —
+ * `userEmail` is then the whole identity, carried by the denormalized
+ * userEmail/userName columns the schema has always had.
+ */
+export interface VoteActor {
+  userEmail: string;
+  userId: string | null;
+  userName?: string | null;
+}
+
 export async function castVote(
   postId: string,
   workspaceId: string,
-  voter: { userId: string }
+  voter: VoteActor
 ) {
-  const { userId } = voter;
-  if (!userId) {
-    throw new Error("userId is required.");
+  const { userId, userEmail } = voter;
+  if (!(userId || userEmail)) {
+    throw new Error("A userId or userEmail is required.");
   }
 
   // Pre-flight checks
@@ -53,11 +65,18 @@ export async function castVote(
     throw new VoteBlockedError("This board is archived.");
   }
 
-  // Check if already voted by userId
+  // Already voted? An account matches on userId. A guest matches on the
+  // verified email ALONE — deliberately not "email AND user_id IS NULL" — so
+  // someone who voted while signed in cannot vote a second time by returning
+  // as a guest with the same address.
   const existing = await db
     .select({ id: votes.id })
     .from(votes)
-    .where(and(eq(votes.postId, postId), eq(votes.userId, userId)))
+    .where(
+      userId
+        ? and(eq(votes.postId, postId), eq(votes.userId, userId))
+        : and(eq(votes.postId, postId), eq(votes.userEmail, userEmail))
+    )
     .limit(1)
     .then((r) => r[0] ?? null);
 
@@ -65,13 +84,17 @@ export async function castVote(
     return existing;
   }
 
-  // Fetch user details to store as fallback
-  const userRecord = await db
-    .select({ name: user.name, email: user.email })
-    .from(user)
-    .where(eq(user.id, userId))
-    .limit(1)
-    .then((r) => r[0] ?? null);
+  // For an account the live user row is authoritative for the denormalized
+  // fallback columns. A guest has no row — their verified email and the name
+  // they supplied are all there is.
+  const userRecord = userId
+    ? await db
+        .select({ name: user.name, email: user.email })
+        .from(user)
+        .where(eq(user.id, userId))
+        .limit(1)
+        .then((r) => r[0] ?? null)
+    : null;
 
   return await db.transaction(async (tx) => {
     const [vote] = await tx
@@ -80,9 +103,9 @@ export async function castVote(
         id: createId(),
         postId,
         workspaceId,
-        userId,
-        userEmail: userRecord?.email ?? null,
-        userName: userRecord?.name ?? null,
+        userId: userId ?? null,
+        userEmail: userRecord?.email ?? userEmail,
+        userName: userRecord?.name ?? voter.userName ?? null,
       })
       .onConflictDoNothing()
       .returning({ id: votes.id });

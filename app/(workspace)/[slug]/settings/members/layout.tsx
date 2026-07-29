@@ -10,6 +10,7 @@ import { InviteMemberButton } from "./_components/invite-member-button";
 
 interface Props {
   children: React.ReactNode;
+  params: Promise<{ slug: string }>;
 }
 
 export default async function MembersSettingsLayout({

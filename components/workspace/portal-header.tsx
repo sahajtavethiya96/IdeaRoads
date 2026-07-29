@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GuestIdentityBadge } from "@/components/portal/guest-identity-badge";
 import { Button } from "@/components/ui/button";
 import { SquareAvatar } from "@/components/ui/square-avatar";
 import { PortalMobileNav } from "@/components/workspace/portal-mobile-nav";
@@ -14,6 +15,10 @@ interface PortalHeaderProps {
   boards: Board[];
   changelogPublic: boolean;
   currentPath?: string;
+  // Email an accountless visitor has verified, when there is no account.
+  // Shown in place of the sign-in button so they can see who they are posting
+  // as and correct it.
+  guestEmail?: string | null;
   isMember?: boolean;
   isSignedIn: boolean;
   logoUrl?: string | null;
@@ -41,6 +46,7 @@ export function PortalHeader({
   roadmapPublic,
   changelogPublic,
   isSignedIn,
+  guestEmail,
   isMember = false,
   userImage,
   userName,
@@ -130,6 +136,8 @@ export function PortalHeader({
                 />
               </Link>
             </>
+          ) : guestEmail ? (
+            <GuestIdentityBadge email={guestEmail} />
           ) : (
             <Button asChild size="sm">
               <Link href={signInHref}>Sign In / Sign Up</Link>

@@ -10,8 +10,17 @@ import type { CommentApi, CommentData, ReplyData } from "./types";
 interface CommentThreadProps {
   api?: CommentApi;
   canModerate: boolean;
+  // Whether the viewer may WRITE a comment: a signed-in account, or an
+  // accountless Public Portal visitor who has verified their email. Defaults
+  // to isSignedIn for surfaces without accountless participation (e.g. the
+  // changelog), which keeps their behavior unchanged.
+  canParticipate?: boolean;
   initialComments: CommentData[];
   isLocked: boolean;
+  // Whether the viewer holds a real account. Reactions and edit/delete stay
+  // gated on this: comment_reactions has no email column, so a guest reaction
+  // could be neither attributed nor de-duplicated, and guest comments are
+  // deliberately final.
   isSignedIn: boolean;
   postId: string;
 }
@@ -27,6 +36,7 @@ export default function CommentThread({
   initialComments,
   postId,
   isSignedIn,
+  canParticipate = isSignedIn,
   isLocked,
   canModerate,
 }: CommentThreadProps) {
@@ -98,7 +108,7 @@ export default function CommentThread({
           <CommentForm
             api={api}
             isLocked={isLocked}
-            isSignedIn={isSignedIn}
+            isSignedIn={canParticipate}
             onSuccess={handleCommentAdded}
             postId={postId}
           />
@@ -173,7 +183,7 @@ export default function CommentThread({
                 >
                   <CommentReplyForm
                     api={api}
-                    isSignedIn={isSignedIn}
+                    isSignedIn={canParticipate}
                     onCancel={() => toggleReplyForm(thread.comment.id)}
                     onSuccess={(reply) =>
                       handleReplyAdded(thread.comment.id, reply)
@@ -194,7 +204,7 @@ export default function CommentThread({
           <CommentForm
             api={api}
             isLocked={isLocked}
-            isSignedIn={isSignedIn}
+            isSignedIn={canParticipate}
             onSuccess={handleCommentAdded}
             postId={postId}
           />

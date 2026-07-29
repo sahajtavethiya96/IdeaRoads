@@ -11,7 +11,10 @@ export async function enqueueNewPostAlerts(input: {
   postSlug: string;
   boardId: string;
   workspaceId: string;
-  authorId: string;
+  // Null when an accountless guest submitted the feedback — the
+  // "don't alert the author about their own post" check below simply never
+  // matches, which is correct: no admin is that guest.
+  authorId: string | null;
   authorName: string;
 }) {
   const [boardRow] = await db

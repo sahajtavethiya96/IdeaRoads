@@ -4,7 +4,9 @@
 
 ## Overview
 
-Comments let people discuss a piece of feedback. A signed-in **User** can comment on a feedback post, and the team can join the conversation too. Reading the discussion needs no account, but commenting and replying require signing in. Comments support **one level of replies**: you can reply to a top-level comment, but not to a reply.
+Comments let people discuss a piece of feedback. A signed-in **User** can comment on a feedback post, and the team can join the conversation too. On the Public Portal, a visitor with no account can also comment once they confirm their email with a 6-digit code — the prompt appears in place and their draft is submitted for them as soon as they verify. Reading the discussion needs no account or verification. Comments support **one level of replies**: you can reply to a top-level comment, but not to a reply.
+
+**Accountless comments are final.** A guest cannot edit or delete what they posted, and cannot react to comments (reactions need an account). Workspace members retain full moderation over guest comments, which are labelled with a **Guest** badge in the moderation queue. Accountless commenting is gated by the `guest_voting` feature flag.
 
 A comment author can delete their own comment, and the team (Brand Admin and Team Members) can remove any comment — a fixed team permission. Deleting a comment never breaks the thread — its text is replaced with a *"[deleted]"* placeholder and the surrounding replies stay readable. When a Brand Admin turns on comment moderation in workspace settings, new comments are held for approval before they appear publicly.
 
@@ -14,7 +16,8 @@ A comment author can delete their own comment, and the team (Brand Admin and Tea
 
 - Comments belong to a feedback post — the discussion lives on that post's detail page.
 - Replies are **one level deep**. A reply attaches to a top-level comment; replies cannot themselves be replied to.
-- Commenting and replying **require signing in** — a User comments using their account. Reading the thread needs no account.
+- Commenting and replying **require an identified author** — a signed-in User comments using their account; a Public Portal visitor comments after confirming their email. Reading the thread needs neither.
+- Editing and deleting your own comment require an **account**; accountless comments are final.
 - Comments on a private board are only visible to members of that workspace.
 - **Comment moderation** is a workspace setting configured by the Brand Admin:
   - **Off** (default) — comments appear immediately.

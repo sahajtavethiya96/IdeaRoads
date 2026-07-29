@@ -7,6 +7,7 @@ import {
   createComment,
   listComments,
 } from "@/lib/comments";
+import { getPortalActor } from "@/lib/portal/guest-identity";
 import { isPostAccessible } from "@/lib/posts/access";
 import { getPost } from "@/lib/posts/queries";
 import { countCharacters } from "@/lib/text-metrics";
@@ -77,11 +78,15 @@ export async function GET(req: NextRequest, { params }: Params) {
 
 export async function POST(req: NextRequest, { params }: Params) {
   const { postId } = await params;
-  const session = await getCurrentSession();
+  // A signed-in account OR an accountless Public Portal visitor who has
+  // verified their email. `actor.id` is null in the latter case.
+  const actor = await getPortalActor();
 
-  // Commenting requires a signed-in User — there is no anonymous/guest commenting.
-  if (!session) {
-    return NextResponse.json({ error: "Sign in to comment." }, { status: 401 });
+  if (!actor) {
+    return NextResponse.json(
+      { error: "Verify your email to comment." },
+      { status: 401 }
+    );
   }
 
   let body: {
@@ -110,8 +115,10 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Post not found." }, { status: 404 });
   }
 
-  // Private-board posts accept comments only from workspace members.
-  if (!(await isPostAccessible(post, session.user.id))) {
+  // Private-board posts accept comments only from workspace members. A guest
+  // passes null here, which correctly fails for private, draft, and unapproved
+  // posts — accountless participation is confined to public, published ones.
+  if (!(await isPostAccessible(post, actor.id))) {
     return NextResponse.json({ error: "Post not found." }, { status: 404 });
   }
 
@@ -121,9 +128,9 @@ export async function POST(req: NextRequest, { params }: Params) {
       {
         body: rawBody,
         parentId: body.parentId ?? null,
-        authorId: session.user.id,
-        authorEmail: session.user.email,
-        authorName: session.user.name ?? null,
+        authorId: actor.id,
+        authorEmail: actor.email,
+        authorName: actor.name,
         authorAvatar: null,
       },
       post.workspaceId
@@ -139,8 +146,10 @@ export async function POST(req: NextRequest, { params }: Params) {
         isDeleted: false,
         authorName: comment.authorName,
         authorAvatar: comment.authorAvatar,
-        isGuest: false,
-        isOwn: true,
+        isGuest: !actor.id,
+        // Guest comments are final: no edit/delete affordance is offered, and
+        // the server refuses both (see lib/comments/update.ts, delete.ts).
+        isOwn: !!actor.id,
         createdAt: comment.createdAt,
       },
       { status: 201 }

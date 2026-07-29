@@ -6,9 +6,10 @@ import { z } from "zod";
 import { WORKSPACE_MEMBER } from "@/config/platform";
 import { boards, user, votes, workspaces } from "@/db/schema";
 import { audit } from "@/lib/audit";
-import { getCurrentSession, requireSession } from "@/lib/authz";
+import { requireSession } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { createNotification } from "@/lib/notifications/create";
+import { getPortalActor } from "@/lib/portal/guest-identity";
 import { mergePost } from "@/lib/posts/merge";
 import { enqueueNewPostAlerts } from "@/lib/posts/notify";
 import {
@@ -29,7 +30,7 @@ import {
 } from "@/lib/posts/queries";
 import { submitFeedback } from "@/lib/posts/submit-feedback";
 import { UnmergeError, unmergePost } from "@/lib/posts/unmerge";
-import { uploadPostImage } from "@/lib/posts/upload-image";
+import { guestUploadKey, uploadPostImage } from "@/lib/posts/upload-image";
 import {
   maxMeaningfulLength,
   minMeaningfulLength,
@@ -62,16 +63,17 @@ export async function createPostAction(input: {
     postSlug: string;
   }>
 > {
-  // Uses getCurrentSession (not requireSession) — this is called from the
-  // embed widget's NewPostForm too, where a stale/missing session must
-  // surface as a normal error the caller can react to (reopening the
-  // in-place sign-in), not a server-triggered redirect to /signin that would
-  // navigate the whole iframe away.
-  const session = await getCurrentSession();
-  if (!session) {
+  // Resolves a signed-in account OR an accountless Public Portal visitor who
+  // has verified their email (actor.id is null for the latter). Never a
+  // redirect: this is called from the embed widget's NewPostForm and from the
+  // portal form, where a stale/missing identity must surface as a normal error
+  // the caller can react to by reopening the in-place prompt, not a
+  // server-triggered navigation to /signin.
+  const actor = await getPortalActor();
+  if (!actor) {
     return {
       success: false,
-      error: "Your session has expired. Please sign in again.",
+      error: "Verify your email to post feedback.",
       code: "UNAUTHENTICATED",
     };
   }
@@ -80,7 +82,7 @@ export async function createPostAction(input: {
   // resolution, the DB write, audit log, admin alerts) is shared with
   // app/api/embed/posts, the bearer-authenticated equivalent of this
   // action for the embed widget — see lib/posts/submit-feedback.ts.
-  const result = await submitFeedback(session.user, input);
+  const result = await submitFeedback(actor, input);
   if (!result.ok) {
     return {
       success: false,
@@ -119,21 +121,22 @@ export async function createPostAction(input: {
 export async function uploadPostImageAction(
   formData: FormData
 ): Promise<ActionResult<{ url: string }>> {
-  // See createPostAction above — getCurrentSession, not requireSession, so a
-  // stale/missing session surfaces as a normal error instead of a redirect
-  // that would navigate the embed widget's iframe away.
-  const session = await getCurrentSession();
-  if (!session) {
+  // See createPostAction above — a resolved actor, not requireSession, so a
+  // stale/missing identity surfaces as a normal error instead of a redirect
+  // that would navigate the embed widget's iframe away. Guests may attach an
+  // image to the feedback they are about to submit.
+  const actor = await getPortalActor();
+  if (!actor) {
     return {
       success: false,
-      error: "Your session has expired. Please sign in again.",
+      error: "Verify your email to attach an image.",
       code: "UNAUTHENTICATED",
     };
   }
 
   const file = formData.get("image");
   const result = await uploadPostImage(
-    session.user.id,
+    actor.id ?? guestUploadKey(actor.email),
     file instanceof File ? file : null
   );
   if (!result.ok) {
