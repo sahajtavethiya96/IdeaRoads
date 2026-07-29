@@ -7,7 +7,11 @@ import { requireSession } from "@/lib/authz";
 import { getBoardById } from "@/lib/boards/queries";
 import { getActiveCategoriesForWorkspace } from "@/lib/categories/queries";
 import { resolveBackTarget } from "@/lib/navigation/back-target";
-import { getPost, listStatusHistory } from "@/lib/posts/queries";
+import {
+  getPost,
+  listPostsMergedInto,
+  listStatusHistory,
+} from "@/lib/posts/queries";
 import { hasUserVoted } from "@/lib/voting";
 import { getActiveWorkspaceStatuses } from "@/lib/workspace-statuses/queries";
 import { listMembers } from "@/lib/workspaces/members";
@@ -57,14 +61,21 @@ export default async function AdminPostDetailPage({
 
   const isAdminOrOwner = member.role !== WORKSPACE_MEMBER;
 
-  const [votedByUser, workspaceStatuses, categories, statusHistory, members] =
-    await Promise.all([
-      hasUserVoted(post.id, { userId: session.user.id }),
-      getActiveWorkspaceStatuses(workspace.id),
-      getActiveCategoriesForWorkspace(workspace.id),
-      listStatusHistory(post.id),
-      listMembers(workspace.id),
-    ]);
+  const [
+    votedByUser,
+    workspaceStatuses,
+    categories,
+    statusHistory,
+    members,
+    mergedPosts,
+  ] = await Promise.all([
+    hasUserVoted(post.id, { userId: session.user.id }),
+    getActiveWorkspaceStatuses(workspace.id),
+    getActiveCategoriesForWorkspace(workspace.id),
+    listStatusHistory(post.id),
+    listMembers(workspace.id),
+    listPostsMergedInto(post.id),
+  ]);
   const assignees = members.map((m) => ({
     id: m.userId,
     name: m.user.name,
@@ -118,6 +129,10 @@ export default async function AdminPostDetailPage({
       isAdminOrOwner={isAdminOrOwner}
       isMember={true}
       isSignedIn={true}
+      mergedPosts={mergedPosts.map((m) => ({
+        ...m,
+        href: `/${slug}/feedback/${m.id}`,
+      }))}
       mergedTarget={mergedTarget}
       post={post}
       statusHistory={statusHistory}

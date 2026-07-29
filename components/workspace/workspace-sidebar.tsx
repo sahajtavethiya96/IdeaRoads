@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  CaretLeft,
-  CaretRight,
   CircleDashed,
   Code,
   List,
@@ -103,33 +101,6 @@ function NavLink({
   );
 }
 
-// Floating rail-edge toggle — same button, same position for both
-// directions. Swaps between CaretLeft/CaretRight rather than rotating a
-// single glyph 180° — Phosphor's caret icons carry asymmetric padding for
-// inline text use, so a rotated glyph drifts off-center in one of the two
-// states; swapping keeps each glyph's own (correctly balanced) artwork.
-function SidebarEdgeToggle({
-  collapsed,
-  onClick,
-}: {
-  collapsed: boolean;
-  onClick: () => void;
-}) {
-  const Caret = collapsed ? CaretRight : CaretLeft;
-
-  return (
-    <button
-      aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-      className="-right-3 absolute top-14 z-20 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-ir-border bg-card text-ir-muted shadow-ir-xs transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-      onClick={onClick}
-      title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-      type="button"
-    >
-      <Caret className="size-3" weight="bold" />
-    </button>
-  );
-}
-
 export function WorkspaceSidebar({
   email,
   initialUnreadCount = 0,
@@ -176,13 +147,29 @@ export function WorkspaceSidebar({
 
   const sidebarContent = (
     <>
-      <WorkspaceSwitcher
-        collapsed={effectiveCollapsed}
-        currentLogoUrl={workspaceLogoUrl}
-        currentName={workspaceName}
-        currentSlug={workspaceSlug}
-        workspaces={workspaces}
-      />
+      {/* Workspace switcher + collapse toggle, ChatGPT-style: when the rail
+          is collapsed, hovering the logo swaps it for an expand caret
+          (WorkspaceSwitcher's onExpand path); when expanded, hovering the
+          logo swaps it for a collapse caret instead (onCollapse path).
+          Mobile has no persistent rail, so neither toggle applies there. */}
+      {effectiveCollapsed ? (
+        <WorkspaceSwitcher
+          collapsed
+          currentLogoUrl={workspaceLogoUrl}
+          currentName={workspaceName}
+          currentSlug={workspaceSlug}
+          onExpand={toggleCollapsed}
+          workspaces={workspaces}
+        />
+      ) : (
+        <WorkspaceSwitcher
+          currentLogoUrl={workspaceLogoUrl}
+          currentName={workspaceName}
+          currentSlug={workspaceSlug}
+          onCollapse={isMobile ? undefined : toggleCollapsed}
+          workspaces={workspaces}
+        />
+      )}
 
       {/* Navigation */}
       <LayoutGroup id="workspace-nav">
@@ -360,12 +347,11 @@ export function WorkspaceSidebar({
   return (
     <aside
       className={cn(
-        "relative flex h-screen shrink-0 flex-col border-r border-sidebar-border bg-sidebar transition-[width] duration-150 ease-ir-standard",
+        "flex h-screen shrink-0 flex-col border-r border-sidebar-border bg-sidebar transition-[width] duration-150 ease-ir-standard",
         collapsed ? "w-16" : "w-56 lg:w-60"
       )}
     >
       {sidebarContent}
-      <SidebarEdgeToggle collapsed={collapsed} onClick={toggleCollapsed} />
     </aside>
   );
 }

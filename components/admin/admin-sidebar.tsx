@@ -3,13 +3,14 @@
 import {
   ArrowLeft,
   Buildings,
-  CaretLeft,
-  CaretRight,
   CaretUpDown,
   ChartBar,
+  CreditCard,
   Flag,
+  Gauge,
   List,
   Scroll,
+  SidebarSimpleIcon,
   SignOut,
   UserCircle,
   Users,
@@ -49,12 +50,14 @@ const navItems = [
     exact: false,
   },
   { href: "/orbit/users", label: "Users", icon: Users, exact: false },
+  { href: "/orbit/plans", label: "Plans", icon: CreditCard, exact: false },
   {
     href: "/orbit/feature-flags",
     label: "Feature Flags",
     icon: Flag,
     exact: false,
   },
+  { href: "/orbit/jobs", label: "Job Queue", icon: Gauge, exact: false },
   { href: "/orbit/audit-log", label: "Audit Log", icon: Scroll, exact: false },
   { href: "/orbit/account", label: "Account", icon: UserCircle, exact: true },
 ];
@@ -111,30 +114,6 @@ function NavLink({
   );
 }
 
-// Floating rail-edge toggle — mirrors WorkspaceSidebar's SidebarEdgeToggle so
-// both sidebars share the same collapse affordance.
-function SidebarEdgeToggle({
-  collapsed,
-  onClick,
-}: {
-  collapsed: boolean;
-  onClick: () => void;
-}) {
-  const Caret = collapsed ? CaretRight : CaretLeft;
-
-  return (
-    <button
-      aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-      className="-right-3 absolute top-14 z-20 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-ir-border bg-card text-ir-muted shadow-ir-xs transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-      onClick={onClick}
-      title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-      type="button"
-    >
-      <Caret className="size-3" weight="bold" />
-    </button>
-  );
-}
-
 export function AdminSidebar({
   email,
   image,
@@ -179,26 +158,46 @@ export function AdminSidebar({
 
   const sidebarContent = (
     <>
-      {/* Brand — the collapse control lives in the floating edge toggle
-          instead, matching the workspace sidebar. */}
-      <div
-        className={cn(
-          "flex h-14 items-center gap-3 border-b border-sidebar-border",
-          effectiveCollapsed ? "justify-center px-0" : "px-5"
-        )}
-      >
-        <span className="grid size-9 shrink-0 place-items-center rounded-ir-sm bg-sidebar-primary font-black text-sidebar-primary-foreground text-xs">
-          IR
-        </span>
-        {!effectiveCollapsed && (
+      {/* Brand + collapse toggle, same ChatGPT-style swap as the workspace
+          sidebar: collapsed shows just the mark, hover reveals the expand
+          icon in its place; expanded shows a persistent collapse button. */}
+      {effectiveCollapsed ? (
+        <button
+          aria-label="Expand sidebar"
+          className="group relative flex h-14 w-full cursor-pointer items-center justify-center border-b border-sidebar-border transition-colors duration-150 ease-ir-standard hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+          onClick={toggleCollapsed}
+          title="Expand sidebar"
+          type="button"
+        >
+          <span className="grid size-9 shrink-0 place-items-center rounded-ir-sm bg-sidebar-primary font-black text-sidebar-primary-foreground text-xs transition-opacity duration-150 ease-ir-standard group-hover:opacity-0">
+            IR
+          </span>
+          <SidebarSimpleIcon className="absolute size-4 text-sidebar-foreground/85 opacity-0 transition-opacity duration-150 ease-ir-standard group-hover:opacity-100" />
+        </button>
+      ) : (
+        <div className="flex h-14 items-center gap-3 border-b border-sidebar-border px-5">
+          <span className="grid size-9 shrink-0 place-items-center rounded-ir-sm bg-sidebar-primary font-black text-sidebar-primary-foreground text-xs">
+            IR
+          </span>
           <div className="min-w-0 flex-1">
             <p className="font-black text-sm leading-none">{PRODUCT_NAME}</p>
             <p className="mt-1 text-2xs font-semibold uppercase tracking-ui text-sidebar-foreground/40">
               Platform Admin
             </p>
           </div>
-        )}
-      </div>
+          {!isMobile && (
+            <button
+              aria-label="Collapse sidebar"
+              className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-ir-sm text-sidebar-foreground/85 transition-colors duration-150 ease-ir-standard hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+              onClick={toggleCollapsed}
+              title="Collapse sidebar"
+              type="button"
+            >
+              <SidebarSimpleIcon className="size-4" />
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Navigation */}
       <LayoutGroup id="orbit-nav">
@@ -359,12 +358,11 @@ export function AdminSidebar({
   return (
     <aside
       className={cn(
-        "relative flex h-screen shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-150 ease-ir-standard",
+        "flex h-screen shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-150 ease-ir-standard",
         effectiveCollapsed ? "w-16" : "w-64 lg:w-72"
       )}
     >
       {sidebarContent}
-      <SidebarEdgeToggle collapsed={collapsed} onClick={toggleCollapsed} />
     </aside>
   );
 }

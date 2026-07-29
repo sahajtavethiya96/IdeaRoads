@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ContentContainer } from "@/components/ui/page";
-import { WORKSPACE_MEMBER } from "@/config/platform";
+import { WORKSPACE_MEMBER, WORKSPACE_OWNER } from "@/config/platform";
 import { requireSession } from "@/lib/authz";
+import { adminBaseUrl } from "@/lib/urls";
+import { listActiveInviteLinks } from "@/lib/workspaces/invite-links";
+import { listPendingInvites } from "@/lib/workspaces/invites";
 import { listMembers } from "@/lib/workspaces/members";
 import {
   getWorkspaceBySlug,
   getWorkspaceMember,
 } from "@/lib/workspaces/queries";
+import { CreateLinkForm } from "./_components/create-link-form";
+import { InviteLinksList } from "./_components/invite-links-list";
 import { MembersTable } from "./_components/members-table";
+import { PendingInvitesList } from "./_components/pending-invites-list";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -34,20 +40,47 @@ export default async function MembersPage({ params }: Props) {
     notFound();
   }
 
-  const members = await listMembers(workspace.id);
+  const canManageAdmin = actorMember.role === WORKSPACE_OWNER;
+
+  const [members, pendingInvites, activeLinks] = await Promise.all([
+    listMembers(workspace.id),
+    listPendingInvites(workspace.id),
+    listActiveInviteLinks(workspace.id),
+  ]);
+
+  const appUrl = adminBaseUrl();
 
   return (
-    <ContentContainer>
-      <p className="mb-4 text-xs font-semibold tracking-eyebrow text-ir-muted uppercase">
-        {members.length} {members.length === 1 ? "member" : "members"}
-      </p>
+    <ContentContainer className="space-y-6">
       <MembersTable
-        actorMemberId={actorMember.id}
         actorRole={actorMember.role}
         actorUserId={session.user.id}
+        canInviteAdmin={canManageAdmin}
         members={members}
         workspaceId={workspace.id}
       />
+
+      <div className="space-y-6 rounded-ir-card border border-ir-border bg-ir-surface p-5 shadow-ir-xs sm:p-6">
+        <CreateLinkForm
+          appUrl={appUrl}
+          canCreateAdmin={canManageAdmin}
+          workspaceId={workspace.id}
+        />
+        <InviteLinksList
+          canManage
+          links={activeLinks}
+          workspaceId={workspace.id}
+        />
+      </div>
+
+      <div className="rounded-ir-card border border-ir-border bg-ir-surface p-5 shadow-ir-xs sm:p-6">
+        <PendingInvitesList
+          actorRole={actorMember.role}
+          canManage
+          invites={pendingInvites}
+          workspaceId={workspace.id}
+        />
+      </div>
     </ContentContainer>
   );
 }

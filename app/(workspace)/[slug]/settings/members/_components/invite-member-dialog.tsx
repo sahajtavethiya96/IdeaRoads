@@ -13,35 +13,35 @@ import {
 } from "@/components/ui/dialog";
 import { InviteForm } from "./invite-form";
 
-interface InviteMemberButtonProps {
+interface InviteMemberDialogProps {
   canInviteAdmin: boolean;
   workspaceId: string;
 }
 
-export function InviteMemberButton({
+export function InviteMemberDialog({
   workspaceId,
   canInviteAdmin,
-}: InviteMemberButtonProps) {
+}: InviteMemberDialogProps) {
   const [open, setOpen] = useState(false);
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
-        <Button>
-          <UserPlusIcon data-icon="inline-start" />
-          Invite member
+        <Button size="sm">
+          <UserPlusIcon />
+          Invite
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Invite a team member</DialogTitle>
+          <DialogTitle>Invite a Team Member</DialogTitle>
           <DialogDescription>
-            They'll get an email invite to join this workspace.
+            They&apos;ll receive an email with a link to join this workspace.
           </DialogDescription>
         </DialogHeader>
         <InviteForm
           canInviteAdmin={canInviteAdmin}
-          showHeading={false}
+          onInvited={() => setOpen(false)}
           workspaceId={workspaceId}
         />
       </DialogContent>

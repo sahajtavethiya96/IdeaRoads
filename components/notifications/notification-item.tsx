@@ -87,11 +87,7 @@ export function NotificationItem({
   }
 
   return (
-    <div
-      className={`group relative flex w-full items-start gap-3 px-5 py-3.5 border-b border-border transition-colors hover:bg-muted/40 ${
-        isRead ? "" : "bg-primary/5"
-      }`}
-    >
+    <div className="group relative flex w-full items-start gap-3 px-5 py-3.5 border-b border-border bg-background transition-colors hover:bg-muted/40">
       {/* Unread indicator */}
       <span className="mt-1 shrink-0 flex items-center justify-center size-4">
         {isRead ? (

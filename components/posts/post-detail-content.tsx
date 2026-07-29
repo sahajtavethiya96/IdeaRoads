@@ -95,6 +95,16 @@ interface PostDetailContentProps {
   // top instead.
   isPublicPortal?: boolean;
   isSignedIn: boolean;
+  // Other feedback merged into this post — the reverse of mergedTarget.
+  // Absent on the public portal route, which doesn't surface merge history.
+  mergedPosts?: Array<{
+    createdAt: Date;
+    href: string;
+    id: string;
+    status: string;
+    title: string;
+    upvotes: number;
+  }>;
   mergedTarget: {
     href: string;
     // Who/when the merge happened — resolved from the audit log (no
@@ -132,6 +142,7 @@ export function PostDetailContent({
   categories,
   assignees,
   statusHistory,
+  mergedPosts = [],
   mergedTarget,
   workspaceId,
   currentUserId,
@@ -303,6 +314,39 @@ export function PostDetailContent({
               <Button asChild className="shrink-0" size="sm" variant="outline">
                 <Link href={mergedTarget.href}>Open destination</Link>
               </Button>
+            </div>
+          )}
+
+          {/* Merged feedback — other posts folded into this one. They no
+            longer appear in the All Feedback table (see excludeMerged in
+            listWorkspacePosts), so this is the only place left to find and
+            open them, e.g. to unmerge one. */}
+          {isMember && mergedPosts.length > 0 && (
+            <div className="mt-4 rounded-ir-card border border-ir-border bg-ir-muted-surface/40 px-4 py-3">
+              <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-ir-muted">
+                <GitMergeIcon className="size-3.5 shrink-0" />
+                Merged feedback ({mergedPosts.length})
+              </p>
+              <ul className="space-y-1.5">
+                {mergedPosts.map((merged) => (
+                  <li
+                    className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs"
+                    key={merged.id}
+                  >
+                    <Link
+                      className="text-ir-heading hover:text-ir-primary hover:underline"
+                      href={merged.href}
+                    >
+                      {merged.title}
+                    </Link>
+                    <span className="text-ir-muted">
+                      · {merged.upvotes}{" "}
+                      {merged.upvotes === 1 ? "vote" : "votes"} ·{" "}
+                      {format(merged.createdAt, "MMM d, yyyy")}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 

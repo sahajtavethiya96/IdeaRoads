@@ -7,9 +7,7 @@ import {
   inArray,
   isNull,
   notInArray,
-  or,
   sql,
-  type SQL,
 } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { boards, postStatusChanges, posts, votes } from "@/db/schema";
@@ -225,6 +223,25 @@ export async function getPost(postId: string) {
   return row ?? null;
 }
 
+/** Posts merged INTO the given post — the reverse of `mergedIntoId`, for
+ * showing merge history on the destination's detail page. */
+export async function listPostsMergedInto(postId: string) {
+  return db
+    .select({
+      id: posts.id,
+      slug: posts.slug,
+      title: posts.title,
+      status: posts.status,
+      upvotes: posts.upvotes,
+      createdAt: posts.createdAt,
+      boardSlug: boards.slug,
+    })
+    .from(posts)
+    .innerJoin(boards, eq(posts.boardId, boards.id))
+    .where(eq(posts.mergedIntoId, postId))
+    .orderBy(desc(posts.createdAt));
+}
+
 export async function countBoardPosts(boardId: string): Promise<number> {
   const [{ value }] = await db
     .select({ value: count() })
@@ -322,6 +339,12 @@ export async function listWorkspacePosts(
     // public/author surface), "include" (drafts + published, admin list view),
     // "only" (drafts only, admin Draft filter).
     drafts?: "exclude" | "include" | "only";
+    // Merged posts are kept by default (unlike listBoardPosts, the public
+    // board feed) — the author profile view still needs to show a user their
+    // own merged item with a "Merged into" badge. The admin "All Feedback"
+    // table opts out via excludeMerged: merge history now lives on the
+    // destination post's detail page instead of cluttering the main list.
+    excludeMerged?: boolean;
     limit?: number;
     offset?: number;
   } = {}
@@ -336,14 +359,11 @@ export async function listWorkspacePosts(
     authorId,
     includeUnapproved = false,
     drafts = "exclude",
+    excludeMerged = false,
     limit = 50,
     offset = 0,
   } = opts;
 
-  // Merged posts are intentionally NOT excluded here (unlike listBoardPosts,
-  // the public board feed) — this cross-board admin/profile view is where
-  // merges need to stay discoverable, so the UI can show a "Merged into"
-  // badge/link instead of the item silently disappearing.
   const conditions = [eq(posts.workspaceId, workspaceId)];
 
   if (!includeUnapproved) {
@@ -353,6 +373,9 @@ export async function listWorkspacePosts(
     conditions.push(eq(posts.isDraft, false));
   } else if (drafts === "only") {
     conditions.push(eq(posts.isDraft, true));
+  }
+  if (excludeMerged) {
+    conditions.push(isNull(posts.mergedIntoId));
   }
   if (status) {
     conditions.push(eq(posts.status, status));
@@ -367,12 +390,7 @@ export async function listWorkspacePosts(
     conditions.push(eq(posts.authorId, authorId));
   }
   if (search?.trim()) {
-    const term = `%${search.trim()}%`;
-    conditions.push(
-      // or() with 2+ args is always defined; the union type is only for the
-      // zero-arg case, which can't happen here.
-      or(ilike(posts.title, term), ilike(posts.authorName, term)) as SQL
-    );
+    conditions.push(ilike(posts.title, `%${search.trim()}%`));
   }
 
   const orderByCols =
@@ -457,6 +475,7 @@ export async function countWorkspacePostsFiltered(
     search?: string;
     includeUnapproved?: boolean;
     drafts?: "exclude" | "include" | "only";
+    excludeMerged?: boolean;
   } = {}
 ): Promise<number> {
   const {
@@ -467,10 +486,11 @@ export async function countWorkspacePostsFiltered(
     search,
     includeUnapproved = false,
     drafts = "exclude",
+    excludeMerged = false,
   } = opts;
 
-  // Kept in lockstep with listWorkspacePosts: merged posts stay countable here
-  // (see that function for why) so pagination matches what's actually listed.
+  // Kept in lockstep with listWorkspacePosts so pagination matches what's
+  // actually listed.
   const conditions = [eq(posts.workspaceId, workspaceId)];
   if (!includeUnapproved) {
     conditions.push(eq(posts.isApproved, true));
@@ -479,6 +499,9 @@ export async function countWorkspacePostsFiltered(
     conditions.push(eq(posts.isDraft, false));
   } else if (drafts === "only") {
     conditions.push(eq(posts.isDraft, true));
+  }
+  if (excludeMerged) {
+    conditions.push(isNull(posts.mergedIntoId));
   }
   if (status) {
     conditions.push(eq(posts.status, status));
@@ -493,12 +516,7 @@ export async function countWorkspacePostsFiltered(
     conditions.push(eq(posts.authorId, authorId));
   }
   if (search?.trim()) {
-    const term = `%${search.trim()}%`;
-    conditions.push(
-      // or() with 2+ args is always defined; the union type is only for the
-      // zero-arg case, which can't happen here.
-      or(ilike(posts.title, term), ilike(posts.authorName, term)) as SQL
-    );
+    conditions.push(ilike(posts.title, `%${search.trim()}%`));
   }
 
   const [{ value }] = await db
