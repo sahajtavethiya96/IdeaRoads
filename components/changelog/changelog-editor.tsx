@@ -837,6 +837,17 @@ export function ChangelogEditor({
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            <Button
+              disabled={isPending}
+              onClick={() =>
+                router.push(`/${workspaceSlug}/settings/changelog`)
+              }
+              type="button"
+              variant="ghost"
+            >
+              Cancel
+            </Button>
+
             {!isPublished && (
               <Button
                 disabled={isPending || !title.trim() || !isDirty}

@@ -1,6 +1,6 @@
 import { createId } from "@paralleldrive/cuid2";
 import { and, desc, eq, sql } from "drizzle-orm";
-import { auditLogs, posts, votes } from "@/db/schema";
+import { auditLogs, comments, posts, votes } from "@/db/schema";
 import { db } from "@/lib/db";
 import type { MergeVoteSnapshotEntry } from "./merge";
 
@@ -110,5 +110,25 @@ export async function unmergePost(sourceId: string): Promise<void> {
       .update(posts)
       .set({ mergedIntoId: null, isLocked: false, updatedAt: new Date() })
       .where(eq(posts.id, sourceId));
+
+    // Remove the summary comment mergePost added to the target, and its
+    // count along with it — this reverses the merge, not just the votes.
+    const removed = await tx
+      .delete(comments)
+      .where(
+        and(
+          eq(comments.postId, targetId),
+          eq(comments.mergedFromPostId, sourceId)
+        )
+      )
+      .returning({ id: comments.id, isApproved: comments.isApproved });
+
+    const approvedRemoved = removed.filter((c) => c.isApproved).length;
+    if (approvedRemoved > 0) {
+      await tx
+        .update(posts)
+        .set({ commentCount: sql`${posts.commentCount} - ${approvedRemoved}` })
+        .where(eq(posts.id, targetId));
+    }
   });
 }

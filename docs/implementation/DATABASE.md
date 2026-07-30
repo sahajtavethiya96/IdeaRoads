@@ -106,7 +106,8 @@ votes               id, post_id, workspace_id,
 -- Comments
 comments            id, post_id, parent_id, body,
                     author_id, author_email, author_name, author_avatar,
-                    is_deleted, is_approved, created_at, updated_at
+                    is_deleted, is_approved, created_at, updated_at,
+                    merged_from_post_id -- set only on the auto-generated merge-summary comment (see Feature 05)
 
 comment_reactions   id, comment_id, user_id, emoji, created_at
 

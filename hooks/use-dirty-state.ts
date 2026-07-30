@@ -11,7 +11,9 @@ import { useCallback, useState } from "react";
  * save, call `markClean(values)` to accept those values as the new
  * baseline. `markClean` has a stable identity (safe in a useEffect
  * dependency array) since it never closes over the latest `values` —
- * callers always pass the baseline to adopt explicitly.
+ * callers always pass the baseline to adopt explicitly. The returned
+ * `baseline` lets a Discard action restore each field's setState to the
+ * last-saved value instead of reloading the page.
  */
 export function useDirtyState<T extends Record<string, unknown>>(values: T) {
   const [baseline, setBaseline] = useState<T>(values);
@@ -22,5 +24,5 @@ export function useDirtyState<T extends Record<string, unknown>>(values: T) {
 
   const markClean = useCallback((next: T) => setBaseline(next), []);
 
-  return { isDirty, markClean };
+  return { baseline, isDirty, markClean };
 }

@@ -298,7 +298,7 @@ export function EmbedSection({
     useState(initialConfig.showViewOtherFeedbackButton);
   const [isPending, startTransition] = useTransition();
 
-  const { isDirty, markClean } = useDirtyState({
+  const { baseline, isDirty, markClean } = useDirtyState({
     accentColor,
     boardId,
     buttonType,
@@ -404,6 +404,29 @@ export function EmbedSection({
         width,
       });
     });
+  }
+
+  function handleDiscard() {
+    setAccentColorError("");
+    setBoardId(baseline.boardId);
+    setButtonType(baseline.buttonType);
+    setTheme(baseline.theme);
+    setWidth(baseline.width);
+    setHeight(baseline.height);
+    setAccentColor(baseline.accentColor);
+    setFloatingPosition(baseline.floatingPosition);
+    setFloatingIconType(baseline.floatingIconType);
+    setFloatingIconUrl(baseline.floatingIconUrl);
+    setStickyButtonText(baseline.stickyButtonText);
+    setStickyButtonColor(baseline.stickyButtonColor);
+    setStickyTextColor(baseline.stickyTextColor);
+    setStickyPosition(baseline.stickyPosition);
+    setDeviceVisibility(baseline.deviceVisibility);
+    setShowRoadmap(baseline.showRoadmap);
+    setShowChangelog(baseline.showChangelog);
+    setShowSubmitFormImmediately(baseline.showSubmitFormImmediately);
+    setShowSimilarPosts(baseline.showSimilarPosts);
+    setShowViewOtherFeedbackButton(baseline.showViewOtherFeedbackButton);
   }
 
   if (boards.length === 0) {
@@ -824,7 +847,7 @@ export function EmbedSection({
               )}
               <Button
                 disabled={isPending || !isDirty}
-                onClick={() => window.location.reload()}
+                onClick={handleDiscard}
                 type="button"
                 variant="outline"
               >

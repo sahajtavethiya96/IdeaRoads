@@ -28,6 +28,14 @@ export const comments = pgTable(
     authorEmail: text("author_email"),
     authorName: text("author_name"),
     authorAvatar: text("author_avatar"),
+    // Set only on the auto-generated "merged feedback" summary comment a
+    // merge posts on the target (see mergePost in lib/posts/merge.ts) —
+    // points back at the source post it summarizes, so unmergePost can find
+    // and remove that one synthetic comment without touching real ones.
+    // Null for every ordinary comment.
+    mergedFromPostId: text("merged_from_post_id").references(() => posts.id, {
+      onDelete: "set null",
+    }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

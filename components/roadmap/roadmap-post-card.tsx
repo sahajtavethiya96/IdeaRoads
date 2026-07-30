@@ -1,6 +1,5 @@
 import {
   ChatCircleIcon,
-  DotsSixVerticalIcon,
   PushPinIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import type { DragControls } from "framer-motion";
@@ -71,17 +70,6 @@ export function RoadmapPostCard({
       onPointerDown={canManage ? (e) => dragControls?.start(e) : undefined}
     >
       <div className="flex items-start gap-3">
-        {canManage && (
-          // Purely a visual affordance now — the whole card starts the drag
-          // (see the outer div's onPointerDown), so this doesn't need its
-          // own pointerdown handler or the z-10 it used to need to win a
-          // pointer-target race against the title link's stretched overlay.
-          <DotsSixVerticalIcon
-            aria-hidden
-            className="mt-1.5 size-4 shrink-0 text-ir-muted/50 group-hover:text-ir-muted"
-          />
-        )}
-
         {/* Vote button — kept above the card-wide link overlay (z-10) so voting
             never triggers navigation. */}
         <div className="relative z-10 shrink-0">

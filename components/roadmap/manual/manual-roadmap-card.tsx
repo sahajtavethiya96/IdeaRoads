@@ -3,7 +3,6 @@
 import {
   CalendarBlankIcon,
   ChatCircleIcon,
-  DotsSixVerticalIcon,
   PencilIcon,
   TrashIcon,
 } from "@phosphor-icons/react";
@@ -94,17 +93,6 @@ export function ManualRoadmapCard({
 
       <div className="p-3.5">
         <div className="flex items-start gap-2">
-          {canManage && (
-            // Purely a visual affordance now — the whole card starts the
-            // drag (see the outer div's onPointerDown), so this doesn't need
-            // its own pointerdown handler. No z-index needed either since it
-            // no longer has to win a pointer-target race against the title
-            // button's stretched-click overlay.
-            <DotsSixVerticalIcon
-              aria-hidden
-              className="mt-0.5 size-4 shrink-0 text-ir-muted/50 group-hover:text-ir-muted"
-            />
-          )}
           <div className="min-w-0 flex-1">
             {/* The whole card opens the read-only detail view — same pattern
                 as the derived-mode card's stretched title link, just backed

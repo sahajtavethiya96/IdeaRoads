@@ -502,7 +502,12 @@ export function EditablePostContent({
       {error && <p className="text-xs text-ir-danger">{error}</p>}
 
       <div className="flex items-center justify-end gap-2">
-        <Button disabled={isPending} onClick={cancel} size="sm" variant="ghost">
+        <Button
+          disabled={isPending}
+          onClick={cancel}
+          size="sm"
+          variant="outline"
+        >
           Cancel
         </Button>
         <Button
