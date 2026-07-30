@@ -4,7 +4,6 @@ import { z } from "zod";
 import { WORKSPACE_MEMBER } from "@/config/platform";
 import { audit } from "@/lib/audit";
 import { requireSession } from "@/lib/authz";
-import { getBoardById } from "@/lib/boards/queries";
 import { upsertEmbedConfig } from "@/lib/embed/queries";
 import { getWorkspaceMember } from "@/lib/workspaces/queries";
 
@@ -19,9 +18,6 @@ const hexColor = z
 
 const updateSchema = z.object({
   workspaceId: z.string().min(1),
-  // Required: the embed is anonymous/public and there's no "all boards" page
-  // to fall back to, so a snippet with no board has nothing valid to embed.
-  boardId: z.string().min(1),
   buttonType: z.enum(["floating", "sticky"]),
   theme: z.enum(["light", "dark", "auto"]),
   width: z.number().int().min(240).max(1200),
@@ -84,17 +80,6 @@ export async function updateEmbedConfigAction(
       success: false,
       error: "Only admins and owners can configure the embed widget.",
     };
-  }
-
-  // The embed is anonymous/public — the board must actually be public, and
-  // must belong to this workspace (cross-tenant safety).
-  const board = await getBoardById(parsed.data.boardId);
-  if (
-    !board ||
-    board.workspaceId !== parsed.data.workspaceId ||
-    !board.isPublic
-  ) {
-    return { success: false, error: "Choose a public board to embed." };
   }
 
   const { workspaceId, ...rest } = parsed.data;

@@ -72,22 +72,6 @@ export const DEFAULT_EMBED_CONFIG = {
   showViewOtherFeedbackButton: true,
 };
 
-// Shared by the Settings → Embed page and the public widget-config API route:
-// the configured board if it's still a valid embed target, else the first
-// embeddable one — a board can be deleted/unpublished/archived after being
-// configured here, so the configured id alone isn't trustworthy.
-export function resolveEmbeddableBoardId(
-  embeddableBoards: { id: string }[],
-  configuredBoardId: string | null
-): string | null {
-  return (
-    (configuredBoardId &&
-    embeddableBoards.some((b) => b.id === configuredBoardId)
-      ? configuredBoardId
-      : embeddableBoards[0]?.id) ?? null
-  );
-}
-
 export async function getEmbedConfig(workspaceId: string) {
   const [row] = await db
     .select()
@@ -115,11 +99,7 @@ export async function getWidgetHostConfig(
   ]);
 
   const embeddableBoards = allBoards.filter((b) => b.isPublic && !b.isArchived);
-  const boardId = resolveEmbeddableBoardId(
-    embeddableBoards,
-    config?.boardId ?? null
-  );
-  const board = embeddableBoards.find((b) => b.id === boardId);
+  const board = embeddableBoards[0];
   if (!board) {
     return null;
   }
@@ -154,7 +134,6 @@ export async function upsertEmbedConfig(
   workspaceId: string,
   config: {
     accentColor: string;
-    boardId: string | null;
     buttonType: EmbedButtonType;
     deviceVisibility: EmbedDeviceVisibility;
     floatingIconType: EmbedFloatingIconType;
