@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { authClient } from "@/lib/auth-client";
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -74,13 +74,12 @@ export function ResetPasswordForm({ token }: { token: string }) {
         <span className="mb-1.5 block text-sm font-semibold text-ir-heading">
           New password
         </span>
-        <Input
+        <PasswordInput
           autoComplete="new-password"
           id="password"
           onChange={(event) => setPassword(event.target.value)}
           placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`}
           required
-          type="password"
           value={password}
         />
       </label>
@@ -89,13 +88,12 @@ export function ResetPasswordForm({ token }: { token: string }) {
         <span className="mb-1.5 block text-sm font-semibold text-ir-heading">
           Confirm new password
         </span>
-        <Input
+        <PasswordInput
           autoComplete="new-password"
           id="confirm-password"
           onChange={(event) => setConfirmPassword(event.target.value)}
           placeholder="Re-enter your password"
           required
-          type="password"
           value={confirmPassword}
         />
       </label>

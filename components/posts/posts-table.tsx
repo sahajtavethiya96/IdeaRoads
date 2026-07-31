@@ -102,7 +102,7 @@ export function PostsTable({
         <thead>
           <tr className="border-b border-ir-border">
             {selectable && (
-              <th className="sticky left-0 z-10 w-10 border-r border-ir-border bg-ir-surface px-4 py-2.5">
+              <th className="sticky left-0 z-10 w-10 rounded-tl-ir-card border-r border-ir-border bg-ir-surface px-4 py-2.5">
                 <SelectAllCheckbox />
               </th>
             )}
