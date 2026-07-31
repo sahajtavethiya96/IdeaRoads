@@ -21,6 +21,9 @@ export interface PostsTableRow {
   isApproved: boolean;
   isDraft: boolean;
   isPinned: boolean;
+  // Count of other posts merged into this one — renders a "N merged" badge
+  // on the parent row so merge history is visible without opening the post.
+  mergedCount?: number;
   // Set when this post was merged into another. mergedIntoTitle/Slug/BoardSlug
   // are resolved via a join so the row can show a "Merged into" badge/link
   // without a follow-up query; they're null if the target itself is gone.

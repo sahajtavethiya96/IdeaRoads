@@ -1,6 +1,26 @@
+import { createId } from "@paralleldrive/cuid2";
 import { eq, sql } from "drizzle-orm";
-import { posts, votes } from "@/db/schema";
+import { comments, posts, votes } from "@/db/schema";
 import { db } from "@/lib/db";
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// The comment a merge posts on the target, summarizing what was merged in —
+// mirrors the source post's own title/body so the target's thread keeps a
+// readable record of it even though the source stays on its own page.
+function buildMergeSummaryHtml(sourceTitle: string, sourceBody: string | null) {
+  const header = `<p><strong>Merged Feedback:</strong> "${escapeHtml(sourceTitle)}"</p>`;
+  if (!sourceBody?.trim()) {
+    return header;
+  }
+  return `${header}<p><strong>Original content:</strong></p>${sourceBody}`;
+}
 
 // Snapshot of one source vote as it stood immediately before a merge —
 // enough to reverse the merge later (see unmergePost in ./unmerge). Persisted
@@ -24,11 +44,13 @@ export interface MergeVoteSnapshotEntry {
  *    de-duplicated, never double-counted),
  *  - both posts' denormalised vote counts are recomputed,
  *  - the source is locked and marked merged (it leaves active lists and points
- *    to the target).
+ *    to the target),
+ *  - a summary comment recapping the source's title/body is added to the
+ *    target's thread, attributed to the source's original author.
  *
- * Comments remain on the source post, which stays viewable with a "merged into"
- * notice. Both posts are assumed to belong to the same workspace (enforced by
- * the caller).
+ * The source post's own comments stay put — it remains viewable with a
+ * "merged into" notice. Both posts are assumed to belong to the same
+ * workspace (enforced by the caller).
  *
  * Returns a snapshot of every source vote as it stood just before the merge —
  * the caller persists this (see mergePostAction) so unmergePost can restore
@@ -40,8 +62,21 @@ export async function mergePost(
 ): Promise<MergeVoteSnapshotEntry[]> {
   return db.transaction(async (tx) => {
     // 0. Snapshot the source's votes, and which of the target's voters they'd
-    // collide with, BEFORE anything is deleted or moved.
-    const [sourceVotes, targetVotes] = await Promise.all([
+    // collide with, BEFORE anything is deleted or moved. Also grab the
+    // source's own content/author for the summary comment added in step 4.
+    const [source, sourceVotes, targetVotes] = await Promise.all([
+      tx
+        .select({
+          title: posts.title,
+          body: posts.body,
+          authorId: posts.authorId,
+          authorEmail: posts.authorEmail,
+          authorName: posts.authorName,
+        })
+        .from(posts)
+        .where(eq(posts.id, sourceId))
+        .limit(1)
+        .then((r) => r[0]!),
       tx
         .select({
           id: votes.id,
@@ -102,7 +137,26 @@ export async function mergePost(
       WHERE posts.id IN (${sourceId}, ${targetId})
     `);
 
-    // 4. Lock and mark the source as merged.
+    // 4. Add a summary comment to the target recapping the source's content,
+    // attributed to the source's original author. Always approved — it's a
+    // system-generated record of the merge, not user-submitted content
+    // subject to moderation.
+    await tx.insert(comments).values({
+      id: createId(),
+      postId: targetId,
+      body: buildMergeSummaryHtml(source.title, source.body),
+      isApproved: true,
+      authorId: source.authorId,
+      authorEmail: source.authorEmail,
+      authorName: source.authorName,
+      mergedFromPostId: sourceId,
+    });
+    await tx
+      .update(posts)
+      .set({ commentCount: sql`${posts.commentCount} + 1` })
+      .where(eq(posts.id, targetId));
+
+    // 5. Lock and mark the source as merged.
     await tx
       .update(posts)
       .set({ mergedIntoId: targetId, isLocked: true, updatedAt: new Date() })

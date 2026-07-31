@@ -1,35 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, useState } from "react";
+import { useActionState, useState } from "react";
+import {
+  type ForgotPasswordState,
+  forgotPasswordAction,
+} from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth-client";
+
+const initialState: ForgotPasswordState = {};
 
 export function ForgotPasswordForm() {
+  const [state, formAction, pending] = useActionState(
+    forgotPasswordAction,
+    initialState
+  );
   const [email, setEmail] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [sent, setSent] = useState(false);
 
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSubmitting(true);
-    await authClient.requestPasswordReset({
-      email,
-      redirectTo: "/reset-password",
-    });
-    setSubmitting(false);
-    // Always report success — Better Auth does the same regardless of whether
-    // the address exists, so this never leaks account existence.
-    setSent(true);
-  }
-
-  if (sent) {
+  if (state.success) {
     return (
       <div className="space-y-3">
         <p className="rounded-ir-sm bg-ir-success/10 p-3 text-sm text-ir-success">
-          If an account exists for <strong>{email}</strong>, we sent it a link
-          to reset the password. Check your inbox and spam folder.
+          {state.success}
         </p>
         <p className="text-center text-xs text-ir-muted">
           <Link className="underline hover:no-underline" href="/signin">
@@ -41,7 +34,7 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <form className="space-y-3" onSubmit={onSubmit}>
+    <form action={formAction} className="space-y-3">
       <label className="block" htmlFor="email">
         <span className="mb-1.5 block text-sm font-semibold text-ir-heading">
           Email
@@ -49,6 +42,7 @@ export function ForgotPasswordForm() {
         <Input
           autoComplete="email"
           id="email"
+          name="email"
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@example.com"
           required
@@ -57,8 +51,14 @@ export function ForgotPasswordForm() {
         />
       </label>
 
-      <Button className="w-full" disabled={submitting} type="submit">
-        {submitting ? "Sending…" : "Send reset link"}
+      {state.error && (
+        <p className="rounded-ir-sm bg-ir-danger/10 p-3 text-sm text-ir-danger">
+          {state.error}
+        </p>
+      )}
+
+      <Button className="w-full" disabled={pending} type="submit">
+        {pending ? "Sending…" : "Send reset link"}
       </Button>
 
       <p className="text-center text-sm text-ir-muted">

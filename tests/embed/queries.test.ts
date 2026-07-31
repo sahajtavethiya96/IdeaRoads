@@ -27,7 +27,6 @@ describe("upsertEmbedConfig", () => {
 
     const saved = await upsertEmbedConfig(ws.id, {
       ...DEFAULT_EMBED_CONFIG,
-      boardId: null,
       buttonType: "sticky",
       floatingPosition: "top-left",
       theme: "dark",
@@ -62,7 +61,6 @@ describe("upsertEmbedConfig", () => {
 
     await upsertEmbedConfig(ws.id, {
       ...DEFAULT_EMBED_CONFIG,
-      boardId: null,
       buttonType: "floating",
       floatingPosition: "bottom-right",
       theme: "light",
@@ -72,7 +70,6 @@ describe("upsertEmbedConfig", () => {
     });
     await upsertEmbedConfig(ws.id, {
       ...DEFAULT_EMBED_CONFIG,
-      boardId: null,
       buttonType: "sticky",
       floatingPosition: "bottom-left",
       theme: "auto",
@@ -99,7 +96,6 @@ describe("upsertEmbedConfig", () => {
 
     await upsertEmbedConfig(wsA.id, {
       ...DEFAULT_EMBED_CONFIG,
-      boardId: null,
       accentColor: "#111111",
     });
 

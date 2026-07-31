@@ -123,6 +123,15 @@ export function PostRow({
               Merged
             </span>
           )}
+          {!isMerged && !!post.mergedCount && post.mergedCount > 0 && (
+            <span
+              className="inline-flex shrink-0 items-center gap-1 rounded-ir-full bg-ir-primary-light/15 px-2 py-0.5 text-[11px] font-medium text-ir-primary"
+              title={`${post.mergedCount} ${post.mergedCount === 1 ? "post" : "posts"} merged into this`}
+            >
+              <GitMergeIcon className="size-3" />
+              {post.mergedCount} merged
+            </span>
+          )}
           {post.isDraft && (
             <span className="inline-flex shrink-0 items-center rounded-ir-full bg-ir-warning/10 px-2 py-0.5 text-[11px] font-medium text-ir-warning">
               Draft

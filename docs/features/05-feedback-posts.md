@@ -21,7 +21,7 @@ Anyone can read posts on a public board. Creating a post requires a **verified e
 - Posts move through a workflow of statuses: **Open**, **Under Review**, **Planned**, **In Progress**, **Completed**, and **Closed**. Status drives the public roadmap.
 - The team can: pin/unpin a post, change its status, move it to another board, merge it into another post, delete it, and approve it (when moderation holds it for review).
 - The author can edit their post's title and description, and delete their own post while it has no votes.
-- Merging a post combines its votes into the target post and locks the merged post (it can no longer be edited or voted on).
+- Merging a post combines its votes into the target post and locks the merged post (it can no longer be edited or voted on). The target's comment thread also gets a summary comment recapping the merged post's title and description, attributed to its original author, so the merge is visible without leaving the target's page; the merged post's own comments stay put on its own page.
 - Moving a post to another board updates its URL to reflect the new board's slug; the old URL redirects to the new one.
 - Descriptions are plain text.
 - **Moderation** is a workspace setting that controls whether new feedback is published immediately or held for approval:
@@ -103,7 +103,7 @@ The post detail page (`/{ws-slug}/b/{board-slug}/p/{postId}-{slug}`) shows the f
 ```
 1. A team member opens the duplicate (source) post
 2. Chooses "Merge" and searches for the post to keep (target)
-3. Confirms — votes transfer to the target, the source is locked and marked merged
+3. Confirms — votes transfer to the target, the source is locked and marked merged, and a summary comment recapping the source's content is added to the target's thread
 4. The source shows a "Merged into: {target title}" badge and leaves the active list
 ```
 

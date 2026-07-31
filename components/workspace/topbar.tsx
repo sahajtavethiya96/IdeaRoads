@@ -143,7 +143,7 @@ export function Topbar() {
   return (
     <div
       className={cn(
-        "sticky top-0 z-10 border-b border-ir-border bg-background",
+        "sticky top-0 z-20 border-b border-ir-border bg-background",
         PAGE_PADDING
       )}
     >

@@ -33,15 +33,8 @@ import type {
 } from "@/lib/embed/queries";
 import { WidgetPreview } from "./widget-preview";
 
-interface BoardOption {
-  id: string;
-  name: string;
-  slug: string;
-}
-
 interface EmbedConfig {
   accentColor: string;
-  boardId: string | null;
   buttonType: EmbedButtonType;
   deviceVisibility: EmbedDeviceVisibility;
   floatingIconType: EmbedFloatingIconType;
@@ -63,7 +56,7 @@ interface EmbedConfig {
 
 interface Props {
   appUrl: string;
-  boards: BoardOption[];
+  hasEmbeddableBoard: boolean;
   initialConfig: EmbedConfig;
   workspaceId: string;
   workspaceSlug: string;
@@ -250,10 +243,9 @@ export function EmbedSection({
   workspaceId,
   workspaceSlug,
   appUrl,
-  boards,
+  hasEmbeddableBoard,
   initialConfig,
 }: Props) {
-  const [boardId, setBoardId] = useState(initialConfig.boardId ?? "");
   const [buttonType, setButtonType] = useState(initialConfig.buttonType);
   const [theme, setTheme] = useState(initialConfig.theme);
   const [width, setWidth] = useState(String(initialConfig.width));
@@ -298,9 +290,8 @@ export function EmbedSection({
     useState(initialConfig.showViewOtherFeedbackButton);
   const [isPending, startTransition] = useTransition();
 
-  const { isDirty, markClean } = useDirtyState({
+  const { baseline, isDirty, markClean } = useDirtyState({
     accentColor,
-    boardId,
     buttonType,
     deviceVisibility,
     floatingIconType,
@@ -322,11 +313,9 @@ export function EmbedSection({
 
   const widthNum = Number(width) || initialConfig.width;
   const heightNum = Number(height) || initialConfig.height;
-  const selectedBoard = boards.find((b) => b.id === boardId);
 
   const currentConfig: EmbedConfig = {
     accentColor,
-    boardId: boardId || null,
     buttonType,
     deviceVisibility,
     floatingIconType,
@@ -346,10 +335,9 @@ export function EmbedSection({
     width: widthNum,
   };
 
-  // Gated on a board being selected even though the snippet itself no longer
-  // references one directly — without a public board configured, the widget
-  // has nothing to embed and GET /api/embed/config would 404 at runtime.
-  const snippet = selectedBoard
+  // Gated on there being an embeddable board — without one, the widget has
+  // nothing to embed and GET /api/embed/config would 404 at runtime.
+  const snippet = hasEmbeddableBoard
     ? buildSnippet({ appUrl, workspaceSlug })
     : null;
 
@@ -357,23 +345,15 @@ export function EmbedSection({
     e.preventDefault();
     setAccentColorError("");
 
-    if (!boardId) {
-      toast.error("Choose a board to embed.");
-      return;
-    }
-
     if (!HEX_COLOR.test(accentColor)) {
       setAccentColorError("Must be a hex color like #2563eb.");
       return;
     }
 
     startTransition(async () => {
-      const { boardId: _unusedBoardId, ...configWithoutBoardId } =
-        currentConfig;
       const result = await updateEmbedConfigAction({
         workspaceId,
-        boardId,
-        ...configWithoutBoardId,
+        ...currentConfig,
       });
 
       if (!result.success) {
@@ -384,7 +364,6 @@ export function EmbedSection({
       toast.success("Widget settings saved");
       markClean({
         accentColor,
-        boardId,
         buttonType,
         deviceVisibility,
         floatingIconType,
@@ -406,7 +385,29 @@ export function EmbedSection({
     });
   }
 
-  if (boards.length === 0) {
+  function handleDiscard() {
+    setAccentColorError("");
+    setButtonType(baseline.buttonType);
+    setTheme(baseline.theme);
+    setWidth(baseline.width);
+    setHeight(baseline.height);
+    setAccentColor(baseline.accentColor);
+    setFloatingPosition(baseline.floatingPosition);
+    setFloatingIconType(baseline.floatingIconType);
+    setFloatingIconUrl(baseline.floatingIconUrl);
+    setStickyButtonText(baseline.stickyButtonText);
+    setStickyButtonColor(baseline.stickyButtonColor);
+    setStickyTextColor(baseline.stickyTextColor);
+    setStickyPosition(baseline.stickyPosition);
+    setDeviceVisibility(baseline.deviceVisibility);
+    setShowRoadmap(baseline.showRoadmap);
+    setShowChangelog(baseline.showChangelog);
+    setShowSubmitFormImmediately(baseline.showSubmitFormImmediately);
+    setShowSimilarPosts(baseline.showSimilarPosts);
+    setShowViewOtherFeedbackButton(baseline.showViewOtherFeedbackButton);
+  }
+
+  if (!hasEmbeddableBoard) {
     return (
       <div className="rounded-ir-card border border-dashed border-ir-border bg-ir-muted-surface p-6 text-center">
         <h2 className="text-sm font-semibold text-ir-heading">
@@ -427,32 +428,6 @@ export function EmbedSection({
           {/* Left — configuration, grouped into the same section+card
               pattern every other settings form on the site uses. */}
           <div className="space-y-8">
-            <section>
-              <SectionHeader
-                description="Which public board the widget submits feedback to."
-                title="Board"
-              />
-              <div className="rounded-ir-card border border-ir-border bg-ir-surface p-4 shadow-ir-xs">
-                <FieldLabel htmlFor="embed-board">Board</FieldLabel>
-                <Select
-                  disabled={isPending}
-                  onValueChange={setBoardId}
-                  value={boardId}
-                >
-                  <SelectTrigger className="w-full" id="embed-board">
-                    <SelectValue placeholder="Select a board" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {boards.map((b) => (
-                      <SelectItem key={b.id} value={b.id}>
-                        {b.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </section>
-
             <section>
               <SectionHeader
                 description="Choose how the trigger appears on your site."
@@ -824,7 +799,7 @@ export function EmbedSection({
               )}
               <Button
                 disabled={isPending || !isDirty}
-                onClick={() => window.location.reload()}
+                onClick={handleDiscard}
                 type="button"
                 variant="outline"
               >

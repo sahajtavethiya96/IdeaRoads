@@ -106,7 +106,7 @@ export default async function OrbitUsersPage({ searchParams }: Props) {
       </div>
 
       <PageBody>
-        <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+        <div className="overflow-hidden rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
           {users.length === 0 ? (
             <EmptyState
               message={
@@ -118,7 +118,15 @@ export default async function OrbitUsersPage({ searchParams }: Props) {
             />
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full table-fixed text-sm">
+                <colgroup>
+                  <col className="w-[34%]" />
+                  <col className="w-[12%]" />
+                  <col className="hidden w-[12%] sm:table-column" />
+                  <col className="hidden w-[14%] md:table-column" />
+                  <col className="hidden w-[18%] lg:table-column" />
+                  <col className="w-[10%]" />
+                </colgroup>
                 <thead>
                   <tr className="border-b border-ir-border">
                     <th className="px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
@@ -147,7 +155,7 @@ export default async function OrbitUsersPage({ searchParams }: Props) {
                       className="transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface"
                       key={u.id}
                     >
-                      <td className="max-w-0 px-4 py-3">
+                      <td className="overflow-hidden px-4 py-3">
                         <div className="truncate font-semibold text-ir-heading">
                           {u.email}
                         </div>

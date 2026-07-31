@@ -467,6 +467,12 @@ export async function listWorkspacePosts(
     mergedIntoTitle: mergeTarget.title,
     mergedIntoSlug: mergeTarget.slug,
     mergedIntoBoardSlug: mergeTargetBoard.slug,
+    // Count of other posts merged into this one — lets the table surface a
+    // "N merged" indicator on the parent row without a follow-up query per row.
+    mergedCount: sql<number>`(
+      SELECT COUNT(*)::int FROM posts AS merged_children
+      WHERE merged_children.merged_into_id = ${posts.id}
+    )`,
   };
 
   if (userId) {
