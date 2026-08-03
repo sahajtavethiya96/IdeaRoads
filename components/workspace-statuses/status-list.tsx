@@ -310,7 +310,7 @@ export function StatusList({
                 {form.name && (
                   <div className="mt-2">
                     <span
-                      className="inline-flex items-center gap-1.5 rounded-ir-sm px-2 py-0.5 text-xs font-medium"
+                      className="badge h-auto inline-flex items-center gap-1.5 rounded-ir-sm border-transparent px-2 py-0.5 text-xs font-medium"
                       style={{
                         backgroundColor: `${form.color}18`,
                         color: form.color,
@@ -363,7 +363,7 @@ export function StatusList({
                   key={s.id}
                 >
                   <span
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-ir-sm px-2 py-0.5 text-xs font-medium"
+                    className="badge h-auto inline-flex shrink-0 items-center gap-1.5 rounded-ir-sm border-transparent px-2 py-0.5 text-xs font-medium"
                     style={{
                       backgroundColor: `${s.color}18`,
                       color: s.color,
@@ -377,7 +377,7 @@ export function StatusList({
                   </span>
 
                   {s.isDefault && (
-                    <span className="flex items-center gap-1 rounded-ir-sm border border-ir-border px-1.5 py-0.5 text-2xs font-medium text-ir-muted">
+                    <span className="badge h-auto flex items-center gap-1 rounded-ir-sm border border-ir-border px-1.5 py-0.5 text-2xs font-medium text-ir-muted">
                       <StarIcon className="size-2.5" />
                       Default
                     </span>
@@ -385,7 +385,7 @@ export function StatusList({
 
                   {s.isSystem && (
                     <span
-                      className="flex items-center gap-1 rounded-ir-sm border border-ir-border px-1.5 py-0.5 text-2xs font-medium text-ir-muted"
+                      className="badge h-auto flex items-center gap-1 rounded-ir-sm border border-ir-border px-1.5 py-0.5 text-2xs font-medium text-ir-muted"
                       title="A protected system status. Posts land here when their status is deleted — it can't be renamed, archived, or deleted."
                     >
                       <LockSimpleIcon className="size-2.5" />
@@ -504,7 +504,7 @@ export function StatusList({
                   key={s.id}
                 >
                   <span
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-ir-sm px-2 py-0.5 text-xs font-medium"
+                    className="badge h-auto inline-flex shrink-0 items-center gap-1.5 rounded-ir-sm border-transparent px-2 py-0.5 text-xs font-medium"
                     style={{
                       backgroundColor: `${s.color}18`,
                       color: s.color,

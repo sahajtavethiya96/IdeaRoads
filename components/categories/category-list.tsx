@@ -338,7 +338,7 @@ export function CategoryList({
                 >
                   <CategoryChip color={cat.color} name={cat.name} />
                   {cat.isDefault && (
-                    <span className="flex items-center gap-1 rounded-ir-sm border border-ir-border px-1.5 py-0.5 text-2xs font-medium text-ir-muted">
+                    <span className="badge h-auto flex items-center gap-1 rounded-ir-sm border border-ir-border px-1.5 py-0.5 text-2xs font-medium text-ir-muted">
                       <StarIcon className="size-2.5" />
                       Default
                     </span>

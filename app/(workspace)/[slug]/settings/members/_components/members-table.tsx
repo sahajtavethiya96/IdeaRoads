@@ -203,7 +203,11 @@ export function MembersTable({
         </p>
       ) : (
         <div className="overflow-hidden overflow-x-auto rounded-ir-card border border-ir-border">
-          <table className="w-full text-sm">
+          {/* `table` (DaisyUI) marker — border-collapse/spacing/radius it sets
+              are either already matched by our own w-full/text-sm utilities
+              or invisible here since no per-cell borders exist to expose a
+              spacing change (rows are separated via divide-y on tbody). */}
+          <table className="table w-full text-sm">
             <thead>
               <tr className="border-b border-ir-border bg-ir-muted-surface/60">
                 <th className="px-4 py-2.5 text-left text-2xs font-semibold tracking-eyebrow text-ir-muted uppercase">
@@ -285,7 +289,7 @@ export function MembersTable({
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-flex shrink-0 items-center rounded-ir-full px-2 py-0.5 text-[11px] font-medium ${ROLE_BADGE[member.role]}`}
+                        className={`badge inline-flex h-auto shrink-0 items-center rounded-ir-full border-transparent px-2 py-0.5 text-[11px] font-medium ${ROLE_BADGE[member.role]}`}
                       >
                         {workspaceRoleLabel(member.role)}
                       </span>

@@ -16,7 +16,17 @@ function Tabs({
       data-slot="tabs"
       data-orientation={orientation}
       className={cn(
-        "group/tabs flex gap-2 data-horizontal:flex-col",
+        // `tabs` (DaisyUI) marker — this root already carries an explicit
+        // `flex`/`flex-col` (see daisyui-migration-technique memory: only
+        // safe on containers that already specify their own display), and
+        // its only other rule (flex-wrap) is inert for a two-child column
+        // layout. TabsList/TabsTrigger deliberately do NOT get `tabs-box`/
+        // `tab` — DaisyUI's `.tabs-box>[aria-selected=true]` is a
+        // child-combinator rule reaching into the active trigger's own
+        // background (the same unsafe pattern documented for `.toggle>*`),
+        // and bare `.tab` paints a folder-tab notch/border on the active
+        // trigger that nothing here cancels.
+        "tabs group/tabs flex gap-2 data-horizontal:flex-col",
         className,
       )}
       {...props}

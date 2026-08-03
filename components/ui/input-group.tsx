@@ -14,7 +14,12 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="input-group"
       role="group"
       className={cn(
-        "group/input-group relative flex h-10 w-full min-w-0 items-center rounded-ir-input border border-ir-border bg-ir-surface shadow-ir-xs transition-[color,border-color,box-shadow] duration-150 ease-ir-standard outline-none in-data-[slot=combobox-content]:focus-within:border-inherit in-data-[slot=combobox-content]:focus-within:ring-0 has-data-[align=block-end]:rounded-ir-input has-data-[align=block-start]:rounded-ir-input has-[[data-slot=input-group-control]:focus-visible]:border-ir-primary has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-ir-primary/20 has-[[data-slot][aria-invalid=true]]:border-ir-danger has-[textarea]:rounded-ir-input has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto dark:has-[[data-slot][aria-invalid=true]]:border-ir-danger/50 has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3",
+        // `input` (DaisyUI) marker, same technique as Input/Select — this
+        // wrapper already fully specifies height/width/radius/border/bg/
+        // shadow via ir-* utilities below, so input's own box-shadow/height/
+        // padding rules are overridden on the same element (see
+        // button-variants.ts for the full explanation).
+        "input group/input-group relative flex h-10 w-full min-w-0 items-center rounded-ir-input border border-ir-border bg-ir-surface shadow-ir-xs transition-[color,border-color,box-shadow] duration-150 ease-ir-standard outline-none in-data-[slot=combobox-content]:focus-within:border-inherit in-data-[slot=combobox-content]:focus-within:ring-0 has-data-[align=block-end]:rounded-ir-input has-data-[align=block-start]:rounded-ir-input has-[[data-slot=input-group-control]:focus-visible]:border-ir-primary has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-ir-primary/20 has-[[data-slot][aria-invalid=true]]:border-ir-danger has-[textarea]:rounded-ir-input has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto dark:has-[[data-slot][aria-invalid=true]]:border-ir-danger/50 has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3",
         className
       )}
       {...props}

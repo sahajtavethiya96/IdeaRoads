@@ -67,7 +67,12 @@ export function InviteLinksList({
           <div className="space-y-px overflow-hidden rounded-ir-card bg-ir-border">
             {links.map((link) => (
               <div
-                className="flex flex-col gap-3 bg-ir-surface px-6 py-4 transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface sm:flex-row sm:items-center sm:gap-4"
+                // `card` (DaisyUI) marker — safe here because this row
+                // already carries its own explicit `flex flex-col`; `rounded-
+                // none` cancels card's own border-radius since these rows are
+                // flush hairline-divided list items, not standalone rounded
+                // cards (only the outer wrapper is rounded).
+                className="card flex flex-col gap-3 rounded-none bg-ir-surface px-6 py-4 transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface sm:flex-row sm:items-center sm:gap-4"
                 key={link.id}
               >
                 <div className="flex min-w-0 flex-1 items-center gap-3">
