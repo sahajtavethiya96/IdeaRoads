@@ -1,5 +1,13 @@
 "use client";
 
+import {
+  CheckCircleIcon,
+  EnvelopeSimpleIcon,
+  LockSimpleIcon,
+  SparkleIcon,
+  ThumbsUpIcon,
+  WarningCircleIcon,
+} from "@phosphor-icons/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -167,11 +175,13 @@ function AuthFormInner({
     }
   }
 
+  const busy = submitting || googleLoading || magicLoading;
+
   return (
-    <main className="grid min-h-screen place-items-center overflow-y-auto bg-ir-primary-light/20 px-4 py-6 sm:py-8">
-      <div className="grid w-full max-w-3xl overflow-hidden rounded-ir-xl border border-ir-border bg-ir-surface shadow-ir-lg lg:grid-cols-2">
+    <main className="animate-ir-fade-in grid min-h-screen place-items-center overflow-y-auto bg-ir-background px-4 py-6 sm:py-8">
+      <div className="card grid w-full max-w-[1100px] animate-ir-slide-up overflow-hidden border border-ir-border bg-ir-surface shadow-ir-lg lg:grid-cols-[45fr_55fr]">
         {/* Left — sign-in form */}
-        <div className="flex flex-col justify-center px-6 py-8 sm:px-8 sm:py-10 lg:px-10">
+        <div className="flex flex-col justify-center px-6 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
           {/* Inside the embed widget's iframe, this logo would otherwise
               navigate the whole panel to the marketing homepage — render it
               as plain branding, not a link, when embedded. */}
@@ -216,72 +226,83 @@ function AuthFormInner({
           <div className="mt-6">
             {sent ? (
               <div className="space-y-3">
-                <p className="rounded-ir-sm bg-ir-success/10 p-3 text-sm text-ir-success">
-                  Sign-in link sent to <strong>{email}</strong>. Check your
-                  inbox and spam folder.
-                </p>
-                <Button
-                  className="w-full"
+                <div className="alert alert-success items-start text-sm">
+                  <CheckCircleIcon className="mt-0.5 shrink-0" size={18} />
+                  <span>
+                    Sign-in link sent to <strong>{email}</strong>. Check your
+                    inbox and spam folder.
+                  </span>
+                </div>
+                <button
+                  className="btn btn-outline btn-block"
                   onClick={() => setSent(false)}
                   type="button"
-                  variant="outline"
                 >
                   Use a different email
-                </Button>
+                </button>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {urlError && (
-                  <p className="rounded-ir-sm bg-ir-danger/10 p-3 text-sm text-ir-danger">
-                    {urlError}
-                  </p>
+                  <div className="alert alert-error items-start text-sm">
+                    <WarningCircleIcon className="mt-0.5 shrink-0" size={18} />
+                    <span>{urlError}</span>
+                  </div>
                 )}
 
                 {googleEnabled && (
                   <>
-                    <Button
-                      className="w-full gap-2"
-                      disabled={submitting || googleLoading || magicLoading}
+                    <button
+                      className="btn btn-outline btn-block gap-2 transition-transform hover:-translate-y-0.5"
+                      disabled={busy}
                       onClick={handleGoogleSignIn}
                       type="button"
-                      variant="outline"
                     >
-                      <GoogleIcon className="size-4" />
+                      {googleLoading ? (
+                        <span className="loading loading-spinner loading-sm" />
+                      ) : (
+                        <GoogleIcon className="size-4" />
+                      )}
                       {googleLoading ? "Redirecting…" : "Continue with Google"}
-                    </Button>
+                    </button>
 
-                    <div className="flex items-center gap-3">
-                      <div className="h-px flex-1 bg-ir-border" />
-                      <span className="text-xs font-semibold tracking-ui text-ir-muted uppercase">
-                        or continue with email
-                      </span>
-                      <div className="h-px flex-1 bg-ir-border" />
+                    <div className="divider text-xs font-semibold tracking-ui text-ir-muted uppercase">
+                      or continue with email
                     </div>
                   </>
                 )}
 
                 <form className="space-y-3" onSubmit={onSubmit}>
-                  <label className="block" htmlFor="email">
-                    <span className="mb-1.5 block text-sm font-semibold text-ir-heading">
+                  <div>
+                    <label
+                      className="mb-1.5 block text-sm font-semibold text-ir-heading"
+                      htmlFor="email"
+                    >
                       Email
-                    </span>
-                    <Input
-                      autoComplete="email"
-                      id="email"
-                      onChange={(event) => setEmail(event.target.value)}
-                      placeholder="you@example.com"
-                      required
-                      type="email"
-                      value={email}
-                    />
-                  </label>
+                    </label>
+                    <label className="input w-full">
+                      <EnvelopeSimpleIcon className="text-ir-muted" size={18} />
+                      <input
+                        autoComplete="email"
+                        id="email"
+                        onChange={(event) => setEmail(event.target.value)}
+                        placeholder="you@example.com"
+                        required
+                        type="email"
+                        value={email}
+                      />
+                    </label>
+                  </div>
 
                   {passwordEnabled && (
-                    <label className="block" htmlFor="password">
+                    <div>
                       <div className="mb-1.5 flex items-center justify-between">
-                        <span className="text-sm font-semibold text-ir-heading">
+                        <label
+                          className="text-sm font-semibold text-ir-heading"
+                          htmlFor="password"
+                        >
                           Password
-                        </span>
+                        </label>
                         {passwordResetEnabled && (
                           <Link
                             className="text-xs text-ir-muted underline hover:text-ir-heading hover:no-underline"
@@ -303,16 +324,23 @@ function AuthFormInner({
                   )}
 
                   {formError && (
-                    <p className="rounded-ir-sm bg-ir-danger/10 p-3 text-sm text-ir-danger">
-                      {formError}
-                    </p>
+                    <div className="alert alert-error items-start text-sm">
+                      <WarningCircleIcon
+                        className="mt-0.5 shrink-0"
+                        size={18}
+                      />
+                      <span>{formError}</span>
+                    </div>
                   )}
                   <div className="space-y-1.5">
-                    <Button
-                      className="w-full"
-                      disabled={submitting || googleLoading || magicLoading}
+                    <button
+                      className="btn btn-primary btn-block gap-2"
+                      disabled={busy}
                       type="submit"
                     >
+                      {submitting && (
+                        <span className="loading loading-spinner loading-sm" />
+                      )}
                       {passwordEnabled
                         ? submitting
                           ? "Signing in…"
@@ -320,19 +348,23 @@ function AuthFormInner({
                         : submitting
                           ? "Sending…"
                           : "Continue with email"}
-                    </Button>
+                    </button>
                     {passwordEnabled ? (
-                      <Button
-                        className="w-full"
-                        disabled={submitting || googleLoading || magicLoading}
+                      <button
+                        className="btn btn-ghost btn-block gap-2"
+                        disabled={busy}
                         onClick={sendMagicLink}
                         type="button"
-                        variant="ghost"
                       >
+                        {magicLoading ? (
+                          <span className="loading loading-spinner loading-sm" />
+                        ) : (
+                          <SparkleIcon size={16} />
+                        )}
                         {magicLoading
                           ? "Sending…"
                           : "Email me a magic link instead"}
-                      </Button>
+                      </button>
                     ) : null}
                   </div>
                 </form>
@@ -371,17 +403,40 @@ function AuthFormInner({
         </div>
 
         {/* Right — brand panel, hidden below the split-screen breakpoint */}
-        <div className="hidden flex-col items-center justify-center gap-5 overflow-hidden bg-ir-primary-light/15 px-8 py-8 lg:flex">
-          <h2 className="max-w-sm text-center text-xl font-bold text-ir-heading">
+        <div className="relative hidden overflow-hidden bg-gradient-to-br from-ir-primary to-ir-primary-hover lg:flex lg:flex-col lg:items-center lg:justify-center lg:gap-6 lg:px-10 lg:py-10">
+          {/* Soft blurred shapes — decorative, kept subtle and non-interactive */}
+          <div
+            aria-hidden="true"
+            className="-top-16 -right-16 pointer-events-none absolute size-64 rounded-full bg-white/10 blur-3xl"
+          />
+          <div
+            aria-hidden="true"
+            className="-bottom-20 -left-10 pointer-events-none absolute size-72 rounded-full bg-black/10 blur-3xl"
+          />
+
+          <span className="badge badge-outline relative border-white/30 text-white">
+            <ThumbsUpIcon size={14} />
+            Trusted by product teams
+          </span>
+
+          <h2 className="relative max-w-sm text-center text-xl font-bold text-white sm:text-2xl">
             Ship what your users actually want.
           </h2>
-          <Image
-            alt="A feature roadmap with upvoted ideas, trending feedback, and a voting box — capturing how IdeaRoads turns user feedback into a shared product roadmap"
-            className="h-auto w-full"
-            height={1123}
-            src="/auth-illustration.png"
-            width={1401}
-          />
+          <p className="relative max-w-xs text-center text-sm text-white/80">
+            Collect feedback, prioritize by votes, and keep everyone posted with
+            a public roadmap and changelog.
+          </p>
+
+          <div className="relative w-full max-w-md animate-ir-float">
+            <Image
+              alt="A feature roadmap with upvoted ideas, trending feedback, and a voting box — capturing how IdeaRoads turns user feedback into a shared product roadmap"
+              className="h-auto w-full drop-shadow-2xl"
+              height={1123}
+              priority
+              src="/auth-illustration.png"
+              width={1401}
+            />
+          </div>
         </div>
       </div>
     </main>

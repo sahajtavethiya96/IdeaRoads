@@ -150,6 +150,9 @@ importers:
       concurrently:
         specifier: ^10.0.3
         version: 10.0.3
+      daisyui:
+        specifier: ^5.7.11
+        version: 5.7.11
       drizzle-kit:
         specifier: ^0.31.10
         version: 0.31.10
@@ -2912,6 +2915,9 @@ packages:
   d3-timer@3.0.1:
     resolution: {integrity: sha512-ndfJ/JxxMd3nw31uyKoY2naivF+r29V+Lc0svZxe1JvvIRmi8hUsrMvdOwgS1o6uBHmiz91geQ0ylPP0aj1VUA==}
     engines: {node: '>=12'}
+
+  daisyui@5.7.11:
+    resolution: {integrity: sha512-hEwAKvtMso+fGAwB0DP1nL4cthxHtJ7Omd1v3k39Zn9IBNyzMWrdDCzaai23z0Z3sddeZDq3VtUVPaNtk2+FMQ==}
 
   data-uri-to-buffer@4.0.1:
     resolution: {integrity: sha512-0R9ikRb668HB7QDxT1vkpuUBtqc53YyAwMwGeUFKRojY/NWKvdZ+9UYtRfGmhqNbRkTSVpMbmyhXipFFv2cb/A==}
@@ -7375,6 +7381,8 @@ snapshots:
       d3-array: 3.2.4
 
   d3-timer@3.0.1: {}
+
+  daisyui@5.7.11: {}
 
   data-uri-to-buffer@4.0.1: {}
 

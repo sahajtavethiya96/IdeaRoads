@@ -3,6 +3,58 @@
 @import "shadcn/tailwind.css";
 @import "./design-tokens.css";
 
+/* DaisyUI — scoped to the Sign In page (app/(auth)/_components/auth-form.tsx)
+   only; no other surface in the app uses `.btn`/`.card`/`.input`-style
+   DaisyUI classes today. Built-in themes are disabled (`themes: false`) and
+   replaced with a single custom theme whose tokens all point at the existing
+   `--ir-*` design tokens (design-tokens.css) rather than DaisyUI's own
+   palette/radius defaults — this avoids a second, independent token system:
+   the DaisyUI theme is just a class-name skin over the tokens that already
+   drive the rest of the app, including automatic dark-mode support since
+   `--ir-*` already flips under `.dark` (see design-tokens.css). */
+@plugin "daisyui" {
+  themes: false;
+}
+@plugin "daisyui/theme" {
+  name: "idearoads";
+  default: true;
+  color-scheme: normal;
+
+  --color-base-100: var(--ir-surface);
+  --color-base-200: var(--ir-muted-surface);
+  --color-base-300: var(--ir-border);
+  --color-base-content: var(--ir-text-heading);
+
+  --color-primary: var(--ir-primary);
+  --color-primary-content: var(--ir-primary-foreground);
+  --color-secondary: var(--ir-primary-hover);
+  --color-secondary-content: var(--ir-primary-foreground);
+  --color-accent: var(--ir-primary-light);
+  --color-accent-content: var(--ir-text-heading);
+  --color-neutral: var(--ir-text-heading);
+  --color-neutral-content: var(--ir-surface);
+
+  --color-info: var(--ir-primary);
+  --color-info-content: var(--ir-primary-foreground);
+  --color-success: var(--ir-success);
+  --color-success-content: var(--ir-success-foreground);
+  --color-warning: var(--ir-warning);
+  --color-warning-content: var(--ir-warning-foreground);
+  --color-error: var(--ir-danger);
+  --color-error-content: var(--ir-danger-foreground);
+
+  --radius-selector: var(--radius-ir-sm);
+  --radius-field: var(--radius-ir-sm);
+  --radius-box: var(--radius-ir-xl);
+  --size-selector: 0.25rem;
+  /* 0.3rem * the field size multiplier (10) = 3rem/48px default button
+     and input height — matches the auth card's existing sizing. */
+  --size-field: 0.3rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 * {
