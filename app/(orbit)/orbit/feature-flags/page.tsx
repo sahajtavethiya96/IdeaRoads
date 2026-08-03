@@ -26,7 +26,7 @@ export default async function FeatureFlagsPage() {
         title="Feature Flags"
       />
 
-      <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+      <div className="card flex flex-col rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
         {flags.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 px-4 py-16 text-center">
             <div className="flex size-10 items-center justify-center rounded-ir-full bg-ir-muted-surface text-ir-muted">
@@ -53,7 +53,7 @@ export default async function FeatureFlagsPage() {
                     <p className="text-sm font-semibold text-ir-heading">
                       {humanizeFlagKey(flag.key)}
                     </p>
-                    <span className="rounded-ir-xs bg-ir-muted-surface px-1.5 py-0.5 font-mono text-2xs text-ir-muted">
+                    <span className="badge inline-flex h-auto rounded-ir-xs border-transparent bg-ir-muted-surface px-1.5 py-0.5 font-mono text-2xs text-ir-muted">
                       {flag.key}
                     </span>
                   </div>

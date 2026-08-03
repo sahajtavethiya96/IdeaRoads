@@ -127,7 +127,7 @@ export default async function OrbitAuditLogPage({ searchParams }: Props) {
         <div className="relative">
           <MagnifyingGlassIcon className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-ir-muted" />
           <input
-            className="h-9 w-64 rounded-ir-input border border-ir-border bg-ir-surface pl-8 pr-3 text-sm text-ir-heading placeholder:text-ir-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+            className="input h-9 w-64 rounded-ir-input border border-ir-border bg-ir-surface pl-8 pr-3 text-sm text-ir-heading placeholder:text-ir-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
             defaultValue={q}
             name="q"
             placeholder="Search events, actors, entities…"
@@ -160,7 +160,7 @@ export default async function OrbitAuditLogPage({ searchParams }: Props) {
       </form>
 
       <PageBody className="flex min-h-0 flex-1 flex-col">
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+        <div className="card flex min-h-0 flex-1 flex-col overflow-hidden rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
           {logs.length === 0 ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 py-16 text-center">
               <div className="flex size-10 items-center justify-center rounded-ir-full bg-ir-muted-surface text-ir-muted">
@@ -187,7 +187,7 @@ export default async function OrbitAuditLogPage({ searchParams }: Props) {
             </div>
           ) : (
             <div className="min-h-0 flex-1 overflow-auto">
-              <table className="w-full text-sm">
+              <table className="table w-full text-sm">
                 <thead className="sticky top-0 z-10 border-b border-ir-border bg-ir-muted-surface/60 backdrop-blur-sm">
                   <tr>
                     <th className="h-10 whitespace-nowrap px-4 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
@@ -217,7 +217,7 @@ export default async function OrbitAuditLogPage({ searchParams }: Props) {
                       <td className="px-4 py-3 align-top">
                         <div className="flex flex-col gap-1">
                           <span
-                            className={`inline-flex max-w-40 items-center truncate rounded-ir-sm px-1.5 py-0.5 font-mono text-2xs font-semibold uppercase tracking-eyebrow ${actionBadgeClass(log.action)}`}
+                            className={`badge inline-flex h-auto max-w-40 items-center truncate border-transparent rounded-ir-sm px-1.5 py-0.5 font-mono text-2xs font-semibold uppercase tracking-eyebrow ${actionBadgeClass(log.action)}`}
                             title={log.action}
                           >
                             {log.action}

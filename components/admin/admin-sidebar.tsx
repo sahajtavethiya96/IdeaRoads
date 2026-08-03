@@ -203,19 +203,20 @@ export function AdminSidebar({
       {/* Navigation */}
       <LayoutGroup id="orbit-nav">
         <nav className="min-h-0 flex-1 overflow-y-auto px-2.5 py-5">
-          <div className="space-y-0.5">
+          <ul className="menu menu-lg w-full min-w-0 flex-nowrap gap-0.5 p-0">
             {navItems.map(({ href, label, icon, exact }) => (
-              <NavLink
-                collapsed={effectiveCollapsed}
-                exact={exact}
-                href={href}
-                icon={icon}
-                key={href}
-              >
-                {label}
-              </NavLink>
+              <li key={href}>
+                <NavLink
+                  collapsed={effectiveCollapsed}
+                  exact={exact}
+                  href={href}
+                  icon={icon}
+                >
+                  {label}
+                </NavLink>
+              </li>
             ))}
-          </div>
+          </ul>
         </nav>
       </LayoutGroup>
 

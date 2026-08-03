@@ -69,7 +69,7 @@ export default async function OrbitUsersPage({ searchParams }: Props) {
           <div className="relative">
             <MagnifyingGlassIcon className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-ir-muted" />
             <input
-              className="h-9 w-64 rounded-ir-input border border-ir-border bg-ir-surface pl-8 pr-3 text-sm text-ir-heading placeholder:text-ir-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+              className="input h-9 w-64 rounded-ir-input border border-ir-border bg-ir-surface pl-8 pr-3 text-sm text-ir-heading placeholder:text-ir-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
               defaultValue={search}
               name="search"
               placeholder="Search name or email…"
@@ -118,7 +118,7 @@ export default async function OrbitUsersPage({ searchParams }: Props) {
             />
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed text-sm">
+              <table className="table w-full table-fixed text-sm">
                 <colgroup>
                   <col className="w-[34%]" />
                   <col className="w-[12%]" />

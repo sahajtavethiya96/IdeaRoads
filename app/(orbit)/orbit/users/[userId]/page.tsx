@@ -77,7 +77,7 @@ export default async function OrbitUserDetailPage({ params }: Props) {
 
         <div className="mt-4 grid gap-4 lg:grid-cols-3">
           {/* Workspace memberships */}
-          <div className="min-w-0 rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs lg:col-span-3">
+          <div className="card flex min-w-0 flex-col rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs lg:col-span-3">
             <div className="border-b border-ir-border px-4 py-3">
               <h2 className="text-sm font-semibold text-ir-heading">
                 Workspace Memberships ({u.workspaceMemberships.length})
@@ -118,7 +118,7 @@ export default async function OrbitUserDetailPage({ params }: Props) {
           </div>
 
           {/* Recent Posts */}
-          <div className="min-w-0 rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+          <div className="card flex min-w-0 flex-col rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
             <div className="border-b border-ir-border px-4 py-3">
               <h2 className="text-sm font-semibold text-ir-heading">
                 Recent Posts
@@ -143,7 +143,7 @@ export default async function OrbitUserDetailPage({ params }: Props) {
           </div>
 
           {/* Recent Comments */}
-          <div className="min-w-0 rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+          <div className="card flex min-w-0 flex-col rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
             <div className="border-b border-ir-border px-4 py-3">
               <h2 className="text-sm font-semibold text-ir-heading">
                 Recent Comments
@@ -174,7 +174,7 @@ export default async function OrbitUserDetailPage({ params }: Props) {
 
 function MetaCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="min-w-0 rounded-ir-card border border-ir-border bg-ir-surface p-4 shadow-ir-xs">
+    <div className="card flex min-w-0 flex-col rounded-ir-card border border-ir-border bg-ir-surface p-4 shadow-ir-xs">
       <p className="text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
         {label}
       </p>

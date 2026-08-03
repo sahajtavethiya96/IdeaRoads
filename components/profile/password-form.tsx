@@ -108,7 +108,9 @@ export function PasswordForm({ hasPassword }: PasswordFormProps) {
               </label>
 
               {state.error && (
-                <p className="text-xs text-ir-danger">{state.error}</p>
+                <p className="alert alert-error rounded-ir-sm border-none bg-transparent p-0 text-xs text-ir-danger shadow-none">
+                  {state.error}
+                </p>
               )}
 
               <Button disabled={pending} size="sm" type="submit">

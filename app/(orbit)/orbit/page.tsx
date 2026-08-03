@@ -54,7 +54,7 @@ export default async function OrbitPage() {
 
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           {/* Recent Workspaces */}
-          <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+          <div className="card flex flex-col rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
             <div className="flex items-center justify-between border-b border-ir-border px-5 py-4">
               <h2 className="text-sm font-semibold text-ir-heading">
                 Recent Workspaces
@@ -79,7 +79,7 @@ export default async function OrbitPage() {
                     href={`/orbit/workspaces/${ws.id}`}
                     key={ws.id}
                   >
-                    <div className="grid size-7 shrink-0 place-items-center rounded-ir-sm bg-ir-muted-surface text-xs font-bold text-ir-muted">
+                    <div className="avatar grid size-7 shrink-0 place-items-center rounded-ir-sm bg-ir-muted-surface text-xs font-bold text-ir-muted">
                       {ws.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -102,7 +102,7 @@ export default async function OrbitPage() {
           </div>
 
           {/* Recent Users */}
-          <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+          <div className="card flex flex-col rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
             <div className="flex items-center justify-between border-b border-ir-border px-5 py-4">
               <h2 className="text-sm font-semibold text-ir-heading">
                 Recent Users
@@ -127,7 +127,7 @@ export default async function OrbitPage() {
                     href={`/orbit/users/${u.id}`}
                     key={u.id}
                   >
-                    <div className="grid size-7 shrink-0 place-items-center rounded-ir-sm bg-ir-muted-surface text-xs font-bold text-ir-muted">
+                    <div className="avatar grid size-7 shrink-0 place-items-center rounded-ir-sm bg-ir-muted-surface text-xs font-bold text-ir-muted">
                       {u.email.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -141,7 +141,7 @@ export default async function OrbitPage() {
                       )}
                     </div>
                     {u.role === ADMIN_ROLE && (
-                      <span className="shrink-0 text-2xs font-semibold uppercase tracking-eyebrow text-ir-success">
+                      <span className="badge inline-flex h-auto shrink-0 border-transparent bg-transparent p-0 text-2xs font-semibold uppercase tracking-eyebrow text-ir-success">
                         Admin
                       </span>
                     )}
@@ -169,17 +169,17 @@ function StatCard({
 }) {
   return (
     <div
-      className={`rounded-ir-card border bg-ir-surface p-5 shadow-ir-xs ${alert && value > 0 ? "border-ir-danger/30" : "border-ir-border"}`}
+      className={`card flex flex-col rounded-ir-card border bg-ir-surface p-5 shadow-ir-xs ${alert && value > 0 ? "border-ir-danger/30" : "border-ir-border"}`}
     >
-      <p className="text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+      <p className="stat-title text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
         {label}
       </p>
       <p
-        className={`mt-2 text-3xl font-bold tracking-normal text-ir-heading ${alert && value > 0 ? "text-ir-danger" : ""}`}
+        className={`stat-value mt-2 text-3xl font-bold tracking-normal text-ir-heading ${alert && value > 0 ? "text-ir-danger" : ""}`}
       >
         {value.toLocaleString()}
       </p>
-      {sub && <p className="mt-1 text-xs text-ir-muted">{sub}</p>}
+      {sub && <p className="stat-desc mt-1 text-xs text-ir-muted">{sub}</p>}
     </div>
   );
 }
