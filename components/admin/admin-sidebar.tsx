@@ -125,12 +125,12 @@ function SidebarEdgeToggle({
   return (
     <button
       aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-      className="-right-3 absolute top-14 z-20 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-ir-border bg-card text-ir-muted shadow-ir-xs transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+      className="btn btn-circle btn-sm -right-3 absolute top-14 z-30 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-ir-border bg-[#F7F9FB] p-0 text-ir-muted shadow-ir-sm transition-colors duration-150 ease-ir-standard hover:border-ir-primary/30 hover:bg-ir-primary/10 hover:text-ir-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 focus-visible:ring-offset-1 active:scale-95"
       onClick={onClick}
       title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
       type="button"
     >
-      <Caret className="size-3" weight="bold" />
+      <Caret className="size-3 shrink-0" weight="bold" />
     </button>
   );
 }
