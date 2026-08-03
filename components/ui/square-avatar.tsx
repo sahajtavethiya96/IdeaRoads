@@ -23,7 +23,12 @@ export function SquareAvatar({
   return (
     <div
       className={cn(
-        "flex size-7 shrink-0 items-center justify-center overflow-hidden bg-ir-muted-surface text-xs font-semibold text-ir-muted",
+        // `avatar` (DaisyUI) is layered in as the base marker class, same
+        // technique as Button — it only contributes display/positioning
+        // rules here (no forced border-radius), so this stays square; our
+        // later-generated size/overflow/bg utilities below are unaffected
+        // (see button-variants.ts for the full explanation).
+        "avatar flex size-7 shrink-0 items-center justify-center overflow-hidden bg-ir-muted-surface text-xs font-semibold text-ir-muted",
         className
       )}
     >

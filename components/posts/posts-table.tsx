@@ -54,6 +54,10 @@ interface WorkspaceStatus {
 
 interface PostsTableProps {
   categories: Category[];
+  // Optional call-to-action rendered by the empty state — opt-in so pages
+  // that don't have a sensible "create" destination (public profile,
+  // dashboard preview) keep rendering the plain empty state as before.
+  emptyStateCta?: { href: string; label: string };
   // Opt-in bulk select + floating action bar — only the admin feedback list
   // page enables this; Dashboard and the public profile page never pass it,
   // so they render exactly as before.
@@ -89,49 +93,55 @@ export function PostsTable({
   workspaceId,
   showBoardColumn = true,
   enableBulkActions = false,
+  emptyStateCta,
 }: PostsTableProps) {
   if (posts.length === 0) {
-    return <PostsEmptyState />;
+    return <PostsEmptyState cta={emptyStateCta} />;
   }
 
   const selectable = enableBulkActions && isMember;
 
   const table = (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      {/* `table` (DaisyUI) is layered in as the base marker class, same
+          technique as Button — its border-radius/font-size/text-align rules
+          are inert here (no border/overflow on the table itself to reveal a
+          radius) or already match our own w-full/text-sm utilities below
+          (see button-variants.ts for the full explanation). */}
+      <table className="table w-full text-sm">
         <thead>
-          <tr className="border-b border-ir-border">
+          <tr className="border-b border-ir-border bg-ir-muted-surface/60">
             {selectable && (
               <th className="sticky left-0 z-10 w-10 rounded-tl-ir-card border-r border-ir-border bg-ir-surface px-4 py-2.5">
                 <SelectAllCheckbox />
               </th>
             )}
-            <th className="w-16 px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+            <th className="w-16 px-4 py-3 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
               Votes
             </th>
-            <th className="px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+            <th className="px-4 py-3 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
               Title
             </th>
-            <th className="hidden px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted lg:table-cell">
+            <th className="hidden px-4 py-3 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted lg:table-cell">
               Description
             </th>
-            <th className="hidden px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted sm:table-cell">
+            <th className="hidden px-4 py-3 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted sm:table-cell">
               Author
             </th>
-            <th className="hidden px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted sm:table-cell">
+            <th className="hidden px-4 py-3 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted sm:table-cell">
               Created
             </th>
-            <th className="hidden px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted md:table-cell">
+            <th className="hidden px-4 py-3 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted md:table-cell">
               Category
             </th>
-            <th className="px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+            <th className="px-4 py-3 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
               Status
             </th>
-            <th className="px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+            <th className="px-4 py-3 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
               Visibility
             </th>
             {isMember && (
-              <th className="w-12 px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+              <th className="w-12 px-4 py-3 text-left text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
                 <span className="sr-only">Actions</span>
               </th>
             )}

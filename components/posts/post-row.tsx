@@ -10,6 +10,7 @@ import type { PostsTableRow } from "@/components/posts/posts-table";
 import StatusSelect from "@/components/posts/status-select";
 import VisibilityToggle from "@/components/posts/visibility-toggle";
 import { RelativeTime } from "@/components/ui/relative-time";
+import { SquareAvatar } from "@/components/ui/square-avatar";
 import VoteButton from "@/components/voting/vote-button";
 import { truncateHtmlToText } from "@/lib/changelog/html";
 
@@ -118,14 +119,14 @@ export function PostRow({
             {post.title}
           </Link>
           {isMerged && (
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-ir-full bg-ir-muted-surface px-2 py-0.5 text-[11px] font-medium text-ir-muted">
+            <span className="badge inline-flex h-auto shrink-0 items-center gap-1 rounded-ir-full border-transparent bg-ir-muted-surface px-2 py-0.5 text-[11px] font-medium text-ir-muted">
               <GitMergeIcon className="size-3" />
               Merged
             </span>
           )}
           {!isMerged && !!post.mergedCount && post.mergedCount > 0 && (
             <span
-              className="inline-flex shrink-0 items-center gap-1 rounded-ir-full bg-ir-primary-light/15 px-2 py-0.5 text-[11px] font-medium text-ir-primary"
+              className="badge inline-flex h-auto shrink-0 items-center gap-1 rounded-ir-full border-transparent bg-ir-primary-light/15 px-2 py-0.5 text-[11px] font-medium text-ir-primary"
               title={`${post.mergedCount} ${post.mergedCount === 1 ? "post" : "posts"} merged into this`}
             >
               <GitMergeIcon className="size-3" />
@@ -133,7 +134,7 @@ export function PostRow({
             </span>
           )}
           {post.isDraft && (
-            <span className="inline-flex shrink-0 items-center rounded-ir-full bg-ir-warning/10 px-2 py-0.5 text-[11px] font-medium text-ir-warning">
+            <span className="badge inline-flex h-auto shrink-0 items-center rounded-ir-full border-transparent bg-ir-warning/10 px-2 py-0.5 text-[11px] font-medium text-ir-warning">
               Draft
             </span>
           )}
@@ -164,14 +165,24 @@ export function PostRow({
         )}
       </td>
       <td className="hidden max-w-72 px-4 py-3 align-middle lg:table-cell">
-        <p className="line-clamp-2 text-xs text-ir-muted">
+        <p
+          className="line-clamp-2 text-xs text-ir-muted"
+          title={post.body ? truncateHtmlToText(post.body, 500) : undefined}
+        >
           {post.body ? truncateHtmlToText(post.body, 200) : "—"}
         </p>
       </td>
-      <td className="hidden max-w-32 px-4 py-3 align-middle sm:table-cell">
-        <p className="truncate text-xs text-ir-muted">
-          {post.authorName || post.authorEmail}
-        </p>
+      <td className="hidden max-w-36 px-4 py-3 align-middle sm:table-cell">
+        <div className="flex min-w-0 items-center gap-2">
+          <SquareAvatar
+            alt={post.authorName || post.authorEmail}
+            className="size-6 shrink-0 bg-ir-muted-surface text-[10px] font-semibold text-ir-muted uppercase"
+            fallback={(post.authorName || post.authorEmail).charAt(0)}
+          />
+          <p className="truncate text-xs text-ir-muted">
+            {post.authorName || post.authorEmail}
+          </p>
+        </div>
       </td>
       <td className="hidden whitespace-nowrap px-4 py-3 align-middle text-xs text-ir-muted sm:table-cell">
         <RelativeTime date={post.createdAt} options={{ addSuffix: true }} />

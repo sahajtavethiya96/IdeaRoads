@@ -1,5 +1,6 @@
 "use client";
 
+import { motion, useReducedMotion } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useTransition } from "react";
 import { SearchInput } from "@/components/ui/search-input";
@@ -39,6 +40,10 @@ const SORT_TABS = [
   { label: "Most Voted", value: "top" },
 ] as const;
 
+// Shared layoutId so the active-tab bar smoothly slides between tabs instead
+// of jumping, matching the same pattern used for the workspace nav indicator.
+const SORT_TAB_INDICATOR_ID = "feedback-sort-tab-indicator";
+
 export function FeedbackFilters({
   activeSort,
   activeStatus,
@@ -52,6 +57,7 @@ export function FeedbackFilters({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
+  const shouldReduceMotion = useReducedMotion();
 
   const updateParam = useCallback(
     (updates: Record<string, string | null>) => {
@@ -80,29 +86,43 @@ export function FeedbackFilters({
     <div className="flex flex-col gap-0">
       {/* Sort tabs */}
       <div className="flex flex-wrap items-center border-b border-ir-border px-4 sm:px-8">
-        <div className="flex">
-          {SORT_TABS.map((tab) => (
-            <button
-              className={`cursor-pointer border-b-2 px-4 py-3 text-sm font-medium transition-colors duration-150 ease-ir-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 focus-visible:ring-inset ${
-                activeSort === tab.value
-                  ? "border-ir-primary text-ir-heading"
-                  : "border-transparent text-ir-muted hover:text-ir-heading"
-              }`}
-              key={tab.value}
-              onClick={() => updateParam({ sort: tab.value })}
-              type="button"
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div className="flex gap-1">
+          {SORT_TABS.map((tab) => {
+            const isActive = activeSort === tab.value;
+            return (
+              <button
+                className={`relative flex cursor-pointer items-center rounded-t-ir-sm px-4 py-3 text-sm font-medium transition-colors duration-150 ease-ir-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 focus-visible:ring-inset ${
+                  isActive
+                    ? "text-ir-heading"
+                    : "text-ir-muted hover:bg-ir-muted-surface/60 hover:text-ir-heading"
+                }`}
+                key={tab.value}
+                onClick={() => updateParam({ sort: tab.value })}
+                type="button"
+              >
+                {tab.label}
+                {isActive && (
+                  <motion.span
+                    className="absolute inset-x-2 -bottom-px h-0.5 rounded-ir-full bg-ir-primary"
+                    layoutId={SORT_TAB_INDICATOR_ID}
+                    transition={
+                      shouldReduceMotion
+                        ? { duration: 0 }
+                        : { type: "spring", stiffness: 500, damping: 40 }
+                    }
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Search + filters */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-ir-border px-4 py-3 sm:px-8">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ir-border px-4 py-3 sm:px-8">
         <div className="flex justify-start">
           <SearchInput
-            className="w-full sm:max-w-sm"
+            className="h-9 w-full sm:max-w-sm"
             defaultValue={activeSearch}
             onSearch={(value) => updateParam({ q: value || null })}
             placeholder="Search feedback or author…"

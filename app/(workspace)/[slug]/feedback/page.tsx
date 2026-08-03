@@ -165,6 +165,11 @@ export default async function FeedbackPage({ params, searchParams }: Props) {
         <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
           <PostsTable
             categories={categories}
+            emptyStateCta={
+              board
+                ? { href: `/${slug}/feedback/new`, label: "Add Feedback" }
+                : undefined
+            }
             enableBulkActions
             isAdminOrOwner={isAdminOrOwner}
             isMember={true}

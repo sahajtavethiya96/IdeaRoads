@@ -39,7 +39,7 @@ export function PostStatusBadge({
     if (ws) {
       return (
         <span
-          className="inline-flex items-center gap-1 rounded-ir-full px-2 py-0.5 text-[11px] font-medium"
+          className="badge inline-flex h-auto items-center gap-1 rounded-ir-full border-transparent px-2 py-0.5 text-[11px] font-medium"
           style={{
             backgroundColor: `${ws.color}18`,
             color: ws.color,
@@ -58,7 +58,7 @@ export function PostStatusBadge({
 
   return (
     <span
-      className={`inline-flex items-center rounded-ir-full px-2 py-0.5 text-[11px] font-medium ${classes}`}
+      className={`badge inline-flex h-auto items-center rounded-ir-full border-transparent px-2 py-0.5 text-[11px] font-medium ${classes}`}
     >
       {label}
     </span>

@@ -197,7 +197,7 @@ export default function StatusSelect({
   if (!canEdit) {
     if (isDraft) {
       return (
-        <span className="inline-flex items-center rounded-ir-full bg-ir-warning/10 px-2 py-0.5 text-[11px] font-medium text-ir-warning">
+        <span className="badge inline-flex h-auto items-center rounded-ir-full border-transparent bg-ir-warning/10 px-2 py-0.5 text-[11px] font-medium text-ir-warning">
           Draft
         </span>
       );

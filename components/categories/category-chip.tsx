@@ -10,7 +10,7 @@ export function CategoryChip({ name, color, size = "sm" }: CategoryChipProps) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-ir-full font-medium ${padding}`}
+      className={`badge inline-flex h-auto items-center gap-1.5 rounded-ir-full border-transparent font-medium ${padding}`}
       style={{
         backgroundColor: `${color}18`,
         color,

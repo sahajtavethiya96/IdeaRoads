@@ -147,14 +147,14 @@ export function Topbar() {
         PAGE_PADDING
       )}
     >
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2.5">
         <div className="min-w-0">
           {titleContent}
           {header.description && (
-            <p className="mt-1 text-sm text-ir-muted">{header.description}</p>
+            <p className="mt-1.5 text-sm text-ir-muted">{header.description}</p>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2.5">
           {/* display:contents so an empty container never eats a flex gap
               slot before its portaled content (if any) arrives. */}
           <div className="contents" ref={setBeforeActionsSlot} />

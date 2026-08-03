@@ -46,7 +46,14 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "flex w-fit items-center justify-between gap-1.5 rounded-ir-input border border-ir-border bg-ir-surface px-3 py-2 text-sm whitespace-nowrap text-ir-body shadow-ir-xs transition-[color,border-color,box-shadow] duration-150 ease-ir-standard outline-none hover:border-ir-primary/40 focus-visible:border-ir-primary focus-visible:ring-2 focus-visible:ring-ir-primary/20 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-ir-border aria-invalid:border-ir-danger aria-invalid:focus-visible:ring-ir-danger/20 data-placeholder:text-ir-muted data-[size=default]:h-10 data-[size=lg]:h-12 data-[size=sm]:h-9 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 dark:aria-invalid:border-ir-danger/50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
+        // `select` (DaisyUI) is layered in as the base marker class, same
+        // technique as Button/Input — this is a Radix trigger (not a native
+        // <select>), so its own width/padding/font-size are overridden by
+        // our later-generated utilities below (see button-variants.ts for
+        // the full explanation). `bg-none` cancels DaisyUI's native-select
+        // arrow background image — we already render our own CaretUpDownIcon
+        // as the chevron, so the CSS-drawn one would otherwise double up.
+        "select bg-none flex w-fit items-center justify-between gap-1.5 rounded-ir-input border border-ir-border bg-ir-surface px-3 py-2 text-sm whitespace-nowrap text-ir-body shadow-ir-xs transition-[color,border-color,box-shadow] duration-150 ease-ir-standard outline-none hover:border-ir-primary/40 focus-visible:border-ir-primary focus-visible:ring-2 focus-visible:ring-ir-primary/20 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-ir-border aria-invalid:border-ir-danger aria-invalid:focus-visible:ring-ir-danger/20 data-placeholder:text-ir-muted data-[size=default]:h-10 data-[size=lg]:h-12 data-[size=sm]:h-9 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 dark:aria-invalid:border-ir-danger/50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
         className
       )}
       {...props}
@@ -73,7 +80,17 @@ function SelectContent({
       <SelectPrimitive.Content
         data-slot="select-content"
         data-align-trigger={position === "item-aligned"}
-        className={cn("relative z-50 max-h-(--radix-select-content-available-height) min-w-36 origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-ir-md border border-ir-border bg-ir-surface p-1.5 text-ir-body shadow-ir-lg duration-100 data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95", position ==="popper"&&"data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1", className )}
+        className={cn(
+          // `dropdown-content` (DaisyUI) is layered in as the base marker
+          // class — Radix sets its own position via an inline style
+          // (position: fixed + transform), which always wins over this
+          // class's `position: absolute`, so placement is unaffected; the
+          // rest of its rules are overridden by our explicit border/bg/
+          // shadow/padding utilities below, same technique as button-variants.ts.
+          "dropdown-content relative z-50 max-h-(--radix-select-content-available-height) min-w-36 origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-ir-md border border-ir-border bg-ir-surface p-1.5 text-ir-body shadow-ir-lg duration-100 data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          position === "popper" && "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+          className
+        )}
         position={position}
         align={align}
         {...props}

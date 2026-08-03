@@ -1,9 +1,17 @@
 "use client";
 
-import { TrayIcon } from "@phosphor-icons/react";
+import { PlusIcon, TrayIcon } from "@phosphor-icons/react";
 import { motion, useReducedMotion } from "framer-motion";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
-export function PostsEmptyState() {
+interface PostsEmptyStateProps {
+  // Opt-in "create" shortcut — only passed by pages that have somewhere
+  // sensible to send the click (see PostsTable's emptyStateCta prop).
+  cta?: { href: string; label: string };
+}
+
+export function PostsEmptyState({ cta }: PostsEmptyStateProps) {
   const shouldReduceMotion = useReducedMotion();
 
   return (
@@ -22,6 +30,14 @@ export function PostsEmptyState() {
           Submitted feedback will show up here.
         </p>
       </div>
+      {cta && (
+        <Button asChild className="mt-1" size="sm">
+          <Link href={cta.href}>
+            <PlusIcon data-icon="inline-start" />
+            {cta.label}
+          </Link>
+        </Button>
+      )}
     </motion.div>
   );
 }
