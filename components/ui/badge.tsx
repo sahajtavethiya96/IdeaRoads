@@ -5,7 +5,13 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "group/badge inline-flex w-fit shrink-0 items-center justify-center gap-1.5 overflow-hidden rounded-ir-full border border-transparent px-2 py-0.5 text-xs font-semibold tracking-ui whitespace-nowrap uppercase transition-colors duration-150 ease-ir-standard focus-visible:border-ir-primary focus-visible:ring-[3px] focus-visible:ring-ir-primary/30 has-data-[icon=inline-end]:pr-0 has-data-[icon=inline-start]:pl-0 aria-invalid:border-ir-danger aria-invalid:ring-ir-danger/20 dark:aria-invalid:ring-ir-danger/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
+  // `badge` (DaisyUI) is layered in as the base marker class, same technique
+  // as Button — but unlike Button, DaisyUI's badge forces a fixed `height`
+  // via `--size` with nothing here to override it (Button already carries
+  // `h-auto`/explicit `h-*` sizes for this exact reason), so `h-auto` is
+  // added alongside to keep this badge's height driven by its existing
+  // line-height + padding, unchanged from before.
+  "group/badge badge h-auto inline-flex w-fit shrink-0 items-center justify-center gap-1.5 overflow-hidden rounded-ir-full border border-transparent px-2 py-0.5 text-xs font-semibold tracking-ui whitespace-nowrap uppercase transition-colors duration-150 ease-ir-standard focus-visible:border-ir-primary focus-visible:ring-[3px] focus-visible:ring-ir-primary/30 has-data-[icon=inline-end]:pr-0 has-data-[icon=inline-start]:pl-0 aria-invalid:border-ir-danger aria-invalid:ring-ir-danger/20 dark:aria-invalid:ring-ir-danger/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
   {
     variants: {
       variant: {

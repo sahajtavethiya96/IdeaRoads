@@ -7,7 +7,12 @@ function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
     <textarea
       data-slot="textarea"
       className={cn(
-        "flex field-sizing-content min-h-16 w-full resize-none wrap-break-word rounded-ir-input border border-ir-border bg-ir-surface px-3 py-2.5 text-base text-ir-body shadow-ir-xs transition-[color,border-color,box-shadow] duration-150 ease-ir-standard outline-none placeholder:text-ir-muted hover:border-ir-primary/40 focus-visible:border-ir-primary focus-visible:ring-2 focus-visible:ring-ir-primary/20 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-ir-border aria-invalid:border-ir-danger aria-invalid:hover:border-ir-danger aria-invalid:focus-visible:ring-ir-danger/20 md:text-sm dark:aria-invalid:border-ir-danger/50",
+        // `textarea` (DaisyUI) is layered in as the base marker class, same
+        // technique as Input — its own width/min-height/padding/radius/
+        // font-size are all overridden by our later-generated w-full/
+        // min-h-16/px-3/py-2.5/rounded-ir-input/text-base utilities below,
+        // so pixel output is unchanged.
+        "textarea flex field-sizing-content min-h-16 w-full resize-none wrap-break-word rounded-ir-input border border-ir-border bg-ir-surface px-3 py-2.5 text-base text-ir-body shadow-ir-xs transition-[color,border-color,box-shadow] duration-150 ease-ir-standard outline-none placeholder:text-ir-muted hover:border-ir-primary/40 focus-visible:border-ir-primary focus-visible:ring-2 focus-visible:ring-ir-primary/20 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-ir-border aria-invalid:border-ir-danger aria-invalid:hover:border-ir-danger aria-invalid:focus-visible:ring-ir-danger/20 md:text-sm dark:aria-invalid:border-ir-danger/50",
         className
       )}
       {...props}

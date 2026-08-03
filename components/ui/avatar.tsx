@@ -17,7 +17,14 @@ function Avatar({
       data-slot="avatar"
       data-size={size}
       className={cn(
-        "group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-ir-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
+        // `avatar` (DaisyUI) is layered in as the base marker class — its
+        // display/vertical-align/position rules are either overridden by our
+        // `flex`/`relative` utilities below or harmless additions. Note:
+        // `avatar-group` is deliberately NOT added to AvatarGroup below —
+        // daisyui's `.avatar-group .avatar` selector adds a 4px solid border
+        // to every avatar inside, which would visibly change this
+        // component's existing negative-margin + ring-based stacking look.
+        "group/avatar avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-ir-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
         className
       )}
       {...props}

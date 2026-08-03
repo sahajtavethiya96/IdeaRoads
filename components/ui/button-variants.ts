@@ -5,22 +5,29 @@ import { cva } from "class-variance-authority"
 // client-only dependency, and Server Components need to call it directly
 // (e.g. to style a plain <Link> as a button), which isn't possible for a
 // named export of a "use client" module.
+//
+// `btn` (DaisyUI) is layered in as the base marker class — its own
+// color/height/padding rules are all driven by CSS custom properties
+// (--btn-bg, --size, --btn-p, ...) that our explicit ir-* utilities below
+// override on the same cascade layer (later-generated Tailwind utilities
+// win ties), so pixel output is unchanged; DaisyUI mainly contributes
+// behavioral resets (touch-action, disabled/checkbox handling) here.
 export const buttonVariants = cva(
-  "group/button inline-flex shrink-0 cursor-pointer items-center justify-center rounded-ir-button border border-transparent bg-clip-padding text-xs font-semibold tracking-ui whitespace-nowrap uppercase transition-all duration-150 ease-ir-standard outline-none select-none focus-visible:border-ir-primary focus-visible:ring-2 focus-visible:ring-ir-primary/30 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-ir-danger aria-invalid:ring-2 aria-invalid:ring-ir-danger/20 dark:aria-invalid:border-ir-danger/50 dark:aria-invalid:ring-ir-danger/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
+  "btn group/button inline-flex h-auto min-h-0 shrink-0 cursor-pointer items-center justify-center rounded-ir-button border border-transparent bg-clip-padding p-0 text-xs font-semibold tracking-ui whitespace-nowrap uppercase shadow-none transition-all duration-150 ease-ir-standard outline-none select-none focus-visible:border-ir-primary focus-visible:ring-2 focus-visible:ring-ir-primary/30 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-ir-danger aria-invalid:ring-2 aria-invalid:ring-ir-danger/20 dark:aria-invalid:border-ir-danger/50 dark:aria-invalid:ring-ir-danger/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
   {
     variants: {
       variant: {
         default:
-          "bg-ir-primary text-ir-primary-foreground shadow-ir-xs hover:bg-ir-primary-hover hover:shadow-ir-sm",
+          "btn-primary bg-ir-primary text-ir-primary-foreground shadow-ir-xs hover:bg-ir-primary-hover hover:shadow-ir-sm",
         outline:
           "border-ir-border bg-ir-surface hover:bg-ir-muted-surface hover:text-ir-heading aria-expanded:bg-ir-muted-surface aria-expanded:text-ir-heading dark:hover:bg-input/30",
         secondary:
           "bg-ir-muted-surface text-ir-body hover:bg-[color-mix(in_oklch,var(--ir-muted-surface),var(--ir-text-heading)_5%)] aria-expanded:bg-ir-muted-surface aria-expanded:text-ir-heading",
         ghost:
-          "hover:bg-ir-muted-surface hover:text-ir-heading aria-expanded:bg-ir-muted-surface aria-expanded:text-ir-heading dark:hover:bg-muted/50",
+          "btn-ghost hover:bg-ir-muted-surface hover:text-ir-heading aria-expanded:bg-ir-muted-surface aria-expanded:text-ir-heading dark:hover:bg-muted/50",
         destructive:
           "bg-ir-danger/10 text-ir-danger hover:bg-ir-danger/20 focus-visible:border-ir-danger/40 focus-visible:ring-ir-danger/20 dark:bg-ir-danger/20 dark:hover:bg-ir-danger/30 dark:focus-visible:ring-ir-danger/40",
-        link: "text-ir-primary underline underline-offset-4 hover:text-ir-primary-hover hover:underline",
+        link: "btn-link p-0 text-ir-primary underline underline-offset-4 hover:text-ir-primary-hover hover:underline",
       },
       size: {
         default:

@@ -16,13 +16,13 @@ export default function WorkspaceNotFound() {
 
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center px-6 text-center">
-      <div className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+      <div className="flex size-12 items-center justify-center rounded-full bg-ir-muted-surface text-ir-muted">
         <FileQuestion className="size-6" />
       </div>
-      <h1 className="mt-5 text-lg font-semibold text-foreground">
+      <h1 className="mt-5 text-lg font-semibold text-ir-heading">
         This item is no longer available
       </h1>
-      <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">
+      <p className="mt-1.5 max-w-sm text-sm text-ir-muted">
         It may have been removed, or the link is no longer valid.
       </p>
       <div className="mt-6 flex items-center gap-3">

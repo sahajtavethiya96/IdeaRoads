@@ -26,7 +26,7 @@ export function ConfirmEmailButton({ token }: { token: string }) {
   return (
     <div className="space-y-3">
       {error && (
-        <p className="bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <p className="bg-ir-danger/10 px-3 py-2 text-sm text-ir-danger">
           {error}
         </p>
       )}

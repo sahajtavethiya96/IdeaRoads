@@ -42,7 +42,7 @@ export function ListSearch({
   );
 
   return (
-    <div className={className ?? "border-border px-4 py-4 sm:px-8"}>
+    <div className={className ?? "border-ir-border px-4 py-4 sm:px-8"}>
       <SearchInput
         aria-label={placeholder}
         className="h-9 min-w-50 max-w-md"

@@ -37,7 +37,14 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-ir-card border border-ir-border bg-ir-surface py-(--card-spacing) text-sm text-ir-body shadow-ir-xs transition-shadow duration-150 ease-ir-standard hover:shadow-ir-sm [--card-spacing:--spacing(6)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(4)] *:[img:first-child]:rounded-t-ir-card *:[img:last-child]:rounded-b-ir-card",
+        // `card` (DaisyUI) is layered in as the base marker class, same
+        // technique as Button — its own border-radius/outline rules are
+        // overridden by our later-generated rounded-ir-card/etc utilities
+        // below (see button-variants.ts for the full explanation). We don't
+        // add `card-body`/`card-title` to the subcomponents below: those set
+        // their own padding/font-size/flex layout that would change this
+        // card's existing spacing, so they're intentionally left alone.
+        "group/card card flex flex-col gap-(--card-spacing) overflow-hidden rounded-ir-card border border-ir-border bg-ir-surface py-(--card-spacing) text-sm text-ir-body shadow-ir-xs transition-shadow duration-150 ease-ir-standard hover:shadow-ir-sm [--card-spacing:--spacing(6)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(4)] *:[img:first-child]:rounded-t-ir-card *:[img:last-child]:rounded-b-ir-card",
         className
       )}
       transition={{ duration: 0.15, ease: "easeOut" }}

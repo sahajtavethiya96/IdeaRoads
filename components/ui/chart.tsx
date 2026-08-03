@@ -65,7 +65,11 @@ function ChartContainer({
         data-slot="chart"
         data-chart={chartId}
         className={cn(
-          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden",
+          // Chrome (grid lines, axis ticks, cursor fills) uses the ir-*
+          // vocabulary like the rest of the migrated components — only the
+          // --color-1..5 data-series tokens (set via ChartStyle below) stay
+          // on their own separate system, per the chart's data-viz design.
+          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-ir-muted [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-ir-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-ir-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-ir-border [&_.recharts-radial-bar-background-sector]:fill-ir-muted-surface [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-ir-muted-surface [&_.recharts-reference-line_[stroke='#ccc']]:stroke-ir-border [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden",
           className
         )}
         {...props}
@@ -191,7 +195,7 @@ function ChartTooltipContent({
   return (
     <div
       className={cn(
-        "grid min-w-32 items-start gap-1.5 bg-popover px-2.5 py-1.5 text-xs text-popover-foreground shadow-sm ring-1 ring-foreground/10",
+        "grid min-w-32 items-start gap-1.5 bg-ir-surface px-2.5 py-1.5 text-xs text-ir-heading shadow-sm ring-1 ring-ir-heading/10",
         className
       )}
     >
@@ -208,7 +212,7 @@ function ChartTooltipContent({
               <div
                 key={index}
                 className={cn(
-                  "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
+                  "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-ir-muted",
                   indicator === "dot" && "items-center"
                 )}
               >
@@ -248,12 +252,12 @@ function ChartTooltipContent({
                     >
                       <div className="grid gap-1.5">
                         {nestLabel ? tooltipLabel : null}
-                        <span className="text-muted-foreground">
+                        <span className="text-ir-muted">
                           {itemConfig?.label ?? item.name}
                         </span>
                       </div>
                       {item.value != null && (
-                        <span className="font-mono font-medium text-foreground tabular-nums">
+                        <span className="font-mono font-medium text-ir-heading tabular-nums">
                           {typeof item.value === "number"
                             ? item.value.toLocaleString()
                             : String(item.value)}
@@ -306,7 +310,7 @@ function ChartLegendContent({
             <div
               key={index}
               className={cn(
-                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground"
+                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-ir-muted"
               )}
             >
               {itemConfig?.icon && !hideIcon ? (

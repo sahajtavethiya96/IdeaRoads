@@ -87,13 +87,13 @@ export function NotificationItem({
   }
 
   return (
-    <div className="group relative flex w-full items-start gap-3 px-5 py-3.5 border-b border-border bg-background transition-colors hover:bg-muted/40">
+    <div className="group relative flex w-full items-start gap-3 px-5 py-3.5 border-b border-ir-border bg-ir-surface transition-colors hover:bg-ir-muted-surface/40">
       {/* Unread indicator */}
       <span className="mt-1 shrink-0 flex items-center justify-center size-4">
         {isRead ? (
           <span className="size-2 rounded-full bg-transparent" />
         ) : (
-          <span className="size-2 rounded-full bg-primary" />
+          <span className="size-2 rounded-full bg-ir-primary" />
         )}
       </span>
 
@@ -101,8 +101,8 @@ export function NotificationItem({
       <span
         className={`mt-0.5 shrink-0 flex size-7 items-center justify-center rounded-ir-sm ${
           isRemoved
-            ? "bg-muted/60 text-muted-foreground/60"
-            : "bg-muted text-muted-foreground"
+            ? "bg-ir-muted-surface/60 text-ir-muted/60"
+            : "bg-ir-muted-surface text-ir-muted"
         }`}
       >
         <Icon className="size-3.5" />
@@ -115,7 +115,7 @@ export function NotificationItem({
         <div className="flex items-start gap-2">
           {isRemoved ? (
             <button
-              className="cursor-pointer text-left text-sm leading-snug text-muted-foreground after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
+              className="cursor-pointer text-left text-sm leading-snug text-ir-muted after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
               onClick={handleRemovedClick}
               type="button"
             >
@@ -125,8 +125,8 @@ export function NotificationItem({
             <Link
               className={`text-sm leading-snug after:absolute after:inset-0 after:content-[''] focus-visible:outline-none ${
                 isRead
-                  ? "font-normal text-muted-foreground"
-                  : "font-semibold text-foreground"
+                  ? "font-normal text-ir-muted"
+                  : "font-semibold text-ir-heading"
               }`}
               href={notification.link}
               onClick={markRead}
@@ -135,22 +135,22 @@ export function NotificationItem({
             </Link>
           )}
           {isRemoved && (
-            <span className="mt-0.5 shrink-0 rounded-full bg-muted px-2 py-0.5 text-2xs font-medium uppercase tracking-wide text-muted-foreground">
+            <span className="mt-0.5 shrink-0 rounded-full bg-ir-muted-surface px-2 py-0.5 text-2xs font-medium uppercase tracking-wide text-ir-muted">
               Removed
             </span>
           )}
         </div>
         {notification.body && !isRemoved && (
-          <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">
+          <p className="mt-0.5 text-xs text-ir-muted line-clamp-1">
             {notification.body}
           </p>
         )}
         {isRemoved && (
-          <p className="mt-0.5 text-xs text-muted-foreground/70">
+          <p className="mt-0.5 text-xs text-ir-muted/70">
             {REMOVED_MESSAGE}
           </p>
         )}
-        <p className="mt-1 text-xs text-muted-foreground/60">
+        <p className="mt-1 text-xs text-ir-muted/60">
           <RelativeTime
             date={notification.createdAt}
             options={{ addSuffix: true }}
@@ -164,7 +164,7 @@ export function NotificationItem({
         {!isRead && !isRemoved && (
           <button
             aria-label="Mark as read"
-            className="flex size-7 cursor-pointer items-center justify-center rounded-ir-sm text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex size-7 cursor-pointer items-center justify-center rounded-ir-sm text-ir-muted transition-colors hover:bg-ir-surface hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
             onClick={handleMarkReadClick}
             title="Mark as read"
             type="button"
@@ -174,7 +174,7 @@ export function NotificationItem({
         )}
         <button
           aria-label="Remove notification"
-          className="flex size-7 cursor-pointer items-center justify-center rounded-ir-sm text-muted-foreground transition-colors hover:bg-background hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex size-7 cursor-pointer items-center justify-center rounded-ir-sm text-ir-muted transition-colors hover:bg-ir-surface hover:text-ir-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
           onClick={handleRequestClear}
           title="Remove notification"
           type="button"
