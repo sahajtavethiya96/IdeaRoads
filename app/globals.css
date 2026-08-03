@@ -9,6 +9,14 @@
   box-sizing: border-box;
 }
 
+/* Every interactive element has its own hover/focus-visible treatment, so the
+   browser's default translucent tap highlight (visible on touch/trackpad
+   click, especially over enlarged hit areas like checkbox ::after) is just
+   visual noise on top of it. */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 html {
   background: var(--background);
   scroll-behavior: smooth;

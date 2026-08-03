@@ -3,6 +3,7 @@
 import {
   Area,
   ComposedChart,
+  DefaultZIndexes,
   Line,
   ReferenceLine,
   XAxis,
@@ -142,6 +143,7 @@ export function FeedbackTrendCard({
                 key={tick}
                 stroke="var(--ir-border)"
                 y={tick}
+                zIndex={DefaultZIndexes.grid}
               />
             ))}
             <XAxis

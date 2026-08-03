@@ -66,15 +66,15 @@ export default async function JoinPage({ params }: Props) {
   return (
     <JoinLayout>
       <div className="space-y-1 text-center">
-        <p className="text-xs font-semibold uppercase tracking-eyebrow text-muted-foreground">
+        <p className="text-xs font-semibold uppercase tracking-eyebrow text-ir-muted">
           Workspace invitation
         </p>
-        <h1 className="text-xl font-semibold text-foreground">
+        <h1 className="text-xl font-semibold text-ir-heading">
           Join {link.workspace.name}
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ir-muted">
           You've been invited as a{" "}
-          <span className="font-medium text-foreground">{link.role}</span>.
+          <span className="font-medium text-ir-heading">{link.role}</span>.
         </p>
       </div>
       <div className="mt-6">
@@ -86,10 +86,10 @@ export default async function JoinPage({ params }: Props) {
 
 function JoinLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="grid min-h-screen place-items-center bg-page px-4 py-10">
+    <main className="grid min-h-screen place-items-center bg-ir-primary-light/20 px-4 py-10">
       <div className="w-full max-w-sm">
         <Link
-          className="mb-8 flex justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="mb-8 flex justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
           href="/"
         >
           <Image
@@ -101,7 +101,7 @@ function JoinLayout({ children }: { children: React.ReactNode }) {
             width={500}
           />
         </Link>
-        <div className="border border-border bg-background px-4 py-8 sm:px-8">
+        <div className="rounded-ir-xl border border-ir-border bg-ir-surface px-4 py-8 shadow-ir-lg sm:px-8">
           {children}
         </div>
       </div>
@@ -112,8 +112,8 @@ function JoinLayout({ children }: { children: React.ReactNode }) {
 function JoinStateCard({ heading, body }: { heading: string; body: string }) {
   return (
     <div className="space-y-3 text-center">
-      <h1 className="text-lg font-semibold text-foreground">{heading}</h1>
-      <p className="text-sm text-muted-foreground">{body}</p>
+      <h1 className="text-lg font-semibold text-ir-heading">{heading}</h1>
+      <p className="text-sm text-ir-muted">{body}</p>
     </div>
   );
 }

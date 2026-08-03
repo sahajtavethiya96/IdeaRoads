@@ -172,7 +172,9 @@ export function DashboardMetricsSection({
               label={status.name}
               periodLabel={periodLabel}
               previousValue={
-                previousSnapshot?.statusCounts[status.slug] ?? null
+                previousSnapshot
+                  ? (previousSnapshot.statusCounts[status.slug] ?? 0)
+                  : null
               }
               value={statusCounts[status.slug] ?? 0}
               valueStyle={{ color: status.color }}

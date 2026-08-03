@@ -7,6 +7,7 @@ import { type FormEvent, Suspense, useEffect, useState } from "react";
 import { useIsEmbedded } from "@/components/embed/use-is-embedded";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { LOGO_PATH, PRODUCT_NAME } from "@/config/platform";
 import { signIn, useSession } from "@/lib/auth-client";
 
@@ -290,13 +291,12 @@ function AuthFormInner({
                           </Link>
                         )}
                       </div>
-                      <Input
+                      <PasswordInput
                         autoComplete="current-password"
                         id="password"
                         onChange={(event) => setPassword(event.target.value)}
                         placeholder="Enter your password"
                         required
-                        type="password"
                         value={password}
                       />
                     </label>

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { createFirstAdminAction } from "@/app/actions/setup";
@@ -7,7 +8,7 @@ import { createWorkspaceAction } from "@/app/actions/workspace";
 import { StepWorkspace } from "@/app/onboarding/_components/steps/step-workspace";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PRODUCT_NAME } from "@/config/platform";
+import { LOGO_PATH, PRODUCT_NAME } from "@/config/platform";
 import { authClient } from "@/lib/auth-client";
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -97,6 +98,14 @@ export function SetupWizard({ appHost }: SetupWizardProps) {
   if (step === "workspace") {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-ir-primary-light/20 px-4 py-10">
+        <Image
+          alt={PRODUCT_NAME}
+          className="mb-8 h-auto w-[140px] sm:w-[160px] md:w-[180px]"
+          height={164}
+          priority
+          src={LOGO_PATH}
+          width={500}
+        />
         <div className="w-full max-w-md rounded-ir-xl border border-ir-border bg-ir-surface p-8 shadow-ir-lg">
           <StepWorkspace
             appHost={appHost}
@@ -114,6 +123,14 @@ export function SetupWizard({ appHost }: SetupWizardProps) {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-ir-primary-light/20 px-4 py-10">
+      <Image
+        alt={PRODUCT_NAME}
+        className="mb-8 h-auto w-[140px] sm:w-[160px] md:w-[180px]"
+        height={164}
+        priority
+        src={LOGO_PATH}
+        width={500}
+      />
       <div className="w-full max-w-md rounded-ir-xl border border-ir-border bg-ir-surface p-8 shadow-ir-lg">
         <div className="text-center">
           <h1 className="text-xl font-bold text-ir-heading">
