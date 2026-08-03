@@ -55,7 +55,7 @@ export function RoadmapColumn({
   const hasMore = posts.length > visibleCount;
 
   return (
-    <div className="flex min-h-0 w-full min-w-0 flex-col">
+    <div className="card flex min-h-0 w-full min-w-0 flex-col">
       <RoadmapStatusHeader color={color} count={posts.length} name={name} />
 
       {/* Drop zone. flex-1 + overflow-y-auto so it fills the column's full

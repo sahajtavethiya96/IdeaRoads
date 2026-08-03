@@ -9,7 +9,7 @@ export function RoadmapEmptyState({ label }: { label?: string }) {
   return (
     <motion.div
       animate={{ opacity: 1, scale: 1 }}
-      className="flex h-full min-h-24 flex-col items-center justify-center gap-3 px-4 py-12 text-center"
+      className="card flex h-full min-h-24 flex-col items-center justify-center gap-3 px-4 py-12 text-center"
       initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.96 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
     >

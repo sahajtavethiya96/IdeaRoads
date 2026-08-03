@@ -220,7 +220,7 @@ export function ManualRoadmapBoard({
               const isDropTarget = dropPosition?.columnId === s.id;
               return (
                 <div
-                  className="flex min-h-0 w-full min-w-0 flex-col"
+                  className="card flex min-h-0 w-full min-w-0 flex-col"
                   key={s.id}
                 >
                   <RoadmapStatusHeader

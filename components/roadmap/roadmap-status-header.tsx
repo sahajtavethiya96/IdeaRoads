@@ -26,7 +26,7 @@ export function RoadmapStatusHeader({
         </h2>
       </div>
       <span
-        className="inline-flex shrink-0 items-center rounded-ir-full px-2 py-0.5 text-xs font-semibold"
+        className="badge inline-flex h-auto shrink-0 items-center rounded-ir-full border-transparent px-2 py-0.5 text-xs font-semibold"
         style={{ backgroundColor: `${color}20`, color }}
       >
         {count}
