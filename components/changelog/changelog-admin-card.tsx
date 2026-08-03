@@ -112,18 +112,18 @@ export function ChangelogAdminCard({
         <div className="flex flex-wrap items-center gap-2.5">
           <ChangelogLabelBadge label={entry.label} />
           {entry.isPublished ? (
-            <span className="inline-flex items-center gap-1 rounded-ir-sm bg-ir-success/10 px-2 py-0.5 text-[11px] font-semibold text-ir-success">
+            <span className="badge h-auto inline-flex items-center gap-1 rounded-ir-sm border-transparent bg-ir-success/10 px-2 py-0.5 text-[11px] font-semibold text-ir-success">
               <GlobeIcon className="size-2.5" />
               Published
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 rounded-ir-sm bg-ir-muted-surface px-2 py-0.5 text-[11px] font-semibold text-ir-muted">
+            <span className="badge h-auto inline-flex items-center gap-1 rounded-ir-sm border-transparent bg-ir-muted-surface px-2 py-0.5 text-[11px] font-semibold text-ir-muted">
               <LockIcon className="size-2.5" />
               Draft
             </span>
           )}
           {entry.notifiedAt && (
-            <span className="inline-flex items-center gap-1 rounded-ir-sm px-2 py-0.5 text-[11px] font-semibold text-ir-muted">
+            <span className="badge h-auto inline-flex items-center gap-1 rounded-ir-sm border-transparent bg-transparent px-2 py-0.5 text-[11px] font-semibold text-ir-muted">
               <BellIcon className="size-2.5" />
               Voters notified
             </span>
@@ -139,7 +139,7 @@ export function ChangelogAdminCard({
           onClick={(e) => e.stopPropagation()}
         >
           <Link
-            className="flex items-center gap-1.5 rounded-ir-sm border border-ir-primary/40 px-3 py-1.5 text-xs font-medium text-ir-primary transition-colors duration-150 ease-ir-standard hover:bg-ir-primary-light/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+            className="btn h-auto shadow-none flex items-center gap-1.5 rounded-ir-sm border border-ir-primary/40 bg-transparent px-3 py-1.5 text-xs font-medium text-ir-primary transition-colors duration-150 ease-ir-standard hover:bg-ir-primary-light/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
             href={editHref}
           >
             <PencilIcon className="size-3" />
@@ -148,7 +148,7 @@ export function ChangelogAdminCard({
 
           {entry.isPublished ? (
             <button
-              className="flex cursor-pointer items-center gap-1.5 rounded-ir-sm border border-ir-border px-3 py-1.5 text-xs font-medium text-ir-muted transition-colors duration-150 ease-ir-standard hover:border-ir-primary/30 hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:opacity-50"
+              className="btn h-auto shadow-none flex cursor-pointer items-center gap-1.5 rounded-ir-sm border border-ir-border bg-transparent px-3 py-1.5 text-xs font-medium text-ir-muted transition-colors duration-150 ease-ir-standard hover:border-ir-primary/30 hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:opacity-50"
               disabled={isPending}
               onClick={handleUnpublish}
             >
@@ -157,7 +157,7 @@ export function ChangelogAdminCard({
             </button>
           ) : (
             <button
-              className="flex cursor-pointer items-center gap-1.5 rounded-ir-sm bg-ir-primary px-3 py-1.5 text-xs font-medium text-ir-primary-foreground shadow-ir-xs transition-colors duration-150 ease-ir-standard hover:bg-ir-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:opacity-50"
+              className="btn h-auto flex cursor-pointer items-center gap-1.5 rounded-ir-sm bg-ir-primary px-3 py-1.5 text-xs font-medium text-ir-primary-foreground shadow-ir-xs transition-colors duration-150 ease-ir-standard hover:bg-ir-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:opacity-50"
               disabled={isPending}
               onClick={handlePublish}
             >

@@ -15,7 +15,7 @@ export function ChangelogLabelBadge({
 
   return (
     <span
-      className={`inline-flex items-center rounded-ir-sm font-semibold tracking-wide ${padding}`}
+      className={`badge h-auto inline-flex items-center rounded-ir-sm border-transparent font-semibold tracking-wide ${padding}`}
       style={{
         backgroundColor: `${color}18`,
         color,
