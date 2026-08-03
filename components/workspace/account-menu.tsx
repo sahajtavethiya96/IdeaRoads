@@ -92,7 +92,7 @@ export function AccountMenu({
 
       <DropdownMenuContent
         align="start"
-        className="w-64 max-w-[calc(100vw-1rem)]"
+        className="menu menu-lg w-64 max-w-[calc(100vw-1rem)] flex-nowrap"
         side="top"
         sideOffset={6}
       >

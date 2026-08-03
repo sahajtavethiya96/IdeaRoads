@@ -39,14 +39,14 @@ const ALLOWED_AVATAR_TYPES = new Set([
 function ActionMessage({ state }: { state: ActionState }) {
   if (state.error) {
     return (
-      <p className="rounded-ir-sm bg-ir-danger/10 p-3 text-sm text-ir-danger">
+      <p className="alert alert-error rounded-ir-sm border-none bg-ir-danger/10 p-3 text-sm text-ir-danger shadow-none">
         {state.error}
       </p>
     );
   }
   if (state.success) {
     return (
-      <p className="rounded-ir-sm bg-ir-success/10 p-3 text-sm text-ir-success">
+      <p className="alert alert-success rounded-ir-sm border-none bg-ir-success/10 p-3 text-sm text-ir-success shadow-none">
         {state.success}
       </p>
     );

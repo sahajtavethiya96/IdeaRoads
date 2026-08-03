@@ -162,7 +162,7 @@ export function ModerationSettingsForm({
         <div className="flex min-h-8 flex-wrap gap-1.5">
           {keywords.map((kw) => (
             <span
-              className="inline-flex items-center gap-1 rounded-ir-sm bg-ir-muted-surface px-2 py-0.5 text-xs text-ir-heading"
+              className="badge inline-flex h-auto items-center gap-1 rounded-ir-sm border-transparent bg-ir-muted-surface px-2 py-0.5 text-xs text-ir-heading"
               key={kw}
             >
               {kw}

@@ -136,7 +136,7 @@ export function SessionsCard({ sessions }: { sessions: SessionRow[] }) {
             {/* Action */}
             <div className="shrink-0">
               {session.isCurrent ? (
-                <span className="rounded-ir-sm bg-ir-muted-surface px-3 py-2 text-xs font-medium text-nowrap text-ir-muted">
+                <span className="badge inline-flex h-auto rounded-ir-sm border-transparent bg-ir-muted-surface px-3 py-2 text-xs font-medium text-nowrap text-ir-muted">
                   Protected
                 </span>
               ) : (

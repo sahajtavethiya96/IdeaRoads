@@ -116,7 +116,7 @@ export function AuditLogTable({
           )}
           <input
             aria-label="Search audit log"
-            className="h-9 rounded-ir-input border border-ir-border bg-ir-surface px-3 text-sm text-ir-heading placeholder:text-ir-muted focus-visible:ring-2 focus-visible:ring-ir-primary/20 focus-visible:outline-none"
+            className="input h-9 rounded-ir-input border border-ir-border bg-ir-surface px-3 text-sm text-ir-heading placeholder:text-ir-muted focus-visible:ring-2 focus-visible:ring-ir-primary/20 focus-visible:outline-none"
             defaultValue={filterActor ?? ""}
             name="actor"
             placeholder="Search by actor, action, or entity…"
@@ -151,7 +151,7 @@ export function AuditLogTable({
             >
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-ir-xs bg-ir-muted-surface px-1.5 py-0.5 font-mono text-xs text-ir-heading">
+                  <span className="badge inline-flex h-auto rounded-ir-xs border-transparent bg-ir-muted-surface px-1.5 py-0.5 font-mono text-xs text-ir-heading">
                     {log.action}
                   </span>
                   {log.entityName && (

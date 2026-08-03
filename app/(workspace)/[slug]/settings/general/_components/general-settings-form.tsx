@@ -81,7 +81,7 @@ function LogoPreview({ url }: { url: string }) {
   const trimmed = url.trim();
 
   return (
-    <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-ir-sm border border-ir-border bg-ir-muted-surface">
+    <div className="avatar flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-ir-sm border border-ir-border bg-ir-muted-surface">
       {trimmed && !failed ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
