@@ -19,6 +19,7 @@ import { useNotificationsContext } from "@/components/notifications/notification
 import { RelativeTime } from "@/components/ui/relative-time";
 import type { NotificationType } from "@/db/schema/notifications";
 import type { NotificationListItem } from "@/lib/notifications/queries";
+import { cn } from "@/lib/utils";
 
 const TYPE_ICONS: Record<NotificationType, React.ElementType> = {
   new_post: FileText,
@@ -87,25 +88,25 @@ export function NotificationItem({
   }
 
   return (
-    <div className="group relative flex w-full items-start gap-3 px-5 py-3.5 border-b border-ir-border bg-ir-surface transition-colors hover:bg-ir-muted-surface/40">
-      {/* Unread indicator */}
-      <span className="mt-1 shrink-0 flex items-center justify-center size-4">
-        {isRead ? (
-          <span className="size-2 rounded-full bg-transparent" />
-        ) : (
-          <span className="size-2 rounded-full bg-ir-primary" />
-        )}
-      </span>
-
+    <div
+      className={cn(
+        "group relative flex w-full items-start gap-3 rounded-ir-md border border-l-[3px] px-4 py-3.5 shadow-ir-xs transition-all duration-150 ease-ir-standard hover:shadow-ir-sm",
+        isRead
+          ? "border-ir-border border-l-transparent bg-ir-surface hover:bg-ir-muted-surface/40"
+          : "border-ir-primary/15 border-l-ir-primary bg-ir-primary/[0.045] hover:bg-ir-primary/[0.07]"
+      )}
+    >
       {/* Icon */}
       <span
-        className={`mt-0.5 shrink-0 flex size-7 items-center justify-center rounded-ir-sm ${
+        className={`mt-0.5 shrink-0 flex size-8 items-center justify-center rounded-ir-sm ${
           isRemoved
             ? "bg-ir-muted-surface/60 text-ir-muted/60"
-            : "bg-ir-muted-surface text-ir-muted"
+            : isRead
+              ? "bg-ir-muted-surface text-ir-muted"
+              : "bg-ir-primary/10 text-ir-primary"
         }`}
       >
-        <Icon className="size-3.5" />
+        <Icon className="size-4" />
       </span>
 
       {/* Content — the title itself is the single real navigation target,
@@ -113,9 +114,15 @@ export function NotificationItem({
           stays clickable without nesting interactive elements. */}
       <div className="flex-1 min-w-0 pr-14">
         <div className="flex items-start gap-2">
+          {!isRead && !isRemoved && (
+            <span
+              aria-hidden
+              className="mt-1.5 size-1.5 shrink-0 rounded-full bg-ir-primary"
+            />
+          )}
           {isRemoved ? (
             <button
-              className="cursor-pointer text-left text-sm leading-snug text-ir-muted after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
+              className="cursor-pointer text-left text-[15px] leading-snug text-ir-muted after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
               onClick={handleRemovedClick}
               type="button"
             >
@@ -123,9 +130,9 @@ export function NotificationItem({
             </button>
           ) : (
             <Link
-              className={`text-sm leading-snug after:absolute after:inset-0 after:content-[''] focus-visible:outline-none ${
+              className={`text-[15px] leading-snug after:absolute after:inset-0 after:content-[''] focus-visible:outline-none ${
                 isRead
-                  ? "font-normal text-ir-muted"
+                  ? "font-normal text-ir-body"
                   : "font-semibold text-ir-heading"
               }`}
               href={notification.link}
@@ -141,16 +148,16 @@ export function NotificationItem({
           )}
         </div>
         {notification.body && !isRemoved && (
-          <p className="mt-0.5 text-xs text-ir-muted line-clamp-1">
+          <p className="mt-1 text-sm leading-relaxed text-ir-muted line-clamp-2">
             {notification.body}
           </p>
         )}
         {isRemoved && (
-          <p className="mt-0.5 text-xs text-ir-muted/70">
+          <p className="mt-1 text-sm leading-relaxed text-ir-muted/70">
             {REMOVED_MESSAGE}
           </p>
         )}
-        <p className="mt-1 text-xs text-ir-muted/60">
+        <p className="mt-2 text-xs text-ir-muted/60">
           <RelativeTime
             date={notification.createdAt}
             options={{ addSuffix: true }}
@@ -160,7 +167,7 @@ export function NotificationItem({
 
       {/* Hover actions — Gmail-style: mark as read (unread only) + clear,
           layered above the stretched title link so they stay clickable. */}
-      <div className="absolute right-4 top-3.5 z-10 hidden items-center gap-1 group-hover:flex">
+      <div className="absolute right-3.5 top-3.5 z-10 hidden items-center gap-1 group-hover:flex">
         {!isRead && !isRemoved && (
           <button
             aria-label="Mark as read"

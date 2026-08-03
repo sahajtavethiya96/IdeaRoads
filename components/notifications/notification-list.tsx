@@ -1,5 +1,6 @@
 "use client";
 
+import { CheckCheck, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { NotificationEmptyState } from "@/components/notifications/notification-empty-state";
@@ -209,20 +210,22 @@ export function NotificationList({
             <>
               {unreadCount > 0 && (
                 <button
-                  className="shrink-0 whitespace-nowrap rounded-ir-button px-3 py-2 text-sm font-medium text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-ir-button px-3 py-2 text-sm font-medium text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={isPending}
                   onClick={handleMarkAllRead}
                   type="button"
                 >
+                  <CheckCheck className="size-3.5" />
                   Mark all as read
                 </button>
               )}
               <button
-                className="shrink-0 whitespace-nowrap rounded-ir-button px-3 py-2 text-sm font-medium text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-danger/10 hover:text-ir-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-ir-button px-3 py-2 text-sm font-medium text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-danger/10 hover:text-ir-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={isPending}
                 onClick={() => setClearConfirmOpen(true)}
                 type="button"
               >
+                <Trash2 className="size-3.5" />
                 Clear all
               </button>
             </>
@@ -230,7 +233,7 @@ export function NotificationList({
         }
         beforeActions={
           showToolbar ? (
-            <div className="flex shrink-0 items-center gap-0.5 rounded-ir-button border border-ir-border bg-ir-surface p-1">
+            <div className="flex shrink-0 items-center gap-0.5 rounded-ir-button border border-ir-border bg-ir-surface p-1 shadow-ir-xs">
               <button
                 className={cn(
                   "cursor-pointer rounded-ir-sm px-2.5 py-1.5 text-sm font-medium transition-colors duration-150 ease-ir-standard",
@@ -290,27 +293,32 @@ export function NotificationList({
           </p>
         </div>
       ) : (
-        <div>
+        <div className="pt-2 pb-6">
           {visibleGroups.map((group) => (
-            <div key={group.label}>
-              <p className="px-5 pt-4 pb-1.5 text-2xs font-semibold uppercase tracking-eyebrow text-muted-foreground/60">
-                {group.label}
-              </p>
-              {group.items.map((notification) => (
-                <NotificationItem
-                  key={notification.id}
-                  notification={notification}
-                  onRead={handleRead}
-                  onRequestClear={setClearTarget}
-                />
-              ))}
+            <div className="mb-2 mt-5 first:mt-0" key={group.label}>
+              <div className="mb-2.5 flex items-center gap-3">
+                <p className="shrink-0 text-2xs font-semibold uppercase tracking-eyebrow text-ir-muted">
+                  {group.label}
+                </p>
+                <span className="h-px flex-1 bg-ir-border" />
+              </div>
+              <div className="space-y-2">
+                {group.items.map((notification) => (
+                  <NotificationItem
+                    key={notification.id}
+                    notification={notification}
+                    onRead={handleRead}
+                    onRequestClear={setClearTarget}
+                  />
+                ))}
+              </div>
             </div>
           ))}
 
           {hasMore && filter === "all" && (
-            <div className="px-5 py-4 text-center">
+            <div className="pt-2 pb-2 text-center">
               <button
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                className="cursor-pointer text-sm text-muted-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={isPending}
                 onClick={handleLoadMore}
                 type="button"
