@@ -1,12 +1,11 @@
 import { notFound } from "next/navigation";
 import { SetPageHeader } from "@/components/workspace/topbar";
-import { WORKSPACE_MEMBER, WORKSPACE_OWNER } from "@/config/platform";
+import { WORKSPACE_MEMBER } from "@/config/platform";
 import { requireSession } from "@/lib/authz";
 import {
   getWorkspaceBySlug,
   getWorkspaceMember,
 } from "@/lib/workspaces/queries";
-import { InviteMemberButton } from "./_components/invite-member-button";
 
 interface Props {
   children: React.ReactNode;
@@ -34,12 +33,6 @@ export default async function MembersSettingsLayout({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <SetPageHeader
-        actions={
-          <InviteMemberButton
-            canInviteAdmin={actorMember.role === WORKSPACE_OWNER}
-            workspaceId={workspace.id}
-          />
-        }
         description="Manage workspace membership and invitations."
         title="Team Members"
       />

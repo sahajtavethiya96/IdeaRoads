@@ -1,6 +1,6 @@
 import { and, asc, eq } from "drizzle-orm";
 import { cache } from "react";
-import { workspaceMembers, workspaces } from "@/db/schema";
+import { user, workspaceMembers, workspaces } from "@/db/schema";
 import { db } from "@/lib/db";
 
 // Wrapped in React cache(): generateMetadata and the page body both resolve the
@@ -13,6 +13,18 @@ export const getWorkspaceBySlug = cache(async (slug: string) => {
     .limit(1);
   return workspace ?? null;
 });
+
+export async function getWorkspaceOwnerName(ownerId: string | null) {
+  if (!ownerId) {
+    return null;
+  }
+  const [owner] = await db
+    .select({ name: user.name })
+    .from(user)
+    .where(eq(user.id, ownerId))
+    .limit(1);
+  return owner?.name ?? null;
+}
 
 export async function getWorkspaceMember(workspaceId: string, userId: string) {
   const [member] = await db

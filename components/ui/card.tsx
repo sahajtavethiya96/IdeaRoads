@@ -37,7 +37,7 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-ir-card border border-ir-border bg-ir-surface py-(--card-spacing) text-sm text-ir-body shadow-ir-xs transition-shadow duration-150 ease-ir-standard hover:shadow-ir-sm [--card-spacing:--spacing(6)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(4)] *:[img:first-child]:rounded-t-ir-card *:[img:last-child]:rounded-b-ir-card",
+        "card group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-box border border-base-300 bg-base-100 py-(--card-spacing) text-sm text-base-content shadow-ir-xs transition-shadow duration-150 ease-ir-standard hover:shadow-ir-sm [--card-spacing:--spacing(6)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(4)] *:[img:first-child]:rounded-t-box *:[img:last-child]:rounded-b-box",
         className
       )}
       transition={{ duration: 0.15, ease: "easeOut" }}
@@ -65,7 +65,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-title"
       className={cn(
-        "font-heading text-lg font-semibold tracking-ui text-ir-heading uppercase",
+        "card-title font-heading text-lg font-semibold tracking-ui text-base-content uppercase",
         className
       )}
       {...props}
@@ -77,7 +77,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("text-sm leading-relaxed text-ir-muted", className)}
+      className={cn("text-sm leading-relaxed text-base-content/60", className)}
       {...props}
     />
   )

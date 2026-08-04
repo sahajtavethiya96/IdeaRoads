@@ -29,6 +29,7 @@ import { getActiveWorkspaceStatuses } from "@/lib/workspace-statuses/queries";
 import {
   getWorkspaceBySlug,
   getWorkspaceMember,
+  getWorkspaceOwnerName,
 } from "@/lib/workspaces/queries";
 
 interface Props {
@@ -85,6 +86,7 @@ export default async function WorkspaceDashboardPage({
     recentActivity,
     newestPosts,
     workspaceStatuses,
+    ownerName,
   ] = await Promise.all([
     getWorkspaceBoard(workspace.id),
     db
@@ -109,6 +111,7 @@ export default async function WorkspaceDashboardPage({
       limit: 5,
     }),
     getActiveWorkspaceStatuses(workspace.id),
+    getWorkspaceOwnerName(workspace.ownerId),
   ]);
 
   const addFeedbackHref = board ? `/${slug}/feedback/new` : null;
@@ -124,11 +127,23 @@ export default async function WorkspaceDashboardPage({
         {/* Workspace Overview */}
         <WorkspaceOverviewCard
           boardIsPublic={board?.isPublic ?? null}
+          categoriesCount={categories.length}
+          changelogPublic={workspace.changelogPublic}
           createdAt={workspace.createdAt}
           description={workspace.description}
+          isSuspended={workspace.isSuspended}
           logoUrl={workspace.logoUrl}
           memberCount={memberCount}
           name={workspace.name}
+          ownerName={ownerName}
+          postsCount={Object.values(statusCounts).reduce(
+            (total, count) => total + count,
+            0
+          )}
+          roadmapPublic={workspace.roadmapPublic}
+          slug={workspace.slug}
+          statusesCount={workspaceStatuses.length}
+          updatedAt={workspace.updatedAt}
         />
 
         {/* Quick Actions */}

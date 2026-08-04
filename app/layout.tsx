@@ -40,6 +40,7 @@ export default function RootLayout({
         GeistSans.variable,
         GeistMono.variable
       )}
+      data-theme="idearoads"
       lang="en"
     >
       <body suppressHydrationWarning>

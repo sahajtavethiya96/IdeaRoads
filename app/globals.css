@@ -3,6 +3,49 @@
 @import "shadcn/tailwind.css";
 @import "./design-tokens.css";
 
+/* DaisyUI — single custom theme whose colors are indirected through the
+   existing --ir-* tokens (design-tokens.css), which already flip values
+   under the .dark class via next-themes. No second daisyui theme or
+   prefersdark logic is needed: the var() references pick up dark values
+   automatically wherever the .dark class is present. */
+@plugin "daisyui" {
+  themes: idearoads --default;
+}
+
+@plugin "daisyui/theme" {
+  name: "idearoads";
+  default: true;
+  color-scheme: light;
+  --color-base-100: var(--ir-surface);
+  --color-base-200: var(--ir-muted-surface);
+  --color-base-300: var(--ir-border);
+  --color-base-content: var(--ir-text-heading);
+  --color-primary: var(--ir-primary);
+  --color-primary-content: var(--ir-primary-foreground);
+  --color-secondary: var(--ir-text-body);
+  --color-secondary-content: var(--ir-surface);
+  --color-accent: var(--ir-primary-light);
+  --color-accent-content: var(--ir-text-heading);
+  --color-neutral: var(--ir-text-heading);
+  --color-neutral-content: var(--ir-surface);
+  --color-info: var(--info);
+  --color-info-content: #ffffff;
+  --color-success: var(--ir-success);
+  --color-success-content: var(--ir-success-foreground);
+  --color-warning: var(--ir-warning);
+  --color-warning-content: var(--ir-warning-foreground);
+  --color-error: var(--ir-danger);
+  --color-error-content: var(--ir-danger-foreground);
+  --radius-selector: var(--radius-ir-sm);
+  --radius-field: var(--radius-ir-sm);
+  --radius-box: var(--radius-ir-card);
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 * {
@@ -67,13 +110,13 @@ body {
   /* Page & brand */
   --color-page: var(--page);
 
-  /* Semantic status */
-  --color-success: var(--success);
+  /* Semantic status — --color-success/-warning/-info deliberately omitted:
+     DaisyUI's theme (below) owns those exact token names for
+     already-migrated components. Only the non-colliding derived tokens
+     stay mapped here for components not yet converted. */
   --color-success-foreground: var(--success-foreground);
   --color-success-subtle: var(--success-subtle);
   --color-success-light: var(--success-light);
-  --color-warning: var(--warning);
-  --color-info: var(--info);
 
   /* Shadcn core */
   --color-sidebar-ring: var(--sidebar-ring);
@@ -93,14 +136,14 @@ body {
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  /* --color-accent and --color-primary omitted for the same reason as the
+     status colors above — DaisyUI's theme owns those names now. */
   --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
+  /* --color-secondary omitted — collides with DaisyUI's theme too. */
   --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
