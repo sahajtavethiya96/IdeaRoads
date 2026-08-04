@@ -323,7 +323,7 @@ export function WorkspaceSidebar({
   if (isMobile) {
     return (
       <Sheet onOpenChange={setMobileOpen} open={mobileOpen}>
-        <div className="flex h-14 shrink-0 items-center gap-3 border-b border-sidebar-border bg-sidebar px-4">
+        <div className="flex h-14 shrink-0 items-center gap-3 border-b border-sidebar-border bg-sidebar px-4 text-sidebar-foreground">
           <SheetTrigger asChild>
             <motion.button
               aria-label="Open navigation"
@@ -343,7 +343,7 @@ export function WorkspaceSidebar({
         </div>
 
         <SheetContent
-          className="flex w-72 flex-col border-sidebar-border bg-sidebar p-0"
+          className="flex w-72 flex-col border-sidebar-border bg-sidebar p-0 text-sidebar-foreground"
           showCloseButton={false}
           side="left"
         >
@@ -360,7 +360,7 @@ export function WorkspaceSidebar({
   return (
     <aside
       className={cn(
-        "relative flex h-screen shrink-0 flex-col border-r border-sidebar-border bg-sidebar transition-[width] duration-150 ease-ir-standard",
+        "relative flex h-screen shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200 ease-ir-standard will-change-[width]",
         collapsed ? "w-16" : "w-56 lg:w-60"
       )}
     >

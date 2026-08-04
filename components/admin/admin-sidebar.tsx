@@ -125,7 +125,7 @@ function SidebarEdgeToggle({
   return (
     <button
       aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-      className="-right-3 absolute top-14 z-20 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-ir-border bg-card text-ir-muted shadow-ir-xs transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+      className="-right-3 absolute top-14 z-30 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-ir-border bg-card text-ir-muted shadow-ir-xs transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
       onClick={onClick}
       title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
       type="button"
@@ -359,7 +359,7 @@ export function AdminSidebar({
   return (
     <aside
       className={cn(
-        "relative flex h-screen shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-150 ease-ir-standard",
+        "relative flex h-screen shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200 ease-ir-standard will-change-[width]",
         effectiveCollapsed ? "w-16" : "w-64 lg:w-72"
       )}
     >
