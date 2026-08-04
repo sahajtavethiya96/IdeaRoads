@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { NotificationEmptyState } from "@/components/notifications/notification-empty-state";
 import { NotificationItem } from "@/components/notifications/notification-item";
 import { useNotificationsContext } from "@/components/notifications/notifications-context";
+import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { SetPageHeader } from "@/components/workspace/topbar";
 import type { NotificationListItem } from "@/lib/notifications/queries";
@@ -208,35 +209,45 @@ export function NotificationList({
           showToolbar ? (
             <>
               {unreadCount > 0 && (
-                <button
-                  className="shrink-0 whitespace-nowrap rounded-ir-button px-3 py-2 text-sm font-medium text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:cursor-not-allowed disabled:opacity-50"
+                <Button
+                  className="h-11 min-h-11 min-w-[96px] rounded-lg px-5 py-0 text-sm font-medium normal-case hover:border-primary/30 hover:bg-base-200 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   disabled={isPending}
                   onClick={handleMarkAllRead}
+                  size="sm"
                   type="button"
+                  variant="ghost"
                 >
                   Mark all as read
-                </button>
+                </Button>
               )}
-              <button
-                className="shrink-0 whitespace-nowrap rounded-ir-button px-3 py-2 text-sm font-medium text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-danger/10 hover:text-ir-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:cursor-not-allowed disabled:opacity-50"
+              <Button
+                className="h-11 min-h-11 min-w-[96px] rounded-lg px-5 py-0 text-sm font-medium normal-case hover:bg-ir-danger/10 hover:text-ir-danger focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 disabled={isPending}
                 onClick={() => setClearConfirmOpen(true)}
+                size="sm"
                 type="button"
+                variant="ghost"
               >
                 Clear all
-              </button>
+              </Button>
             </>
           ) : undefined
         }
         beforeActions={
           showToolbar ? (
-            <div className="flex shrink-0 items-center gap-0.5 rounded-ir-button border border-ir-border bg-ir-surface p-1">
+            // biome-ignore lint/a11y/useSemanticElements: a <fieldset> pulls in native form/legend semantics that don't fit a standalone toggle group outside a <form>
+            <div
+              aria-label="Filter notifications"
+              className="join shrink-0"
+              role="group"
+            >
               <button
+                aria-pressed={filter === "all"}
                 className={cn(
-                  "cursor-pointer rounded-ir-sm px-2.5 py-1.5 text-sm font-medium transition-colors duration-150 ease-ir-standard",
+                  "join-item btn h-11 min-h-11 min-w-[96px] shrink-0 cursor-pointer justify-center rounded-lg px-5 py-0 text-sm font-medium whitespace-nowrap normal-case shadow-none transition-all duration-200 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                   filter === "all"
-                    ? "bg-ir-muted-surface text-ir-heading"
-                    : "text-ir-muted hover:text-ir-heading"
+                    ? "btn-primary"
+                    : "btn-outline border-base-300 bg-base-100 text-ir-muted hover:border-primary/30 hover:bg-base-200 hover:text-ir-heading"
                 )}
                 onClick={() => setFilter("all")}
                 type="button"
@@ -244,18 +255,26 @@ export function NotificationList({
                 All
               </button>
               <button
+                aria-pressed={filter === "unread"}
                 className={cn(
-                  "flex cursor-pointer items-center gap-1.5 rounded-ir-sm px-2.5 py-1.5 text-sm font-medium transition-colors duration-150 ease-ir-standard",
+                  "join-item btn flex h-11 min-h-11 min-w-[96px] shrink-0 cursor-pointer items-center justify-center rounded-lg px-5 py-0 text-sm font-medium whitespace-nowrap normal-case shadow-none transition-all duration-200 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                   filter === "unread"
-                    ? "bg-ir-muted-surface text-ir-heading"
-                    : "text-ir-muted hover:text-ir-heading"
+                    ? "btn-primary"
+                    : "btn-outline border-base-300 bg-base-100 text-ir-muted hover:border-primary/30 hover:bg-base-200 hover:text-ir-heading"
                 )}
                 onClick={() => setFilter("unread")}
                 type="button"
               >
                 Unread
                 {unreadCount > 0 && (
-                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-ir-primary/15 px-1 text-2xs font-semibold text-ir-primary">
+                  <span
+                    className={cn(
+                      "badge badge-sm ml-2 h-auto min-w-4 rounded-md border-transparent px-1 text-2xs font-semibold",
+                      filter === "unread"
+                        ? "bg-primary-content/20 text-primary-content"
+                        : "badge-primary bg-primary/15 text-primary"
+                    )}
+                  >
                     {unreadCount}
                   </span>
                 )}
@@ -284,39 +303,42 @@ export function NotificationList({
       {items.length === 0 ? (
         <NotificationEmptyState />
       ) : visibleGroups.length === 0 ? (
-        <div className="px-5 py-16 text-center">
-          <p className="text-sm text-muted-foreground">
+        <div className="px-1 py-16 text-center">
+          <p className="text-sm text-ir-muted">
             You're all caught up — no unread notifications.
           </p>
         </div>
       ) : (
-        <div>
+        <div className="px-1 pb-2">
           {visibleGroups.map((group) => (
-            <div key={group.label}>
-              <p className="px-5 pt-4 pb-1.5 text-2xs font-semibold uppercase tracking-eyebrow text-muted-foreground/60">
+            <div className="mt-8 first:mt-4" key={group.label}>
+              <p className="mb-3 px-1 text-xs font-semibold tracking-widest text-base-content/50 uppercase">
                 {group.label}
               </p>
-              {group.items.map((notification) => (
-                <NotificationItem
-                  key={notification.id}
-                  notification={notification}
-                  onRead={handleRead}
-                  onRequestClear={setClearTarget}
-                />
-              ))}
+              <div className="flex flex-col gap-2">
+                {group.items.map((notification) => (
+                  <NotificationItem
+                    key={notification.id}
+                    notification={notification}
+                    onRead={handleRead}
+                    onRequestClear={setClearTarget}
+                  />
+                ))}
+              </div>
             </div>
           ))}
 
           {hasMore && filter === "all" && (
-            <div className="px-5 py-4 text-center">
-              <button
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+            <div className="pt-6 text-center">
+              <Button
                 disabled={isPending}
                 onClick={handleLoadMore}
+                size="sm"
                 type="button"
+                variant="outline"
               >
                 {isPending ? "Loading…" : "Load more"}
-              </button>
+              </Button>
             </div>
           )}
         </div>

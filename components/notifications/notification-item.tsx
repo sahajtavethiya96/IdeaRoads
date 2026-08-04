@@ -19,6 +19,7 @@ import { useNotificationsContext } from "@/components/notifications/notification
 import { RelativeTime } from "@/components/ui/relative-time";
 import type { NotificationType } from "@/db/schema/notifications";
 import type { NotificationListItem } from "@/lib/notifications/queries";
+import { cn } from "@/lib/utils";
 
 const TYPE_ICONS: Record<NotificationType, React.ElementType> = {
   new_post: FileText,
@@ -87,35 +88,42 @@ export function NotificationItem({
   }
 
   return (
-    <div className="group relative flex w-full items-start gap-3 px-5 py-3.5 border-b border-border bg-background transition-colors hover:bg-muted/40">
-      {/* Unread indicator */}
-      <span className="mt-1 shrink-0 flex items-center justify-center size-4">
-        {isRead ? (
-          <span className="size-2 rounded-full bg-transparent" />
-        ) : (
-          <span className="size-2 rounded-full bg-primary" />
-        )}
-      </span>
-
+    <article
+      className={cn(
+        "group relative flex items-center gap-4 rounded-ir-lg border-t border-r border-b border-l-4 border-ir-border bg-ir-surface p-4 shadow-ir-xs transition-all duration-200 ease-ir-standard",
+        "hover:-translate-y-0.5 hover:border-t-ir-primary/30 hover:border-r-ir-primary/30 hover:border-b-ir-primary/30 hover:shadow-ir-md",
+        "has-[:focus-visible]:-translate-y-0.5 has-[:focus-visible]:shadow-ir-md has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ir-primary/40 has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-ir-background",
+        isRead
+          ? "border-l-transparent"
+          : "border-l-ir-primary bg-ir-primary/5"
+      )}
+    >
       {/* Icon */}
       <span
-        className={`mt-0.5 shrink-0 flex size-7 items-center justify-center rounded-ir-sm ${
+        className={cn(
+          "relative flex size-12 shrink-0 items-center justify-center rounded-xl",
           isRemoved
-            ? "bg-muted/60 text-muted-foreground/60"
-            : "bg-muted text-muted-foreground"
-        }`}
+            ? "bg-base-200 text-base-content/40"
+            : "bg-base-200 text-base-content/70"
+        )}
       >
-        <Icon className="size-3.5" />
+        <Icon className="size-5" />
+        {!isRead && !isRemoved && (
+          <span
+            aria-hidden="true"
+            className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-ir-primary ring-2 ring-ir-surface"
+          />
+        )}
       </span>
 
       {/* Content — the title itself is the single real navigation target,
           stretched via ::after to cover the whole row so the entire row
           stays clickable without nesting interactive elements. */}
-      <div className="flex-1 min-w-0 pr-14">
+      <div className="min-w-0 flex-1 pr-16">
         <div className="flex items-start gap-2">
           {isRemoved ? (
             <button
-              className="cursor-pointer text-left text-sm leading-snug text-muted-foreground after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
+              className="cursor-pointer text-left text-base font-semibold leading-snug text-ir-muted after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
               onClick={handleRemovedClick}
               type="button"
             >
@@ -123,11 +131,10 @@ export function NotificationItem({
             </button>
           ) : (
             <Link
-              className={`text-sm leading-snug after:absolute after:inset-0 after:content-[''] focus-visible:outline-none ${
-                isRead
-                  ? "font-normal text-muted-foreground"
-                  : "font-semibold text-foreground"
-              }`}
+              className={cn(
+                "text-base leading-snug font-semibold after:absolute after:inset-0 after:content-[''] focus-visible:outline-none",
+                isRead ? "text-base-content/60" : "text-ir-heading"
+              )}
               href={notification.link}
               onClick={markRead}
             >
@@ -135,22 +142,22 @@ export function NotificationItem({
             </Link>
           )}
           {isRemoved && (
-            <span className="mt-0.5 shrink-0 rounded-full bg-muted px-2 py-0.5 text-2xs font-medium uppercase tracking-wide text-muted-foreground">
+            <span className="badge mt-0.5 h-auto shrink-0 border-transparent bg-ir-muted-surface px-2 py-0.5 text-2xs font-medium tracking-wide text-ir-muted uppercase">
               Removed
             </span>
           )}
         </div>
         {notification.body && !isRemoved && (
-          <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">
+          <p className="mt-1 line-clamp-1 text-sm text-base-content/70">
             {notification.body}
           </p>
         )}
         {isRemoved && (
-          <p className="mt-0.5 text-xs text-muted-foreground/70">
+          <p className="mt-1 text-sm text-base-content/60">
             {REMOVED_MESSAGE}
           </p>
         )}
-        <p className="mt-1 text-xs text-muted-foreground/60">
+        <p className="mt-1.5 text-xs text-base-content/60">
           <RelativeTime
             date={notification.createdAt}
             options={{ addSuffix: true }}
@@ -160,11 +167,11 @@ export function NotificationItem({
 
       {/* Hover actions — Gmail-style: mark as read (unread only) + clear,
           layered above the stretched title link so they stay clickable. */}
-      <div className="absolute right-4 top-3.5 z-10 hidden items-center gap-1 group-hover:flex">
+      <div className="absolute top-1/2 right-4 z-10 hidden -translate-y-1/2 items-center gap-1 group-hover:flex">
         {!isRead && !isRemoved && (
           <button
             aria-label="Mark as read"
-            className="flex size-7 cursor-pointer items-center justify-center rounded-ir-sm text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex size-7 cursor-pointer items-center justify-center rounded-ir-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
             onClick={handleMarkReadClick}
             title="Mark as read"
             type="button"
@@ -174,7 +181,7 @@ export function NotificationItem({
         )}
         <button
           aria-label="Remove notification"
-          className="flex size-7 cursor-pointer items-center justify-center rounded-ir-sm text-muted-foreground transition-colors hover:bg-background hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex size-7 cursor-pointer items-center justify-center rounded-ir-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-danger/10 hover:text-ir-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
           onClick={handleRequestClear}
           title="Remove notification"
           type="button"
@@ -182,6 +189,6 @@ export function NotificationItem({
           <Trash2 className="size-3.5" />
         </button>
       </div>
-    </div>
+    </article>
   );
 }

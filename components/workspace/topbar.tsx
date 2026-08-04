@@ -154,7 +154,7 @@ export function Topbar() {
             <p className="mt-1 text-sm text-ir-muted">{header.description}</p>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-3">
           {/* display:contents so an empty container never eats a flex gap
               slot before its portaled content (if any) arrives. */}
           <div className="contents" ref={setBeforeActionsSlot} />

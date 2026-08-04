@@ -6,7 +6,7 @@ import {
   DialogBackdrop,
   DialogPanel,
 } from "@headlessui/react"
-import { XIcon } from "@phosphor-icons/react"
+import { X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -183,22 +183,21 @@ function DialogContent({
           data-slot="dialog-content"
           transition
           className={cn(
-            "grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] gap-6 overflow-y-auto rounded-box border border-base-300 bg-base-100 p-6 text-sm text-base-content shadow-ir-xl duration-100 data-closed:scale-95 data-closed:opacity-0 sm:max-w-md",
+            "relative grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] gap-6 overflow-y-auto rounded-box border border-base-300 bg-base-100 p-6 text-sm text-base-content shadow-ir-xl duration-100 data-closed:scale-95 data-closed:opacity-0 sm:max-w-md",
             className
           )}
           {...props}
         >
           {children}
           {showCloseButton && (
-            <Button
-              className="absolute top-5 right-5 bg-base-200"
+            <button
+              aria-label="Close dialog"
+              className="absolute top-4 right-4 flex size-10 shrink-0 items-center justify-center rounded-lg border border-base-300 bg-base-100 p-0 leading-none text-base-content/70 shadow-sm transition-all duration-200 hover:bg-base-200 hover:text-base-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               onClick={() => setOpen(false)}
-              size="icon-sm"
-              variant="ghost"
+              type="button"
             >
-              <XIcon />
-              <span className="sr-only">Close</span>
-            </Button>
+              <X className="m-0 size-4 shrink-0 p-0" strokeWidth={2} />
+            </button>
           )}
         </DialogPanel>
       </div>

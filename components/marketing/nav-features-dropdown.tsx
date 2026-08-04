@@ -6,9 +6,15 @@ import {
   ChartBarIcon,
   SquaresFourIcon,
 } from "@phosphor-icons/react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const FEATURE_LINKS = [
   {
@@ -36,88 +42,57 @@ export function NavFeaturesDropdown() {
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <div
-      className="relative"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
-      {/* Trigger */}
-      <button
-        aria-expanded={open}
-        aria-haspopup="true"
-        className="flex items-center gap-1 rounded-ir-sm px-3 py-2 text-xs font-semibold tracking-ui text-ir-muted uppercase transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface hover:text-ir-heading"
-        onKeyDown={(e) => {
-          if (e.key === "Escape") {
-            setOpen(false);
-          }
-          if (e.key === "Enter" || e.key === " ") {
-            setOpen((v) => !v);
-          }
-        }}
-        type="button"
-      >
+    <DropdownMenu onOpenChange={setOpen} open={open}>
+      <DropdownMenuTrigger className="flex items-center gap-1 rounded-ir-sm px-3 py-2 text-xs font-semibold tracking-ui text-ir-muted uppercase transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface hover:text-ir-heading">
         Features
-        <CaretDownIcon
-          aria-hidden="true"
-          className={`size-3.5 transition-transform duration-150 ease-ir-standard ${open ? "-rotate-180" : ""}`}
-        />
-      </button>
+        <motion.span
+          animate={{ rotate: open ? 180 : 0 }}
+          className="flex"
+          transition={{
+            duration: shouldReduceMotion ? 0 : 0.15,
+            ease: "easeOut",
+          }}
+        >
+          <CaretDownIcon aria-hidden="true" className="size-3.5" />
+        </motion.span>
+      </DropdownMenuTrigger>
 
-      {/* Dropdown panel — same fade/zoom treatment as the app's Radix-based
-          overlays (Select/DropdownMenu/Popover), so it feels like the same
-          dropdown system despite being hover-triggered rather than click. */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="absolute top-full left-0 z-50 mt-2 w-72 origin-top-left rounded-ir-md border border-ir-border bg-ir-surface shadow-ir-lg"
-            exit={
-              shouldReduceMotion
-                ? undefined
-                : { opacity: 0, scale: 0.95, y: -4 }
-            }
-            initial={
-              shouldReduceMotion ? false : { opacity: 0, scale: 0.95, y: -4 }
-            }
-            transition={{ duration: 0.15, ease: "easeOut" }}
+      <DropdownMenuContent
+        align="start"
+        className="w-72 p-1.5"
+        sideOffset={8}
+      >
+        {FEATURE_LINKS.map(({ icon: Icon, label, tagline, href }) => (
+          <DropdownMenuItem
+            asChild
+            className="items-start gap-3 px-3 py-3 font-normal normal-case tracking-normal not-last:mb-0"
+            key={label}
           >
-            {/* Feature links */}
-            <div className="p-1.5">
-              {FEATURE_LINKS.map(({ icon: Icon, label, tagline, href }) => (
-                <Link
-                  className="flex items-start gap-3 rounded-ir-sm px-3 py-3 transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface"
-                  href={href}
-                  key={label}
-                  onClick={() => setOpen(false)}
-                >
-                  <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-ir-sm bg-ir-primary-light/15 text-ir-primary">
-                    <Icon aria-hidden="true" className="size-3.5" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-ir-heading">
-                      {label}
-                    </p>
-                    <p className="mt-0.5 text-xs leading-4 text-ir-muted">
-                      {tagline}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            <Link href={href}>
+              <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-ir-sm bg-ir-primary-light/15 text-ir-primary">
+                <Icon aria-hidden="true" className="size-3.5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-ir-heading">
+                  {label}
+                </p>
+                <p className="mt-0.5 text-xs leading-4 font-normal text-ir-muted">
+                  {tagline}
+                </p>
+              </div>
+            </Link>
+          </DropdownMenuItem>
+        ))}
 
-            {/* Footer link */}
-            <div className="border-t border-ir-border px-4 py-3">
-              <Link
-                className="text-xs font-semibold tracking-ui text-ir-muted uppercase transition-colors duration-150 ease-ir-standard hover:text-ir-heading"
-                href="/features"
-                onClick={() => setOpen(false)}
-              >
-                All Features →
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+        <div className="-mx-1.5 -mb-1.5 mt-1 border-t border-ir-border px-4 py-3">
+          <DropdownMenuItem
+            asChild
+            className="p-0 font-semibold tracking-ui text-ir-muted data-focus:bg-transparent hover:text-ir-heading"
+          >
+            <Link href="/features">All Features →</Link>
+          </DropdownMenuItem>
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

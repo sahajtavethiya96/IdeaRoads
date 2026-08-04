@@ -172,35 +172,23 @@ function AuthFormInner({
       <div className="grid w-full max-w-3xl overflow-hidden rounded-ir-xl border border-ir-border bg-ir-surface shadow-ir-lg lg:grid-cols-2">
         {/* Left — sign-in form */}
         <div className="flex flex-col justify-center px-6 py-8 sm:px-8 sm:py-10 lg:px-10">
-          {/* Inside the embed widget's iframe, this logo would otherwise
-              navigate the whole panel to the marketing homepage — render it
-              as plain branding, not a link, when embedded. */}
-          {isEmbedded ? (
-            <div className="mb-6 flex justify-center lg:justify-start">
-              <Image
-                alt={PRODUCT_NAME}
-                className="h-9 w-auto"
-                height={164}
-                priority
-                src={LOGO_PATH}
-                width={500}
-              />
-            </div>
-          ) : (
-            <Link
-              className="mb-6 flex justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 lg:justify-start"
-              href="/"
-            >
-              <Image
-                alt={PRODUCT_NAME}
-                className="h-9 w-auto"
-                height={164}
-                priority
-                src={LOGO_PATH}
-                width={500}
-              />
-            </Link>
-          )}
+          {/* Inside the embed widget's iframe, a plain click would navigate
+              just the small iframe to the marketing homepage — target
+              `_top` so it opens in the parent window instead. */}
+          <Link
+            className="mb-6 flex justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 lg:justify-start"
+            href="/"
+            target={isEmbedded ? "_top" : undefined}
+          >
+            <Image
+              alt={PRODUCT_NAME}
+              className="h-9 w-auto"
+              height={164}
+              priority
+              src={LOGO_PATH}
+              width={500}
+            />
+          </Link>
 
           <h1 className="text-xl font-bold text-ir-heading sm:text-2xl">
             {sent ? "Check your email" : "Welcome back"}

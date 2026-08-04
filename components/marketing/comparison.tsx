@@ -64,55 +64,56 @@ export function Comparison() {
 
         <div className="mt-12 overflow-x-auto">
           <div className="min-w-120 overflow-hidden rounded-ir-lg border border-ir-border bg-ir-surface shadow-ir-xs">
-            {/* Table header */}
-            <div className="grid grid-cols-3">
-              <div className="border-b border-ir-border bg-ir-muted-surface px-4 py-3">
-                <span className="text-2xs font-semibold tracking-ui text-ir-muted uppercase">
-                  Feature
-                </span>
-              </div>
-              <div className="border-b border-l border-ir-border bg-ir-primary px-4 py-3">
-                <span className="text-2xs font-semibold tracking-ui text-ir-primary-foreground uppercase">
-                  IdeaRoads
-                </span>
-              </div>
-              <div className="border-b border-l border-ir-border bg-ir-muted-surface px-4 py-3">
-                <span className="text-2xs font-semibold tracking-ui text-ir-muted uppercase">
-                  Canny
-                </span>
-              </div>
-            </div>
-
-            {/* Table rows */}
-            {ROWS.map(({ feature, ir, canny, check }) => (
-              <div
-                className="grid grid-cols-3 border-b border-ir-border last:border-b-0"
-                key={feature}
-              >
-                <div className="px-4 py-3">
-                  <span className="text-sm font-medium text-ir-heading">
-                    {feature}
-                  </span>
-                </div>
-                <div className="border-l border-ir-border px-4 py-3">
-                  {check ? (
-                    <span className="text-sm font-semibold text-ir-success">
-                      ✓ {ir}
-                    </span>
-                  ) : (
-                    <span className="text-sm font-semibold text-ir-heading">
-                      {ir}
-                    </span>
-                  )}
-                </div>
-                <div className="border-l border-ir-border px-4 py-3">
-                  <span className="text-sm text-ir-muted">
-                    {check ? "✗ " : ""}
-                    {canny}
-                  </span>
-                </div>
-              </div>
-            ))}
+            <table className="table w-full">
+              <caption className="sr-only">
+                Feature comparison of IdeaRoads versus Canny
+              </caption>
+              <thead>
+                <tr>
+                  <th className="border-b border-ir-border bg-ir-muted-surface px-4 py-3 text-2xs font-semibold tracking-ui text-ir-muted uppercase">
+                    Feature
+                  </th>
+                  <th className="border-b border-l border-ir-border bg-ir-primary px-4 py-3 text-2xs font-semibold tracking-ui text-ir-primary-foreground uppercase">
+                    IdeaRoads
+                  </th>
+                  <th className="border-b border-l border-ir-border bg-ir-muted-surface px-4 py-3 text-2xs font-semibold tracking-ui text-ir-muted uppercase">
+                    Canny
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {ROWS.map(({ feature, ir, canny, check }, index) => {
+                  const rowBorder =
+                    index === ROWS.length - 1 ? "" : "border-b border-ir-border";
+                  return (
+                    <tr key={feature}>
+                      <td className={`px-4 py-3 text-sm font-medium text-ir-heading ${rowBorder}`}>
+                        {feature}
+                      </td>
+                      <td
+                        className={`border-l border-ir-border px-4 py-3 ${rowBorder}`}
+                      >
+                        {check ? (
+                          <span className="text-sm font-semibold text-ir-success">
+                            ✓ {ir}
+                          </span>
+                        ) : (
+                          <span className="text-sm font-semibold text-ir-heading">
+                            {ir}
+                          </span>
+                        )}
+                      </td>
+                      <td
+                        className={`border-l border-ir-border px-4 py-3 text-sm text-ir-muted ${rowBorder}`}
+                      >
+                        {check ? "✗ " : ""}
+                        {canny}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
 

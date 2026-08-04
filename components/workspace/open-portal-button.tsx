@@ -72,7 +72,7 @@ export function OpenPortalButton({
   return (
     <a
       aria-label="Open Public Portal"
-      className="flex shrink-0 items-center gap-1.5 rounded-ir-button border border-ir-border px-3 py-2 text-sm font-medium whitespace-nowrap text-ir-heading transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 sm:px-3.5"
+      className="flex h-11 min-h-11 min-w-[96px] shrink-0 items-center justify-center gap-1.5 rounded-lg border border-base-300 px-5 py-0 text-sm font-medium whitespace-nowrap text-ir-heading transition-all duration-200 hover:border-primary/30 hover:bg-base-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       href={href}
       rel="noopener noreferrer"
       target="_blank"
