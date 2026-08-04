@@ -77,7 +77,7 @@ export function FeedbackFilters({
   const activeCategories = categories.filter((c) => !c.isArchived);
 
   return (
-    <div className="flex flex-col gap-0">
+    <div className="flex shrink-0 flex-col gap-0">
       {/* Sort tabs */}
       <div className="flex flex-wrap items-center border-b border-ir-border px-4 sm:px-8">
         <div className="flex">

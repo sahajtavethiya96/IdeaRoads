@@ -132,7 +132,11 @@ export default async function FeedbackPage({ params, searchParams }: Props) {
   };
 
   return (
-    <div className="flex flex-col">
+    // Fills the remaining height below Topbar (sticky inside the workspace
+    // shell's scrolling <main>) so this page never itself grows taller than
+    // the viewport — that's what keeps the filters below from scrolling
+    // away and leaves the table as the only region that scrolls.
+    <div className="flex min-h-0 flex-1 flex-col">
       <SetPageHeader
         actions={
           board ? (
@@ -148,6 +152,8 @@ export default async function FeedbackPage({ params, searchParams }: Props) {
         title="All Feedback"
       />
 
+      {/* Sits outside the scroll region below (shrink-0), so it stays in
+          view without needing sticky offsets. */}
       <FeedbackFilters
         activeCategoryId={validCategoryId}
         activeDraft={validDraft}
@@ -158,31 +164,41 @@ export default async function FeedbackPage({ params, searchParams }: Props) {
         workspaceStatuses={workspaceStatuses}
       />
 
-      <PageBody>
-        {/* No overflow-hidden here: BulkActionBar (rendered by PostsTable)
-            sticks to the viewport bottom while the page scrolls, which an
-            overflow-hidden ancestor would clip. */}
-        <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
-          <PostsTable
-            categories={categories}
-            enableBulkActions
-            isAdminOrOwner={isAdminOrOwner}
-            isMember={true}
-            isSignedIn={true}
-            mergedIntoHref={(post) =>
-              post.mergedIntoId
-                ? `/${slug}/feedback/${post.mergedIntoId}`
-                : null
-            }
-            postHref={(post) => `/${slug}/feedback/${post.id}`}
-            posts={posts}
-            showBoardColumn={false}
-            workspaceId={workspace.id}
-            workspaceStatuses={workspaceStatuses}
-          />
+      <PageBody className="flex min-h-0 flex-1 flex-col">
+        {/* overflow-hidden here is safe for BulkActionBar (rendered by
+            PostsTable): it's fixed-positioned, so ancestor overflow can't
+            clip it. This just keeps the card's rounded corners clean around
+            the scrolling table. */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+          {/* This is the one real scroll container for the table — both
+              axes live here so PostsTable's sticky thead (stickyHeader) has
+              a single, correct ancestor to anchor `top: 0` to. PostsTable
+              itself skips its usual overflow-x-auto wrapper in that mode;
+              see the comment above STICKY_HEADER_CELL there for why a
+              second nested auto-overflow div would break stickiness. */}
+          <div className="min-h-0 flex-1 overflow-auto">
+            <PostsTable
+              categories={categories}
+              enableBulkActions
+              isAdminOrOwner={isAdminOrOwner}
+              isMember={true}
+              isSignedIn={true}
+              mergedIntoHref={(post) =>
+                post.mergedIntoId
+                  ? `/${slug}/feedback/${post.mergedIntoId}`
+                  : null
+              }
+              postHref={(post) => `/${slug}/feedback/${post.id}`}
+              posts={posts}
+              showBoardColumn={false}
+              stickyHeader
+              workspaceId={workspace.id}
+              workspaceStatuses={workspaceStatuses}
+            />
+          </div>
 
           {totalCount > 0 && (
-            <div className="border-t border-ir-border px-4 py-3 sm:px-8">
+            <div className="shrink-0 border-t border-ir-border px-4 py-3 sm:px-8">
               <PostsPaginationBar
                 baseParams={paginationBaseParams}
                 currentPage={currentPage}

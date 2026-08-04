@@ -144,7 +144,7 @@ export function BulkActionBar({
         {isVisible && (
           <motion.div
             animate={{ y: 0, opacity: 1 }}
-            className="sticky bottom-4 z-20 mx-4 flex flex-wrap items-center gap-3 rounded-ir-card border border-ir-border bg-ir-surface px-4 py-3 shadow-ir-lg sm:mx-8"
+            className="fixed bottom-6 left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 flex-wrap items-center gap-3 rounded-ir-card border border-ir-border bg-ir-surface px-4 py-3 shadow-ir-lg"
             exit={shouldReduceMotion ? undefined : { y: 24, opacity: 0 }}
             initial={shouldReduceMotion ? false : { y: 24, opacity: 0 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
