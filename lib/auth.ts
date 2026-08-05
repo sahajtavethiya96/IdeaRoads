@@ -185,11 +185,16 @@ export const auth = betterAuth({
         "/email-otp/send-verification-otp",
       ];
       if (emailPaths.includes(ctx.path)) {
-        const email = (ctx.body as { email?: unknown } | undefined)?.email;
+        const body = ctx.body as
+          | { callbackURL?: unknown; email?: unknown }
+          | undefined;
+        const email = body?.email;
+        const callbackURL =
+          typeof body?.callbackURL === "string" ? body.callbackURL : null;
         if (
           typeof email === "string" &&
           email.trim() &&
-          !(await mayAuthenticate(email))
+          !(await mayAuthenticate(email, callbackURL))
         ) {
           throw new APIError("FORBIDDEN", {
             message: NO_SELF_SIGNUP_MESSAGE,
@@ -300,8 +305,25 @@ export const auth = betterAuth({
         // the first Orbit Admin with Drizzle directly (app/actions/setup.ts),
         // never through Better Auth, so this hook never sees it. That is what
         // keeps a brand-new instance bootstrappable.
-        before: async (newUser) => {
-          if (!(await mayCreateAccount(newUser.email))) {
+        before: async (newUser, context) => {
+          // The magic-link/email-OTP verify endpoints carry the invite-link
+          // path forward as `callbackURL` — in the query string for the GET
+          // verify link, in the body for endpoints that resolve in one
+          // request. Either shape can appear here depending on which
+          // provider is minting the account.
+          const query = context?.query as
+            | { callbackURL?: unknown }
+            | undefined;
+          const body = context?.body as
+            | { callbackURL?: unknown }
+            | undefined;
+          const callbackURL =
+            typeof query?.callbackURL === "string"
+              ? query.callbackURL
+              : typeof body?.callbackURL === "string"
+                ? body.callbackURL
+                : null;
+          if (!(await mayCreateAccount(newUser.email, callbackURL))) {
             throw new APIError("FORBIDDEN", {
               message: NO_SELF_SIGNUP_MESSAGE,
             });

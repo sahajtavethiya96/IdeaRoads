@@ -1,14 +1,18 @@
 import { and, eq, gt, isNull, sql } from "drizzle-orm";
 import { user, workspaceInvites } from "@/db/schema";
 import { db } from "@/lib/db";
+import { hasLiveInviteLink } from "@/lib/workspaces/invite-links";
 
 // This instance does not offer self-serve registration. Accounts come from
-// exactly two places:
+// exactly three places:
 //
 //   1. The first-run `/setup` wizard, which creates the first Orbit Admin by
 //      inserting rows directly (app/actions/setup.ts) and therefore never
 //      passes through Better Auth or the checks here.
-//   2. An invitation sent by a Brand Admin.
+//   2. A personal invitation sent by a Brand Admin to a specific address
+//      (workspace_invites — see hasPendingInvite).
+//   3. A shareable invite link (workspace_invite_links), which is not
+//      addressed to anyone in particular — see extractInviteLinkToken.
 //
 // Everything else — magic link, Google, email OTP, the old /sign-up/email
 // endpoint — can still SIGN IN an existing account, but must not bring a new
@@ -55,15 +59,53 @@ export async function hasPendingInvite(email: string): Promise<boolean> {
   return !!row;
 }
 
+const INVITE_LINK_PATH_PATTERN = /\/invite\/link\/([^/?#]+)/;
+
+/**
+ * A shareable invite link (see app/invite/link/[linkToken]) is not addressed
+ * to any particular email — that's the whole point of it being shareable —
+ * so it can't be found by hasPendingInvite. Instead, the sign-in flow carries
+ * it through as the `callbackURL`/`next` the person was on their way to
+ * (e.g. "/invite/link/&lt;token&gt;") when they were bounced to /signin. Pull the
+ * token back out of that path so its own liveness (active, unexpired, under
+ * its use cap) can stand in for "this address was invited".
+ */
+export function extractInviteLinkToken(
+  callbackURL?: string | null
+): string | null {
+  if (!callbackURL) {
+    return null;
+  }
+  let decoded = callbackURL;
+  try {
+    decoded = decodeURIComponent(callbackURL);
+  } catch {
+    // Already decoded (or not validly encoded) — fall through and match as-is.
+  }
+  return (
+    INVITE_LINK_PATH_PATTERN.exec(decoded)?.[1] ??
+    INVITE_LINK_PATH_PATTERN.exec(callbackURL)?.[1] ??
+    null
+  );
+}
+
 /**
  * May a brand-new account be created for this address?
  *
- * Only when an admin has already invited it. Callers that run BEFORE we know
- * whether the account exists (the sign-in endpoints) should also accept an
- * existing user — see mayAuthenticate.
+ * Only when an admin has already invited it by email, or the person arrived
+ * via a live shareable invite link. Callers that run BEFORE we know whether
+ * the account exists (the sign-in endpoints) should also accept an existing
+ * user — see mayAuthenticate.
  */
-export async function mayCreateAccount(email: string): Promise<boolean> {
-  return hasPendingInvite(email);
+export async function mayCreateAccount(
+  email: string,
+  callbackURL?: string | null
+): Promise<boolean> {
+  if (await hasPendingInvite(email)) {
+    return true;
+  }
+  const linkToken = extractInviteLinkToken(callbackURL);
+  return linkToken ? hasLiveInviteLink(linkToken) : false;
 }
 
 /**
@@ -74,9 +116,12 @@ export async function mayCreateAccount(email: string): Promise<boolean> {
  * refuse early — before a magic link or one-time code is emailed — so nobody
  * receives a link that would fail at the end.
  */
-export async function mayAuthenticate(email: string): Promise<boolean> {
+export async function mayAuthenticate(
+  email: string,
+  callbackURL?: string | null
+): Promise<boolean> {
   if (await userExistsByEmail(email)) {
     return true;
   }
-  return hasPendingInvite(email);
+  return mayCreateAccount(email, callbackURL);
 }

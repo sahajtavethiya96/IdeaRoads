@@ -62,6 +62,33 @@ export async function getInviteLinkByToken(token: string) {
   return row ?? null;
 }
 
+/**
+ * Is this link (as returned by getInviteLinkByToken) still usable to join —
+ * active, unexpired, under its use cap, and the workspace not suspended?
+ * Mirrors the row-level checks joinViaLink makes inside its transaction, so
+ * a caller that only needs a yes/no (e.g. deciding whether an unknown email
+ * may create an account) doesn't have to re-derive them.
+ */
+export function isInviteLinkLive(
+  link: NonNullable<Awaited<ReturnType<typeof getInviteLinkByToken>>>
+): boolean {
+  if (!link.isActive) {
+    return false;
+  }
+  if (link.expiresAt && link.expiresAt <= new Date()) {
+    return false;
+  }
+  if (link.maxUses !== null && link.useCount >= link.maxUses) {
+    return false;
+  }
+  return !link.workspace.isSuspended;
+}
+
+export async function hasLiveInviteLink(token: string): Promise<boolean> {
+  const link = await getInviteLinkByToken(token);
+  return !!link && isInviteLinkLive(link);
+}
+
 export async function getInviteLinkById(linkId: string, workspaceId: string) {
   const [row] = await db
     .select()
