@@ -175,7 +175,7 @@ export function MembersTable({
         />
       </div>
 
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="mb-4 flex flex-col gap-2.5 sm:flex-row sm:items-center">
         <SearchInput
           aria-label="Search members"
           className="sm:max-w-xs"
@@ -186,7 +186,7 @@ export function MembersTable({
           onValueChange={(v) => setRoleFilter(v as RoleFilter)}
           value={roleFilter}
         >
-          <SelectTrigger className="sm:w-44" size="sm">
+          <SelectTrigger className="w-full sm:w-44">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -202,7 +202,7 @@ export function MembersTable({
           No members match your search.
         </p>
       ) : (
-        <div className="overflow-hidden overflow-x-auto rounded-ir-card border border-ir-border">
+        <div className="overflow-hidden rounded-ir-card border border-ir-border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-ir-border bg-ir-muted-surface/60">

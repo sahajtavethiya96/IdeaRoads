@@ -152,10 +152,14 @@ export function ModerationSettingsForm({
 
       {/* Spam keywords */}
       <div className="mt-6 mb-4">
-        <h2 className="text-sm font-semibold text-ir-heading">Spam keywords</h2>
+        <h2 className="text-sm font-semibold text-ir-heading">
+          Flagged words & phrases
+        </h2>
         <p className="mt-0.5 text-xs text-ir-muted">
-          Posts containing any of these keywords are held for review (when
-          moderation is Auto or Manual).
+          Add words commonly used in spam or promotional posts — like
+          "discount code," "buy now," or a link (e.g. "http"). Any new post
+          containing one is held for review instead of publishing
+          immediately (when moderation is Auto or Manual).
         </p>
       </div>
       <div className="rounded-ir-card border border-ir-border bg-ir-surface p-4 shadow-ir-xs">
@@ -178,7 +182,7 @@ export function ModerationSettingsForm({
           ))}
           {keywords.length === 0 && (
             <span className="text-xs text-ir-muted">
-              No spam keywords configured.
+              No flagged words configured.
             </span>
           )}
         </div>
@@ -189,11 +193,16 @@ export function ModerationSettingsForm({
             maxLength={100}
             onChange={(e) => setKeywordInput(e.target.value)}
             onKeyDown={addKeyword}
-            placeholder="Add keyword, press Enter or comma…"
+            placeholder='e.g. "discount code", "buy now", "http"…'
             type="text"
             value={keywordInput}
           />
         </div>
+        {keywords.length < 50 && (
+          <p className="mt-1.5 text-xs text-ir-muted">
+            Press Enter or comma to add a word.
+          </p>
+        )}
         {keywords.length >= 50 && (
           <p className="mt-1 text-xs text-ir-muted">
             Maximum 50 keywords reached.

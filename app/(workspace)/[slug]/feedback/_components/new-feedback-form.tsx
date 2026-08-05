@@ -292,40 +292,51 @@ export function NewFeedbackForm({
               (optional)
             </span>
           </span>
-          {imagePreviewUrl ? (
-            <div className="relative inline-block">
-              <ImagePreviewThumbnail
-                className="max-h-40 w-auto rounded-ir-md border border-ir-border object-contain"
-                src={imagePreviewUrl}
-              />
+          <div
+            className={`relative flex h-40 w-full items-center justify-center rounded-ir-input ${
+              imagePreviewUrl
+                ? ""
+                : "border border-dashed border-ir-border transition-colors duration-150 ease-ir-standard hover:border-ir-primary/40"
+            }`}
+          >
+            {imagePreviewUrl ? (
+              <>
+                <ImagePreviewThumbnail
+                  className="h-40 w-auto max-w-full rounded-ir-md border border-ir-border object-contain"
+                  src={imagePreviewUrl}
+                />
+                <button
+                  aria-label="Remove image"
+                  className="absolute -top-2 -right-2 flex size-6 cursor-pointer items-center justify-center rounded-ir-full border border-ir-border bg-ir-surface text-ir-danger shadow-ir-xs transition-opacity duration-150 hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                  disabled={isPending}
+                  onClick={removeImage}
+                  type="button"
+                >
+                  <XIcon className="size-3.5" />
+                </button>
+              </>
+            ) : (
               <button
-                aria-label="Remove image"
-                className="absolute -top-2 -right-2 flex size-6 cursor-pointer items-center justify-center rounded-ir-full border border-ir-border bg-ir-surface text-ir-danger shadow-ir-xs transition-opacity duration-150 hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                className={`flex h-full w-full cursor-pointer items-center justify-center gap-1.5 text-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading ${
+                  isPending ? "pointer-events-none opacity-50" : ""
+                }`}
                 disabled={isPending}
-                onClick={removeImage}
+                onClick={() => fileInputRef.current?.click()}
                 type="button"
               >
-                <XIcon className="size-3.5" />
+                <ImageIcon className="size-4" />
+                Add an image
               </button>
-            </div>
-          ) : (
-            <label
-              className={`flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-ir-input border border-dashed border-ir-border px-3 py-3 text-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:border-ir-primary/40 hover:text-ir-heading ${
-                isPending ? "pointer-events-none opacity-50" : ""
-              }`}
-            >
-              <ImageIcon className="size-4" />
-              Add an image
-              <input
-                accept="image/png,image/jpeg,image/webp,image/gif"
-                className="sr-only"
-                disabled={isPending}
-                onChange={handleImageChange}
-                ref={fileInputRef}
-                type="file"
-              />
-            </label>
-          )}
+            )}
+          </div>
+          <input
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            className="hidden"
+            disabled={isPending}
+            onChange={handleImageChange}
+            ref={fileInputRef}
+            type="file"
+          />
           {imageError && (
             <p className="mt-1 text-xs text-ir-danger">{imageError}</p>
           )}

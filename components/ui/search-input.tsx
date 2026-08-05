@@ -57,6 +57,7 @@ export function SearchInput({
       </InputGroupAddon>
       <InputGroupInput
         aria-label={ariaLabel ?? placeholder}
+        autoComplete="off"
         onChange={(e) => update(e.target.value)}
         placeholder={placeholder}
         type="text"

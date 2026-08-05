@@ -43,19 +43,17 @@ export default async function NewFeedbackPage({ params }: Props) {
   ]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <>
       <SetPageHeader backHref={`/${slug}/feedback`} title="New Feedback" />
-      <div className="flex-1 overflow-y-auto">
-        <ContentContainer>
-          <NewFeedbackForm
-            boardId={board.id}
-            categories={categories}
-            workspaceId={workspace.id}
-            workspaceSlug={slug}
-            workspaceStatuses={workspaceStatuses}
-          />
-        </ContentContainer>
-      </div>
-    </div>
+      <ContentContainer>
+        <NewFeedbackForm
+          boardId={board.id}
+          categories={categories}
+          workspaceId={workspace.id}
+          workspaceSlug={slug}
+          workspaceStatuses={workspaceStatuses}
+        />
+      </ContentContainer>
+    </>
   );
 }

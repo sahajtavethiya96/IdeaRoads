@@ -114,8 +114,8 @@ export function WidgetPreview({
             // swaps left/right corners — so the radius is set inverted here
             // to land rounded on the inward-facing side once rotated.
             borderRadius: stickyPosition.startsWith("left")
-              ? "6px 0 0 6px"
-              : "0 6px 6px 0",
+              ? "0 6px 6px 0"
+              : "6px 0 0 6px",
           }}
         >
           {stickyButtonText}

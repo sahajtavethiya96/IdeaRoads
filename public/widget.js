@@ -684,8 +684,8 @@
       // corners — so the radius is set inverted here to land rounded on
       // the inward-facing side once rotated.
       (isLeftEdge
-        ? "border-radius:8px 0 0 8px;"
-        : "border-radius:0 8px 8px 0;");
+        ? "border-radius:0 8px 8px 0;"
+        : "border-radius:8px 0 0 8px;");
 
     return mountPanel(config, tab, stickyPanelCornerCss(config));
   }
