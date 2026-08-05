@@ -47,6 +47,11 @@ export const QUEUE_OPTIONS: Record<
     policy: "standard",
     retryLimit: 3,
   },
+  [JOB_NAMES.SEND_PENDING_COMMENT_ALERT]: {
+    expireInSeconds: 3600,
+    policy: "standard",
+    retryLimit: 3,
+  },
   [JOB_NAMES.CLEANUP_READ_NOTIFICATIONS]: {
     expireInSeconds: 300,
     policy: "exclusive",

@@ -14,6 +14,7 @@ export const NOTIFICATION_TYPES = [
   "status_change",
   "new_comment",
   "reply",
+  "pending_comment",
   "changelog_published",
   "invite_accepted",
   "member_removed",

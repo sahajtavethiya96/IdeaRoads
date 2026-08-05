@@ -8,6 +8,7 @@ import {
   MailOpen,
   Megaphone,
   MessageCircle,
+  MessageCircleWarning,
   Trash2,
   UserCheck,
   UserPlus,
@@ -26,6 +27,7 @@ const TYPE_ICONS: Record<NotificationType, React.ElementType> = {
   status_change: ArrowRight,
   new_comment: MessageCircle,
   reply: CornerDownRight,
+  pending_comment: MessageCircleWarning,
   invite_accepted: UserCheck,
   member_removed: UserX,
   changelog_published: Megaphone,
@@ -93,9 +95,7 @@ export function NotificationItem({
         "group relative flex items-center gap-4 rounded-ir-lg border-t border-r border-b border-l-4 border-ir-border bg-ir-surface p-4 shadow-ir-xs transition-all duration-200 ease-ir-standard",
         "hover:-translate-y-0.5 hover:border-t-ir-primary/30 hover:border-r-ir-primary/30 hover:border-b-ir-primary/30 hover:shadow-ir-md",
         "has-[:focus-visible]:-translate-y-0.5 has-[:focus-visible]:shadow-ir-md has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ir-primary/40 has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-ir-background",
-        isRead
-          ? "border-l-transparent"
-          : "border-l-ir-primary bg-ir-primary/5"
+        isRead ? "border-l-transparent" : "border-l-ir-primary bg-ir-primary/5"
       )}
     >
       {/* Icon */}
@@ -153,9 +153,7 @@ export function NotificationItem({
           </p>
         )}
         {isRemoved && (
-          <p className="mt-1 text-sm text-base-content/60">
-            {REMOVED_MESSAGE}
-          </p>
+          <p className="mt-1 text-sm text-base-content/60">{REMOVED_MESSAGE}</p>
         )}
         <p className="mt-1.5 text-xs text-base-content/60">
           <RelativeTime

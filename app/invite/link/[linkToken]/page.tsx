@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LOGO_PATH, PRODUCT_NAME } from "@/config/platform";
+import { getCurrentSession } from "@/lib/authz";
 import { getInviteLinkByToken } from "@/lib/workspaces/invite-links";
 import { JoinButton } from "./_components/join-button";
 
@@ -63,6 +64,8 @@ export default async function JoinPage({ params }: Props) {
     );
   }
 
+  const session = await getCurrentSession();
+
   return (
     <JoinLayout>
       <div className="space-y-1 text-center">
@@ -78,7 +81,16 @@ export default async function JoinPage({ params }: Props) {
         </p>
       </div>
       <div className="mt-6">
-        <JoinButton token={linkToken} />
+        {session ? (
+          <JoinButton token={linkToken} />
+        ) : (
+          <Link
+            className="flex w-full items-center justify-center rounded-ir-button bg-ir-primary px-4 py-2.5 text-sm font-semibold text-ir-primary-foreground transition-colors duration-150 hover:bg-ir-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+            href={`/signin?next=${encodeURIComponent(`/invite/link/${linkToken}`)}`}
+          >
+            Sign in to join
+          </Link>
+        )}
       </div>
     </JoinLayout>
   );

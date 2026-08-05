@@ -680,9 +680,12 @@
       ";font:600 13px/1.2 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;" +
       "letter-spacing:0.03em;box-shadow:0 4px 14px rgba(0,0,0,0.18);" +
       "writing-mode:vertical-rl;" +
+      // Always rotated 180deg above, which visually swaps left/right
+      // corners — so the radius is set inverted here to land rounded on
+      // the inward-facing side once rotated.
       (isLeftEdge
-        ? "border-radius:0 8px 8px 0;"
-        : "border-radius:8px 0 0 8px;");
+        ? "border-radius:8px 0 0 8px;"
+        : "border-radius:0 8px 8px 0;");
 
     return mountPanel(config, tab, stickyPanelCornerCss(config));
   }

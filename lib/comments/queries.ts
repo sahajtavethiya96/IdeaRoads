@@ -1,5 +1,5 @@
-import { and, asc, count, eq, inArray, isNull } from "drizzle-orm";
-import { comments } from "@/db/schema";
+import { and, asc, count, desc, eq, inArray, isNull } from "drizzle-orm";
+import { comments, posts } from "@/db/schema";
 import { db } from "@/lib/db";
 
 export interface CommentRow {
@@ -133,6 +133,48 @@ export async function getOwnCommentIds(
     );
 
   return new Set(rows.map((r) => r.id));
+}
+
+export interface PendingCommentRow {
+  authorEmail: string | null;
+  authorName: string | null;
+  body: string;
+  createdAt: Date;
+  id: string;
+  parentId: string | null;
+  postId: string;
+  postSlug: string;
+  postTitle: string;
+}
+
+// Workspace-wide moderation queue — mirrors getPendingPosts (lib/posts/queries.ts)
+// so admins have one place to review pending comments instead of relying on
+// stumbling onto the inline queue on each post's own detail page.
+export async function getPendingComments(
+  workspaceId: string
+): Promise<PendingCommentRow[]> {
+  return db
+    .select({
+      id: comments.id,
+      body: comments.body,
+      parentId: comments.parentId,
+      postId: comments.postId,
+      authorName: comments.authorName,
+      authorEmail: comments.authorEmail,
+      createdAt: comments.createdAt,
+      postTitle: posts.title,
+      postSlug: posts.slug,
+    })
+    .from(comments)
+    .innerJoin(posts, eq(comments.postId, posts.id))
+    .where(
+      and(
+        eq(posts.workspaceId, workspaceId),
+        eq(comments.isApproved, false),
+        eq(comments.isDeleted, false)
+      )
+    )
+    .orderBy(desc(comments.createdAt));
 }
 
 export async function getCommentCount(postId: string): Promise<number> {

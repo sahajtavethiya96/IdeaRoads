@@ -11,6 +11,7 @@ import { isBlocked } from "@/lib/moderation/queries";
 import { createNotification } from "@/lib/notifications/create";
 import { isEmailNotificationEnabled } from "@/lib/notifications/queries";
 import { portalBaseUrl } from "@/lib/urls";
+import { enqueuePendingCommentAlerts } from "./notify";
 import { commentPreviewText } from "./preview";
 
 export class CommentBlockedError extends Error {
@@ -166,6 +167,22 @@ export async function createComment(
       post,
       workspace?.commentModeration ?? false
     ).catch((err) => console.error("[comments] notification error", err));
+  } else {
+    // Comment is pending moderation — alert admins/owners so approval
+    // doesn't rely on someone happening to reopen this exact post.
+    enqueuePendingCommentAlerts({
+      commentId: comment.id,
+      commentBody: comment.body,
+      commenterId: authorId ?? null,
+      commenterName: resolvedAuthorName ?? authorEmail ?? "Someone",
+      postId: post.id,
+      postTitle: post.title,
+      postSlug: post.slug,
+      boardId: post.boardId,
+      workspaceId,
+    }).catch((err) =>
+      console.error("[comments] pending-comment alert error", err)
+    );
   }
 
   return comment;

@@ -69,6 +69,9 @@ export async function startWorker() {
   const { handleSendNewPostAlert } = await import(
     "@/lib/worker/handlers/send-new-post-alert"
   );
+  const { handleSendPendingCommentAlert } = await import(
+    "@/lib/worker/handlers/send-pending-comment-alert"
+  );
   const { handleCleanupReadNotifications } = await import(
     "@/lib/worker/handlers/cleanup-read-notifications"
   );
@@ -81,6 +84,7 @@ export async function startWorker() {
     work(JOB_NAMES.SEND_CHANGELOG_EMAIL, handleSendChangelogEmail),
     work(JOB_NAMES.SEND_STATUS_CHANGE_EMAIL, handleSendStatusChangeEmail),
     work(JOB_NAMES.SEND_NEW_POST_ALERT, handleSendNewPostAlert),
+    work(JOB_NAMES.SEND_PENDING_COMMENT_ALERT, handleSendPendingCommentAlert),
     work(JOB_NAMES.CLEANUP_READ_NOTIFICATIONS, handleCleanupReadNotifications),
   ]);
 

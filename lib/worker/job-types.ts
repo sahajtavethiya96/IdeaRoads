@@ -6,6 +6,7 @@ export const JOB_NAMES = {
   SEND_CHANGELOG_EMAIL: "changelog.send-email",
   SEND_STATUS_CHANGE_EMAIL: "notifications.send-status-change-email",
   SEND_NEW_POST_ALERT: "notifications.send-new-post-alert",
+  SEND_PENDING_COMMENT_ALERT: "notifications.send-pending-comment-alert",
   CLEANUP_READ_NOTIFICATIONS: "notifications.cleanup-read",
 } as const;
 
@@ -58,6 +59,23 @@ export interface SendNewPostAlertPayload {
   workspaceSlug: string;
 }
 
+export interface SendPendingCommentAlertPayload {
+  boardName: string;
+  boardSlug: string;
+  commentBody: string;
+  commenterId: string | null;
+  commenterName: string;
+  commentId: string;
+  moderatorEmail: string;
+  moderatorUserId: string;
+  postId: string;
+  postSlug: string;
+  postTitle: string;
+  workspaceId: string;
+  workspaceName: string;
+  workspaceSlug: string;
+}
+
 export type JobPayloads = {
   [JOB_NAMES.EMAIL_EVENTS_PRUNE]: Record<string, never>;
   [JOB_NAMES.EMAIL_OUTBOX_REAP]: Record<string, never>;
@@ -66,5 +84,6 @@ export type JobPayloads = {
   [JOB_NAMES.SEND_CHANGELOG_EMAIL]: SendChangelogEmailPayload;
   [JOB_NAMES.SEND_STATUS_CHANGE_EMAIL]: SendStatusChangeEmailPayload;
   [JOB_NAMES.SEND_NEW_POST_ALERT]: SendNewPostAlertPayload;
+  [JOB_NAMES.SEND_PENDING_COMMENT_ALERT]: SendPendingCommentAlertPayload;
   [JOB_NAMES.CLEANUP_READ_NOTIFICATIONS]: Record<string, never>;
 };

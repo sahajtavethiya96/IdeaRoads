@@ -10,7 +10,6 @@ const AUTH_GATE_PREFIXES = [
   "/account",
   "/onboarding",
   "/post-auth",
-  "/invite/link",
   "/complete-profile",
 ];
 

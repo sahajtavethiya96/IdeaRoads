@@ -39,6 +39,8 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const URL_ERROR_MESSAGES: Record<string, string> = {
   INVALID_TOKEN:
     "This sign-in link has expired or has already been used. Please request a new one.",
@@ -114,6 +116,16 @@ function AuthFormInner({
 
   async function sendMagicLink() {
     setFormError(null);
+
+    // The "magic link" button sits outside the form's submit flow, so the
+    // native required/type=email validation on the email field never runs
+    // for it — validate here instead of letting an empty/invalid email
+    // reach the API and surface a raw backend error.
+    if (!EMAIL_PATTERN.test(email)) {
+      setFormError("Please enter a valid email address.");
+      return;
+    }
+
     setMagicLoading(true);
     const result = await signIn.magicLink({ callbackURL, email });
     setMagicLoading(false);
@@ -315,7 +327,7 @@ function AuthFormInner({
                         disabled={submitting || googleLoading || magicLoading}
                         onClick={sendMagicLink}
                         type="button"
-                        variant="ghost"
+                        variant="secondary"
                       >
                         {magicLoading
                           ? "Sending…"

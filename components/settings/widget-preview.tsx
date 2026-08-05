@@ -110,9 +110,12 @@ export function WidgetPreview({
               "transform" in stickyCorner
                 ? `${stickyCorner.transform} rotate(180deg)`
                 : "rotate(180deg)",
+            // Always rotated 180deg (see transform above), which visually
+            // swaps left/right corners — so the radius is set inverted here
+            // to land rounded on the inward-facing side once rotated.
             borderRadius: stickyPosition.startsWith("left")
-              ? "0 6px 6px 0"
-              : "6px 0 0 6px",
+              ? "6px 0 0 6px"
+              : "0 6px 6px 0",
           }}
         >
           {stickyButtonText}
