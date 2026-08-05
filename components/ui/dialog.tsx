@@ -192,7 +192,7 @@ function DialogContent({
           {showCloseButton && (
             <button
               aria-label="Close dialog"
-              className="absolute top-4 right-4 flex size-10 shrink-0 items-center justify-center rounded-lg border border-base-300 bg-base-100 p-0 leading-none text-base-content/70 shadow-sm transition-all duration-200 hover:bg-base-200 hover:text-base-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="absolute top-4 right-4 flex size-8 shrink-0 items-center justify-center rounded-md border border-base-300 bg-base-100 p-0 leading-none text-base-content/70 shadow-sm transition-all duration-200 hover:bg-base-200 hover:text-base-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               onClick={() => setOpen(false)}
               type="button"
             >

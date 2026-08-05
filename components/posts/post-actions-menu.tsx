@@ -231,41 +231,39 @@ export function PostActionsMenu({
         <DropdownMenuContent align="end" className="w-44">
           {isDraft && (
             <>
-              <DropdownMenuItem onSelect={handlePublish}>
+              <DropdownMenuItem onClick={handlePublish}>
                 <PaperPlaneTiltIcon />
                 Publish
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
           )}
-          <DropdownMenuItem
-            onSelect={() => router.push(`${detailHref}?edit=1`)}
-          >
+          <DropdownMenuItem onClick={() => router.push(`${detailHref}?edit=1`)}>
             <PencilIcon />
             Edit
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={handleDuplicate}>
+          <DropdownMenuItem onClick={handleDuplicate}>
             <CopyIcon />
             Duplicate
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={handlePinToggle}>
+          <DropdownMenuItem onClick={handlePinToggle}>
             {isPinned ? <PushPinSlashIcon /> : <PushPinIcon />}
             {isPinned ? "Unpin" : "Pin"}
           </DropdownMenuItem>
           {mergedIntoId ? (
-            <DropdownMenuItem onSelect={() => setUnmergeOpen(true)}>
+            <DropdownMenuItem onClick={() => setUnmergeOpen(true)}>
               <ArrowsSplitIcon />
               Unmerge
             </DropdownMenuItem>
           ) : (
-            <DropdownMenuItem onSelect={openMerge}>
+            <DropdownMenuItem onClick={openMerge}>
               <GitMergeIcon />
               Merge
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onSelect={() => setDeleteOpen(true)}
+            onClick={() => setDeleteOpen(true)}
             variant="destructive"
           >
             <TrashIcon />

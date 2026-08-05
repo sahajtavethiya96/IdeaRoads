@@ -1,3 +1,16 @@
+import {
+  Calendar,
+  Clock,
+  FileText,
+  Globe,
+  ListChecks,
+  type LucideIcon,
+  Map as MapIcon,
+  Megaphone,
+  Tags,
+  User,
+  Users,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { RelativeTime } from "@/components/ui/relative-time";
 import { SquareAvatar } from "@/components/ui/square-avatar";
@@ -22,37 +35,51 @@ interface WorkspaceOverviewCardProps {
 }
 
 interface InfoRowProps {
+  icon: LucideIcon;
   label: string;
   value: string;
 }
 
-function InfoRow({ label, value }: InfoRowProps) {
+function InfoRow({ icon: Icon, label, value }: InfoRowProps) {
   return (
-    <div className="min-w-0">
-      <p className="text-2xs font-semibold tracking-eyebrow text-ir-muted uppercase">
-        {label}
-      </p>
-      <p className="mt-0.5 truncate text-sm font-medium text-ir-heading">
-        {value}
-      </p>
+    <div className="flex min-w-0 items-start gap-2.5">
+      <span
+        aria-hidden
+        className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-ir-md bg-ir-muted-surface text-ir-muted"
+      >
+        <Icon className="size-3.5" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-2xs font-medium text-ir-muted">{label}</p>
+        <p className="mt-0.5 truncate text-sm font-semibold text-ir-heading">
+          {value}
+        </p>
+      </div>
     </div>
   );
 }
 
 interface StatTileProps {
+  icon: LucideIcon;
   label: string;
   value: number;
 }
 
-function StatTile({ label, value }: StatTileProps) {
+function StatTile({ icon: Icon, label, value }: StatTileProps) {
   return (
-    <div className="flex flex-col items-center justify-center gap-0.5 rounded-ir-md border border-ir-border bg-ir-muted-surface px-2 py-2 text-center transition-colors duration-150 ease-ir-standard hover:border-ir-primary/25">
-      <span className="text-2xs font-semibold tracking-eyebrow text-ir-muted uppercase">
-        {label}
+    <div className="flex items-center gap-3 rounded-ir-lg px-3 py-2.5 transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface">
+      <span
+        aria-hidden
+        className="flex size-9 shrink-0 items-center justify-center rounded-ir-md bg-ir-muted-surface text-ir-primary"
+      >
+        <Icon className="size-4" />
       </span>
-      <span className="text-lg font-semibold tabular-nums text-ir-heading">
-        {value}
-      </span>
+      <div className="min-w-0">
+        <p className="text-lg leading-none font-semibold tabular-nums text-ir-heading">
+          {value}
+        </p>
+        <p className="mt-1 text-2xs font-medium text-ir-muted">{label}</p>
+      </div>
     </div>
   );
 }
@@ -78,32 +105,43 @@ export function WorkspaceOverviewCard({
     boardIsPublic === null ? "No board" : boardIsPublic ? "Public" : "Private";
 
   return (
-    <div className="rounded-ir-card border border-ir-border bg-ir-surface px-5 py-4 shadow-ir-xs transition-shadow duration-200 ease-ir-standard hover:shadow-ir-sm">
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:divide-x lg:divide-ir-border">
+    <section
+      aria-labelledby="workspace-overview-heading"
+      className="animate-in fade-in rounded-ir-card border border-ir-border bg-ir-surface p-6 shadow-ir-xs transition-shadow duration-300 ease-ir-standard hover:shadow-ir-sm sm:p-7"
+    >
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
         {/* Workspace identity */}
-        <div className="flex min-w-0 items-center gap-3.5 lg:pr-5">
+        <div className="flex min-w-0 gap-4 md:col-span-2 lg:col-span-1">
           <SquareAvatar
             alt={name}
-            className="size-14 shrink-0 rounded-ir-md bg-ir-primary-light/20 text-base font-semibold text-ir-primary ring-2 ring-ir-primary/15 sm:size-16"
+            className="size-16 shrink-0 rounded-ir-lg bg-ir-primary-light/20 text-lg font-semibold text-ir-primary ring-1 ring-ir-border sm:size-[4.5rem]"
             fallback={name.charAt(0).toUpperCase()}
             imageUrl={logoUrl}
           />
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="truncate text-xl font-semibold text-ir-heading">
+          <div className="min-w-0 space-y-2.5">
+            <div>
+              <h2
+                className="truncate text-2xl font-semibold tracking-tight text-ir-heading"
+                id="workspace-overview-heading"
+              >
                 {name}
               </h2>
-              <Badge variant={boardIsPublic ? "default" : "secondary"}>
-                {boardLabel}
-              </Badge>
+              {description && (
+                <p className="mt-1 line-clamp-2 text-sm text-ir-body/80">
+                  {description}
+                </p>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5">
               <Badge
                 className={cn(
-                  "gap-1",
+                  "h-6 gap-1.5 rounded-full px-2.5 text-2xs normal-case",
                   isSuspended
-                    ? "border-ir-danger/30 bg-ir-danger/10 text-ir-danger"
-                    : "border-ir-success/30 bg-ir-success/10 text-ir-success"
+                    ? "bg-ir-danger/10 text-ir-danger"
+                    : "bg-ir-success/10 text-ir-success"
                 )}
-                variant="outline"
+                variant="ghost"
               >
                 <span
                   aria-hidden
@@ -114,21 +152,29 @@ export function WorkspaceOverviewCard({
                 />
                 {isSuspended ? "Suspended" : "Active"}
               </Badge>
+              <Badge
+                className={cn(
+                  "h-6 gap-1.5 rounded-full px-2.5 text-2xs normal-case",
+                  boardIsPublic
+                    ? "bg-ir-primary/10 text-ir-primary"
+                    : "bg-ir-muted-surface text-ir-muted"
+                )}
+                variant="ghost"
+              >
+                <Globe aria-hidden className="size-3" />
+                {boardLabel}
+              </Badge>
             </div>
-            {description && (
-              <p className="mt-0.5 line-clamp-1 text-sm text-ir-body/80">
-                {description}
-              </p>
-            )}
-            <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-ir-muted">
+
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ir-muted">
               <span className="font-mono">/{slug}</span>
-              <span aria-hidden>•</span>
-              <span>
+              <span className="flex items-center gap-1">
+                <Calendar aria-hidden className="size-3.5" />
                 Created{" "}
                 <RelativeTime date={createdAt} options={{ addSuffix: true }} />
               </span>
-              <span aria-hidden>•</span>
-              <span>
+              <span className="flex items-center gap-1">
+                <Clock aria-hidden className="size-3.5" />
                 Updated{" "}
                 <RelativeTime date={updatedAt} options={{ addSuffix: true }} />
               </span>
@@ -137,27 +183,33 @@ export function WorkspaceOverviewCard({
         </div>
 
         {/* Workspace information */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 lg:px-5">
-          <InfoRow label="Owner" value={ownerName ?? "Unassigned"} />
-          <InfoRow label="Visibility" value={boardLabel} />
+        <div className="grid grid-cols-2 gap-x-4 gap-y-4 self-center sm:grid-cols-2">
           <InfoRow
+            icon={User}
+            label="Owner"
+            value={ownerName ?? "Unassigned"}
+          />
+          <InfoRow icon={Globe} label="Visibility" value={boardLabel} />
+          <InfoRow
+            icon={MapIcon}
             label="Roadmap"
             value={roadmapPublic ? "Public" : "Private"}
           />
           <InfoRow
+            icon={Megaphone}
             label="Changelog"
             value={changelogPublic ? "Public" : "Private"}
           />
         </div>
 
         {/* Workspace statistics */}
-        <div className="grid grid-cols-2 gap-2 lg:pl-5">
-          <StatTile label="Members" value={memberCount} />
-          <StatTile label="Posts" value={postsCount} />
-          <StatTile label="Categories" value={categoriesCount} />
-          <StatTile label="Statuses" value={statusesCount} />
+        <div className="grid grid-cols-2 gap-1 self-center">
+          <StatTile icon={Users} label="Members" value={memberCount} />
+          <StatTile icon={FileText} label="Posts" value={postsCount} />
+          <StatTile icon={Tags} label="Categories" value={categoriesCount} />
+          <StatTile icon={ListChecks} label="Statuses" value={statusesCount} />
         </div>
       </div>
-    </div>
+    </section>
   );
 }
