@@ -3,8 +3,10 @@
 import { Eye, EyeSlash } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 interface SecretFieldProps {
+  className?: string;
   cleared: boolean;
   disabled?: boolean;
   fromEnv: boolean;
@@ -13,6 +15,7 @@ interface SecretFieldProps {
   label: string;
   onChange: (value: string) => void;
   onClear: () => void;
+  required?: boolean;
   value: string;
 }
 
@@ -34,6 +37,8 @@ export function SecretField({
   onClear,
   cleared,
   disabled,
+  required,
+  className,
 }: SecretFieldProps) {
   const [visible, setVisible] = useState(false);
 
@@ -46,9 +51,16 @@ export function SecretField({
       : "Not set.";
 
   return (
-    <label className="block" htmlFor={id}>
+    <label className={cn("block", className)} htmlFor={id}>
       <span className="mb-1.5 flex items-center justify-between gap-2">
-        <span className="text-sm font-semibold text-ir-heading">{label}</span>
+        <span className="flex items-baseline gap-1 text-sm font-semibold text-ir-heading">
+          {label}
+          {required && (
+            <span aria-hidden="true" className="text-ir-danger">
+              *
+            </span>
+          )}
+        </span>
         {hasValue && !cleared && (
           <button
             className="cursor-pointer text-xs font-medium text-ir-muted hover:text-ir-danger"

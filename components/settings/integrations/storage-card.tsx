@@ -1,28 +1,74 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { memo, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   testStorageConnectionAction,
   updateStorageSettingsAction,
 } from "@/app/actions/integration-settings";
+import { Callout } from "@/components/settings/integrations/callout";
+import { Field, FormGrid } from "@/components/settings/integrations/field";
+import { SaveBar } from "@/components/settings/integrations/save-bar";
 import { SecretField } from "@/components/settings/integrations/secret-field";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useDirtyState } from "@/hooks/use-dirty-state";
 import {
   type IntegrationSettingsStatus,
   UNCHANGED_SECRET,
 } from "@/lib/integration-settings-types";
+import { cn } from "@/lib/utils";
 
 interface StorageCardProps {
   status: IntegrationSettingsStatus["storage"];
 }
 
-export function StorageCard({ status }: StorageCardProps) {
+type StorageType = "local" | "r2" | "s3";
+
+const STORAGE_TYPE_OPTIONS: {
+  hint: string;
+  label: string;
+  value: StorageType;
+}[] = [
+  {
+    value: "local",
+    label: "Local disk",
+    hint: "No setup required. Fine for a single-server deployment.",
+  },
+  {
+    value: "s3",
+    label: "Amazon S3",
+    hint: "Store uploads in an AWS S3 bucket.",
+  },
+  {
+    value: "r2",
+    label: "Cloudflare R2",
+    hint: "S3-compatible storage on Cloudflare's network.",
+  },
+];
+
+function inferStorageType(status: StorageCardProps["status"]): StorageType {
+  const hasS3Fields = !!(
+    status.region ||
+    status.bucket ||
+    status.accessKeyId ||
+    status.hasSecretAccessKey ||
+    status.endpoint
+  );
+  if (!hasS3Fields) {
+    return "local";
+  }
+  return status.endpoint || status.region === "auto" ? "r2" : "s3";
+}
+
+function StorageCardImpl({ status }: StorageCardProps) {
   const [isSaving, startSave] = useTransition();
   const [isTesting, startTest] = useTransition();
+  const [justSaved, setJustSaved] = useState(false);
 
+  const [storageType, setStorageType] = useState<StorageType>(() =>
+    inferStorageType(status)
+  );
   const [region, setRegion] = useState(status.region);
   const [bucket, setBucket] = useState(status.bucket);
   const [accessKeyId, setAccessKeyId] = useState(status.accessKeyId);
@@ -32,7 +78,8 @@ export function StorageCard({ status }: StorageCardProps) {
   const [publicUrlBase, setPublicUrlBase] = useState(status.publicUrlBase);
   const [localDir, setLocalDir] = useState(status.localDir);
 
-  const { isDirty, markClean } = useDirtyState({
+  const { baseline, isDirty, markClean } = useDirtyState({
+    storageType,
     region,
     bucket,
     accessKeyId,
@@ -43,31 +90,59 @@ export function StorageCard({ status }: StorageCardProps) {
     localDir,
   });
 
+  useEffect(() => {
+    if (!justSaved) {
+      return;
+    }
+    const timer = setTimeout(() => setJustSaved(false), 2000);
+    return () => clearTimeout(timer);
+  }, [justSaved]);
+
   function secretValue() {
     return secretCleared ? "" : secretAccessKey.trim() || UNCHANGED_SECRET;
   }
 
+  // The type picker is purely a client-side view over the same six fields —
+  // there's no separate "storage type" column. Choosing Local and saving
+  // clears the S3/R2 fields (an explicit, informed switch — see the warning
+  // callout below); choosing S3 clears a leftover R2 endpoint so it can't
+  // silently point an AWS bucket at the wrong host.
+  function buildPayload() {
+    if (storageType === "local") {
+      return {
+        region: "",
+        bucket: "",
+        accessKeyId: "",
+        secretAccessKey: "",
+        endpoint: "",
+        publicUrlBase: "",
+        localDir,
+      };
+    }
+    return {
+      region: storageType === "r2" ? "" : region,
+      bucket,
+      accessKeyId,
+      secretAccessKey: secretValue(),
+      endpoint: storageType === "r2" ? endpoint : "",
+      publicUrlBase,
+      localDir,
+    };
+  }
+
   function handleSave() {
     startSave(async () => {
-      const result = await updateStorageSettingsAction({
-        region,
-        bucket,
-        accessKeyId,
-        secretAccessKey: secretValue(),
-        endpoint,
-        publicUrlBase,
-        localDir,
-      });
+      const result = await updateStorageSettingsAction(buildPayload());
 
       if (!result.success) {
         toast.error(result.error);
         return;
       }
 
-      toast.success("Storage settings saved");
       setSecretAccessKey("");
       setSecretCleared(false);
       markClean({
+        storageType,
         region,
         bucket,
         accessKeyId,
@@ -77,7 +152,20 @@ export function StorageCard({ status }: StorageCardProps) {
         publicUrlBase,
         localDir,
       });
+      setJustSaved(true);
     });
+  }
+
+  function handleDiscard() {
+    setStorageType(baseline.storageType);
+    setRegion(baseline.region);
+    setBucket(baseline.bucket);
+    setAccessKeyId(baseline.accessKeyId);
+    setSecretAccessKey(baseline.secretAccessKey);
+    setSecretCleared(baseline.secretCleared);
+    setEndpoint(baseline.endpoint);
+    setPublicUrlBase(baseline.publicUrlBase);
+    setLocalDir(baseline.localDir);
   }
 
   function handleTest() {
@@ -87,7 +175,7 @@ export function StorageCard({ status }: StorageCardProps) {
         bucket,
         accessKeyId,
         secretAccessKey: secretValue(),
-        endpoint,
+        endpoint: storageType === "r2" ? endpoint : "",
       });
 
       if (!result.success) {
@@ -98,160 +186,166 @@ export function StorageCard({ status }: StorageCardProps) {
     });
   }
 
-  const s3Configured = !!(
-    region &&
-    bucket &&
-    accessKeyId &&
-    status.hasSecretAccessKey
+  const initialHadS3Data = !!(
+    status.region ||
+    status.bucket ||
+    status.accessKeyId ||
+    status.hasSecretAccessKey ||
+    status.endpoint
   );
+  const willClearS3OnSave = storageType === "local" && initialHadS3Data;
+
+  const testDisabled =
+    storageType === "r2"
+      ? !(bucket && accessKeyId && endpoint)
+      : !(region && bucket && accessKeyId);
 
   return (
-    <section className="rounded-ir-card border border-ir-border bg-ir-surface p-4 shadow-ir-xs">
-      <div className="mb-4 flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-sm font-semibold text-ir-heading">
-            File storage
-          </h2>
-          <p className="mt-0.5 text-xs text-ir-muted">
-            Where uploaded images (avatars, post/changelog attachments) are
-            stored. Leave S3/R2 blank to use local disk — no setup required for
-            a single-server deployment.
-          </p>
-        </div>
-        <StatusPill
-          label={s3Configured ? "S3/R2" : "Local disk"}
-          variant={s3Configured ? "success" : "neutral"}
-        />
+    <div>
+      <RadioGroup
+        className="grid gap-2.5 sm:grid-cols-3"
+        onValueChange={(value) => setStorageType(value as StorageType)}
+        value={storageType}
+      >
+        {STORAGE_TYPE_OPTIONS.map((option) => (
+          <label
+            className={cn(
+              "flex cursor-pointer items-start gap-2.5 rounded-ir-md border p-3 transition-colors duration-150 ease-ir-standard",
+              storageType === option.value
+                ? "border-ir-primary bg-ir-primary/5"
+                : "border-ir-border hover:border-ir-primary/40"
+            )}
+            htmlFor={`storage-type-${option.value}`}
+            key={option.value}
+          >
+            <RadioGroupItem
+              className="mt-0.5"
+              id={`storage-type-${option.value}`}
+              value={option.value}
+            />
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-ir-heading">
+                {option.label}
+              </span>
+              <span className="mt-0.5 block text-xs text-ir-muted">
+                {option.hint}
+              </span>
+            </span>
+          </label>
+        ))}
+      </RadioGroup>
+
+      {willClearS3OnSave && (
+        <Callout className="mt-3" variant="warning">
+          Switching to local disk will clear your saved S3/R2 credentials when
+          you save — you'll need to re-enter them to switch back.
+        </Callout>
+      )}
+
+      <div className="mt-4">
+        {storageType === "local" && (
+          <Field
+            hint="Only used while S3/R2 is unconfigured."
+            htmlFor="storage-local-dir"
+            label="Local storage directory"
+          >
+            <Input
+              id="storage-local-dir"
+              onChange={(e) => setLocalDir(e.target.value)}
+              placeholder="public/uploads (default)"
+              value={localDir}
+            />
+          </Field>
+        )}
+
+        {storageType !== "local" && (
+          <FormGrid>
+            {storageType === "s3" ? (
+              <Field htmlFor="storage-region" label="Region" required>
+                <Input
+                  id="storage-region"
+                  onChange={(e) => setRegion(e.target.value)}
+                  placeholder="us-east-1"
+                  value={region}
+                />
+              </Field>
+            ) : (
+              <Field htmlFor="storage-endpoint" label="Endpoint" required>
+                <Input
+                  id="storage-endpoint"
+                  onChange={(e) => setEndpoint(e.target.value)}
+                  placeholder="https://<account-id>.r2.cloudflarestorage.com"
+                  value={endpoint}
+                />
+              </Field>
+            )}
+
+            <Field htmlFor="storage-bucket" label="Bucket" required>
+              <Input
+                id="storage-bucket"
+                onChange={(e) => setBucket(e.target.value)}
+                placeholder="idearoads-uploads"
+                value={bucket}
+              />
+            </Field>
+
+            <Field
+              htmlFor="storage-access-key-id"
+              label="Access key ID"
+              required
+            >
+              <Input
+                id="storage-access-key-id"
+                onChange={(e) => setAccessKeyId(e.target.value)}
+                placeholder="AKIA…"
+                value={accessKeyId}
+              />
+            </Field>
+
+            <SecretField
+              cleared={secretCleared}
+              fromEnv={status.secretAccessKeyFromEnv}
+              hasValue={status.hasSecretAccessKey}
+              id="storage-secret-access-key"
+              label="Secret access key"
+              onChange={setSecretAccessKey}
+              onClear={() => {
+                setSecretCleared(true);
+                setSecretAccessKey("");
+              }}
+              required
+              value={secretAccessKey}
+            />
+
+            <Field
+              className="sm:col-span-2"
+              hint="Leave blank to derive it automatically from region + bucket."
+              htmlFor="storage-public-url-base"
+              label="Public URL base"
+            >
+              <Input
+                id="storage-public-url-base"
+                onChange={(e) => setPublicUrlBase(e.target.value)}
+                placeholder="https://idearoads-uploads.s3.us-east-1.amazonaws.com"
+                value={publicUrlBase}
+              />
+            </Field>
+          </FormGrid>
+        )}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="block" htmlFor="storage-region">
-          <span className="mb-1.5 block text-sm font-semibold text-ir-heading">
-            Region
-          </span>
-          <Input
-            id="storage-region"
-            onChange={(e) => setRegion(e.target.value)}
-            placeholder="us-east-1 (or auto for R2)"
-            value={region}
-          />
-        </label>
-
-        <label className="block" htmlFor="storage-bucket">
-          <span className="mb-1.5 block text-sm font-semibold text-ir-heading">
-            Bucket
-          </span>
-          <Input
-            id="storage-bucket"
-            onChange={(e) => setBucket(e.target.value)}
-            placeholder="idearoads-uploads"
-            value={bucket}
-          />
-        </label>
-
-        <label className="block" htmlFor="storage-access-key-id">
-          <span className="mb-1.5 block text-sm font-semibold text-ir-heading">
-            Access key ID
-          </span>
-          <Input
-            id="storage-access-key-id"
-            onChange={(e) => setAccessKeyId(e.target.value)}
-            placeholder="AKIA…"
-            value={accessKeyId}
-          />
-        </label>
-
-        <SecretField
-          cleared={secretCleared}
-          fromEnv={status.secretAccessKeyFromEnv}
-          hasValue={status.hasSecretAccessKey}
-          id="storage-secret-access-key"
-          label="Secret access key"
-          onChange={setSecretAccessKey}
-          onClear={() => {
-            setSecretCleared(true);
-            setSecretAccessKey("");
-          }}
-          value={secretAccessKey}
-        />
-
-        <label className="block" htmlFor="storage-endpoint">
-          <span className="mb-1.5 block text-sm font-semibold text-ir-heading">
-            Endpoint
-          </span>
-          <Input
-            id="storage-endpoint"
-            onChange={(e) => setEndpoint(e.target.value)}
-            placeholder="Leave blank for AWS S3"
-            value={endpoint}
-          />
-        </label>
-
-        <label className="block" htmlFor="storage-public-url-base">
-          <span className="mb-1.5 block text-sm font-semibold text-ir-heading">
-            Public URL base
-          </span>
-          <Input
-            id="storage-public-url-base"
-            onChange={(e) => setPublicUrlBase(e.target.value)}
-            placeholder="https://idearoads-uploads.s3.us-east-1.amazonaws.com"
-            value={publicUrlBase}
-          />
-        </label>
-
-        <label className="block sm:col-span-2" htmlFor="storage-local-dir">
-          <span className="mb-1.5 block text-sm font-semibold text-ir-heading">
-            Local storage directory
-          </span>
-          <Input
-            id="storage-local-dir"
-            onChange={(e) => setLocalDir(e.target.value)}
-            placeholder="public/uploads (default)"
-            value={localDir}
-          />
-          <span className="mt-1 block text-xs text-ir-muted">
-            Only used while S3/R2 above is unconfigured.
-          </span>
-        </label>
-      </div>
-
-      <div className="mt-4 flex items-center justify-end gap-2">
-        <Button
-          disabled={isTesting || !(region && bucket && accessKeyId)}
-          onClick={handleTest}
-          type="button"
-          variant="outline"
-        >
-          {isTesting ? "Testing…" : "Test connection"}
-        </Button>
-        <Button
-          disabled={isSaving || !isDirty}
-          onClick={handleSave}
-          type="button"
-        >
-          {isSaving ? "Saving…" : "Save"}
-        </Button>
-      </div>
-    </section>
+      <SaveBar
+        isDirty={isDirty}
+        isSaving={isSaving}
+        isTesting={isTesting}
+        justSaved={justSaved}
+        onDiscard={handleDiscard}
+        onSave={handleSave}
+        onTest={storageType === "local" ? undefined : handleTest}
+        testDisabled={testDisabled}
+      />
+    </div>
   );
 }
 
-function StatusPill({
-  label,
-  variant,
-}: {
-  label: string;
-  variant: "success" | "neutral";
-}) {
-  return (
-    <span
-      className={
-        variant === "success"
-          ? "shrink-0 rounded-ir-full bg-ir-success/10 px-2 py-0.5 text-2xs font-semibold text-ir-success"
-          : "shrink-0 rounded-ir-full bg-ir-muted-surface px-2 py-0.5 text-2xs font-semibold text-ir-muted"
-      }
-    >
-      {label}
-    </span>
-  );
-}
+export const StorageCard = memo(StorageCardImpl);

@@ -149,7 +149,7 @@ export function SetupWizard({ appHost, adminUrl }: SetupWizardProps) {
           src={LOGO_PATH}
           width={500}
         />
-        <div className="w-full max-w-2xl rounded-ir-xl border border-ir-border bg-ir-surface p-8 shadow-ir-lg">
+        <div className="w-full max-w-4xl rounded-ir-xl border border-ir-border bg-ir-surface p-8 shadow-ir-lg">
           <div className="text-center">
             <h1 className="text-xl font-bold text-ir-heading">
               Connect your integrations

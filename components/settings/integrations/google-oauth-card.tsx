@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { memo, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { updateGoogleOAuthSettingsAction } from "@/app/actions/integration-settings";
+import { CodeBlock } from "@/components/settings/code-block";
+import { Callout } from "@/components/settings/integrations/callout";
+import { Field, FormGrid } from "@/components/settings/integrations/field";
+import { SaveBar } from "@/components/settings/integrations/save-bar";
 import { SecretField } from "@/components/settings/integrations/secret-field";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDirtyState } from "@/hooks/use-dirty-state";
 import {
@@ -17,18 +20,27 @@ interface GoogleOAuthCardProps {
   status: IntegrationSettingsStatus["google"];
 }
 
-export function GoogleOAuthCard({ status, appUrl }: GoogleOAuthCardProps) {
+function GoogleOAuthCardImpl({ status, appUrl }: GoogleOAuthCardProps) {
   const [isSaving, startSave] = useTransition();
+  const [justSaved, setJustSaved] = useState(false);
 
   const [clientId, setClientId] = useState(status.clientId);
   const [clientSecret, setClientSecret] = useState("");
   const [clientSecretCleared, setClientSecretCleared] = useState(false);
 
-  const { isDirty, markClean } = useDirtyState({
+  const { baseline, isDirty, markClean } = useDirtyState({
     clientId,
     clientSecret,
     clientSecretCleared,
   });
+
+  useEffect(() => {
+    if (!justSaved) {
+      return;
+    }
+    const timer = setTimeout(() => setJustSaved(false), 2000);
+    return () => clearTimeout(timer);
+  }, [justSaved]);
 
   function handleSave() {
     startSave(async () => {
@@ -44,8 +56,8 @@ export function GoogleOAuthCard({ status, appUrl }: GoogleOAuthCardProps) {
         return;
       }
 
-      toast.success(
-        "Google OAuth settings saved — restart the app for the change to take effect"
+      toast.info(
+        "Restart required for this change to take effect (a redeploy or dev-server reload)."
       );
       setClientSecret("");
       setClientSecretCleared(false);
@@ -54,45 +66,58 @@ export function GoogleOAuthCard({ status, appUrl }: GoogleOAuthCardProps) {
         clientSecret: "",
         clientSecretCleared: false,
       });
+      setJustSaved(true);
     });
   }
 
+  function handleDiscard() {
+    setClientId(baseline.clientId);
+    setClientSecret(baseline.clientSecret);
+    setClientSecretCleared(baseline.clientSecretCleared);
+  }
+
+  const redirectUri = `${appUrl}/api/auth/callback/google`;
+
   return (
-    <section className="rounded-ir-card border border-ir-border bg-ir-surface p-4 shadow-ir-xs">
-      <div className="mb-4 flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-sm font-semibold text-ir-heading">
-            Google sign-in
-          </h2>
-          <p className="mt-0.5 text-xs text-ir-muted">
-            Enables "Continue with Google" on the sign-in screen. Authorized
-            redirect URI:{" "}
-            <code className="rounded-ir-xs bg-ir-muted-surface px-1 py-0.5 text-2xs">
-              {appUrl}/api/auth/callback/google
-            </code>
-          </p>
-        </div>
-        <StatusPill configured={status.hasClientSecret && !!status.clientId} />
+    <div className="space-y-4">
+      <div>
+        <p className="mb-1.5 text-sm font-semibold text-ir-heading">
+          Authorized redirect URI
+        </p>
+        <CodeBlock code={redirectUri} />
+        <p className="mt-1.5 text-xs text-ir-muted">
+          Add this exact URI to your OAuth client's "Authorized redirect URIs"
+          in Google Cloud Console.
+        </p>
       </div>
 
-      <div className="rounded-ir-sm border border-ir-warning/30 bg-ir-warning/5 p-3 text-xs text-ir-muted">
+      <Callout variant="info">
+        <strong className="font-semibold text-ir-heading">
+          Getting credentials from Google Cloud Console
+        </strong>
+        <ol>
+          <li>Open APIs &amp; Services → Credentials.</li>
+          <li>Create an OAuth 2.0 Client ID of type "Web application".</li>
+          <li>Paste the redirect URI above into Authorized redirect URIs.</li>
+          <li>Copy the generated Client ID and Client secret below.</li>
+        </ol>
+      </Callout>
+
+      <Callout variant="warning">
         Better Auth builds its Google client once, at app start — saving here
         requires an app restart (a redeploy, or a dev-server reload) before
-        sign-in picks up the change. See docs/implementation/INTEGRATIONS.md.
-      </div>
+        sign-in picks up the change.
+      </Callout>
 
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <label className="block" htmlFor="google-client-id">
-          <span className="mb-1.5 block text-sm font-semibold text-ir-heading">
-            Client ID
-          </span>
+      <FormGrid>
+        <Field htmlFor="google-client-id" label="Client ID" required>
           <Input
             id="google-client-id"
             onChange={(e) => setClientId(e.target.value)}
             placeholder="1234567890-abc.apps.googleusercontent.com"
             value={clientId}
           />
-        </label>
+        </Field>
 
         <SecretField
           cleared={clientSecretCleared}
@@ -105,33 +130,20 @@ export function GoogleOAuthCard({ status, appUrl }: GoogleOAuthCardProps) {
             setClientSecretCleared(true);
             setClientSecret("");
           }}
+          required
           value={clientSecret}
         />
-      </div>
+      </FormGrid>
 
-      <div className="mt-4 flex items-center justify-end">
-        <Button
-          disabled={isSaving || !isDirty}
-          onClick={handleSave}
-          type="button"
-        >
-          {isSaving ? "Saving…" : "Save"}
-        </Button>
-      </div>
-    </section>
+      <SaveBar
+        isDirty={isDirty}
+        isSaving={isSaving}
+        justSaved={justSaved}
+        onDiscard={handleDiscard}
+        onSave={handleSave}
+      />
+    </div>
   );
 }
 
-function StatusPill({ configured }: { configured: boolean }) {
-  return (
-    <span
-      className={
-        configured
-          ? "shrink-0 rounded-ir-full bg-ir-success/10 px-2 py-0.5 text-2xs font-semibold text-ir-success"
-          : "shrink-0 rounded-ir-full bg-ir-muted-surface px-2 py-0.5 text-2xs font-semibold text-ir-muted"
-      }
-    >
-      {configured ? "Configured" : "Not configured"}
-    </span>
-  );
-}
+export const GoogleOAuthCard = memo(GoogleOAuthCardImpl);
