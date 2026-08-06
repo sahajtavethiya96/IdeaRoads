@@ -80,6 +80,7 @@ IdeaRoads has **exactly four product roles**. Full definitions and the complete 
 | [implementation/DATABASE.md](implementation/DATABASE.md) | Full database schema and role mapping |
 | [implementation/ARCHITECTURE.md](implementation/ARCHITECTURE.md) | Routes, folder structure, engineering conventions |
 | [implementation/JOBS.md](implementation/JOBS.md) | Background jobs and outbound webhooks |
+| [implementation/INTEGRATIONS.md](implementation/INTEGRATIONS.md) | Optional config (SMTP, Google OAuth, storage, webhooks) — database vs. `.env`, encryption, restart-required exceptions |
 
 ---
 

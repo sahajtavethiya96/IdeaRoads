@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { featureFlags } from "@/db/schema";
 import { db } from "@/lib/db";
+import { env } from "@/lib/env";
 
 export type FeatureFlag = typeof featureFlags.$inferSelect;
 
@@ -88,5 +89,17 @@ export const DEFAULT_FEATURE_FLAGS: Array<{
     // which invited members use after choosing a password during setup.
     description: "Email + password sign-in",
     isEnabled: true,
+  },
+  {
+    key: "show_landing_page",
+    // Self-hosted deployments (the default) send logged-out visitors at `/`
+    // straight to /signin; this flag serves the marketing landing page there
+    // instead — meant for the hosted IdeaRoads.com instance. Seeded (once,
+    // INSERT ON CONFLICT DO NOTHING — see lib/worker/boss.ts) from the legacy
+    // NEXT_PUBLIC_SHOW_LANDING_PAGE env var so an existing install that set
+    // it keeps the same behavior after upgrading; from then on this flag in
+    // Orbit → Feature Flags is the only thing that controls it.
+    description: "Serve the marketing landing page at / instead of /signin",
+    isEnabled: env.NEXT_PUBLIC_SHOW_LANDING_PAGE,
   },
 ];

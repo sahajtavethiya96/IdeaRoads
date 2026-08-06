@@ -3,16 +3,17 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { emailEvents } from "@/db/schema";
 import { db } from "@/lib/db";
-import { env } from "@/lib/env";
+import { getEmailWebhookSecret } from "@/lib/integration-settings";
 
 export async function POST(request: Request) {
-  if (!env.EMAIL_WEBHOOK_SECRET) {
+  const webhookSecret = await getEmailWebhookSecret();
+  if (!webhookSecret) {
     return NextResponse.json(
-      { error: "EMAIL_WEBHOOK_SECRET is not configured" },
+      { error: "The email webhook secret is not configured" },
       { status: 503 }
     );
   }
-  if (!isValidWebhookSecret(request)) {
+  if (!isValidWebhookSecret(request, webhookSecret)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
   return NextResponse.json({ ok: true });
 }
 
-function isValidWebhookSecret(request: Request) {
+function isValidWebhookSecret(request: Request, webhookSecret: string) {
   const authorization = request.headers.get("authorization");
   const candidates = [
     request.headers.get("x-webhook-secret"),
@@ -55,7 +56,7 @@ function isValidWebhookSecret(request: Request) {
   ].filter(Boolean);
 
   return candidates.some((candidate) =>
-    safeEqual(String(candidate), env.EMAIL_WEBHOOK_SECRET ?? "")
+    safeEqual(String(candidate), webhookSecret)
   );
 }
 

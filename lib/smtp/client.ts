@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { env } from "@/lib/env";
+import { getSmtpSettings } from "@/lib/integration-settings";
 
 export interface SmtpSendInput {
   html: string;
@@ -14,14 +14,20 @@ export interface SmtpSendResult {
   status: string;
 }
 
-export function isSmtpConfigured() {
-  return !!(env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS && env.EMAIL_FROM);
+// Read fresh from lib/integration-settings.ts on every call — never cached
+// beyond the current request — so an SMTP change made in Admin →
+// Integrations (or the setup wizard) applies to the very next email sent,
+// with no restart.
+export async function isSmtpConfigured() {
+  return (await getSmtpSettings()) !== null;
 }
 
 export async function sendEmailViaSmtp(
   input: SmtpSendInput
 ): Promise<SmtpSendResult> {
-  if (!isSmtpConfigured()) {
+  const smtp = await getSmtpSettings();
+
+  if (!smtp) {
     console.log("[email:dev]", {
       subject: input.subject,
       text: input.text,
@@ -34,16 +40,16 @@ export async function sendEmailViaSmtp(
   }
 
   const transporter = nodemailer.createTransport({
-    host: env.SMTP_HOST,
-    port: env.SMTP_PORT ?? 587,
+    host: smtp.host,
+    port: smtp.port,
     auth: {
-      user: env.SMTP_USER,
-      pass: env.SMTP_PASS,
+      user: smtp.user,
+      pass: smtp.pass,
     },
   });
 
   const info = await transporter.sendMail({
-    from: env.EMAIL_FROM,
+    from: smtp.from,
     to: Array.isArray(input.to) ? input.to.join(", ") : input.to,
     subject: input.subject,
     html: input.html,

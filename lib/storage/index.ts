@@ -12,12 +12,12 @@ export async function uploadFile(
   buffer: Buffer,
   contentType: string
 ): Promise<string> {
-  return isS3Configured()
+  return (await isS3Configured())
     ? uploadFileS3(key, buffer, contentType)
     : uploadFileLocal(key, buffer);
 }
 
 /** Deletes a previously uploaded file by its public URL. */
 export async function deleteFile(url: string): Promise<void> {
-  return isS3Configured() ? deleteFileS3(url) : deleteFileLocal(url);
+  return (await isS3Configured()) ? deleteFileS3(url) : deleteFileLocal(url);
 }

@@ -96,23 +96,28 @@ Every pg-boss handler reads current state first, checks if the action already co
 
 ## Environment Variables
 
+Only `DATABASE_URL` / `APP_SECRET` / `NEXT_PUBLIC_APP_URL` are boot-time
+required. Google OAuth, SMTP, S3/R2 storage, and the inbound email webhook
+secret are optional here — they can instead be set from **Admin →
+Integrations** or the setup wizard, stored in the database (secrets encrypted
+at rest, keyed off `APP_SECRET` — see `lib/crypto.ts`). A database value
+always wins over the matching env var below. Full picture, including which
+setting needs an app restart to take effect, in
+[`INTEGRATIONS.md`](INTEGRATIONS.md).
+
 ```env
 # Database
 DATABASE_URL="postgresql://idearoads:idearoads@localhost:5432/idearoads"
 
-# Better Auth
-BETTER_AUTH_SECRET="generate with: openssl rand -base64 32"
-BETTER_AUTH_URL="http://localhost:3000"
-
 # App
+APP_SECRET="generate with: openssl rand -base64 32"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
-NEXT_PUBLIC_APP_NAME="IdeaRoads"
 
-# Google OAuth (optional — leave blank to disable)
+# Google OAuth (optional — leave blank to disable, or set via Integrations)
 GOOGLE_CLIENT_ID=""
 GOOGLE_CLIENT_SECRET=""
 
-# SMTP — works with any SMTP server (Mailtrap for dev, any for prod)
+# SMTP (optional here — or set via Integrations)
 SMTP_HOST="smtp.mailtrap.io"
 SMTP_PORT="587"
 SMTP_USER=""
@@ -122,7 +127,4 @@ EMAIL_FROM="IdeaRoads <noreply@yourdomain.com>"
 # Platform Admin
 ORBIT_SEED_EMAIL=""            # First Platform Admin email — seeded at startup if set
 ENABLE_IMPERSONATION="false"   # Set to "true" to allow Platform Admin user impersonation
-
-# Encryption — for webhook secrets and API key display tokens
-ENCRYPTION_KEY=""              # generate with: openssl rand -hex 32 (AES-256 key)
 ```

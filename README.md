@@ -59,6 +59,18 @@ pnpm make:admin you@example.com
 
 Without `SMTP_HOST`, `SMTP_USER`, and `SMTP_PASS` set, the worker logs emails to stdout instead of sending them.
 
+### Configuration
+
+`.env` only needs the handful of values required before the database is even
+reachable (`DATABASE_URL`, `APP_SECRET`, `NEXT_PUBLIC_APP_URL`). Everything
+optional — SMTP, Google OAuth, S3/R2 file storage, the inbound email webhook
+secret — can instead be set from **Admin → Integrations** or the first-run
+setup wizard, backed by the database, with secrets encrypted at rest. `.env`
+still works for all of these as a fallback for existing installs. See
+[`docs/implementation/INTEGRATIONS.md`](./docs/implementation/INTEGRATIONS.md)
+for the full picture, including which settings need an app restart to take
+effect.
+
 ---
 
 ## What's Implemented

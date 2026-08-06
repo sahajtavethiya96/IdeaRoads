@@ -25,3 +25,4 @@ export * from "@/db/schema/embed";
 export * from "@/db/schema/pending-email-changes";
 export * from "@/db/schema/portal-verifications";
 export * from "@/db/schema/orbit";
+export * from "@/db/schema/integration-settings";

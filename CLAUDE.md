@@ -13,6 +13,21 @@ Before implementing any feature:
 7. Keep consistency with existing codebase
 8. Run typecheck before finishing
 
+## Configuration & Integrations
+
+Only `DATABASE_URL`, `APP_SECRET`, and `NEXT_PUBLIC_APP_URL` (plus its
+two-host siblings, read on the Edge runtime) are boot-time-required env
+vars. Everything else optional — SMTP, Google OAuth, S3/R2 storage, the
+inbound email webhook secret — lives in the `integration_settings` database
+table, editable from Admin → Integrations or the setup wizard, with a
+database value always winning over the matching `.env` var (`dbValue ??
+envValue`, per field). Secrets are encrypted at rest (AES-256-GCM keyed off
+`APP_SECRET`) and the API never returns plaintext to the client — only
+`has<Field>` flags. One documented exception reads these once at process
+boot rather than live: Google OAuth, because `lib/auth.ts` builds its
+Better Auth client at module-evaluation time — a saved credential change
+needs an app restart. Full detail: `docs/implementation/INTEGRATIONS.md`.
+
 ## Design Philosophy
 
 This product must never feel AI-generated.

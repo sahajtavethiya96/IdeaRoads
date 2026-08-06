@@ -23,9 +23,10 @@ const envSchema = z.object({
   // two applications' sessions — see docs/migration/01-portal-subdomain-auth.md.
   NEXT_PUBLIC_ADMIN_URL: z.url().optional(),
   NEXT_PUBLIC_PORTAL_URL: z.url().optional(),
-  // Self-hosted deployments default to sending logged-out visitors straight to
-  // sign-in instead of the SaaS marketing site. The hosted IdeaRoads instance
-  // sets this to "true" to serve the landing page at `/`.
+  // Legacy — only consulted once, to seed the "show_landing_page" feature
+  // flag's initial value the first time the worker runs (lib/worker/boss.ts).
+  // After that, Orbit → Feature Flags is the only thing that controls it; see
+  // lib/orbit/feature-flags.ts.
   NEXT_PUBLIC_SHOW_LANDING_PAGE: z.preprocess(
     (v) => v === "true",
     z.boolean().default(false)

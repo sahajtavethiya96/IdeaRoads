@@ -12,7 +12,7 @@ import { ProductTour } from "@/components/marketing/product-tour";
 import { PageTransition } from "@/components/motion/page-transition";
 import { LOGO_PATH, PRODUCT_NAME } from "@/config/platform";
 import { getCurrentSession } from "@/lib/authz";
-import { env } from "@/lib/env";
+import { isFeatureEnabled } from "@/lib/orbit/feature-flags";
 import { redirectToSetupIfNeeded } from "@/lib/setup";
 
 const TITLE = `${PRODUCT_NAME} — Collect feedback, ship faster, close the loop`;
@@ -48,8 +48,9 @@ export default async function HomePage() {
   await redirectToSetupIfNeeded();
 
   // Self-hosted deployments (the default) send logged-out visitors straight to
-  // sign-in — the marketing site is only for the hosted SaaS instance.
-  if (!env.NEXT_PUBLIC_SHOW_LANDING_PAGE) {
+  // sign-in — the marketing site is only for the hosted SaaS instance. Toggle
+  // via Orbit → Feature Flags ("show_landing_page"), not an env var.
+  if (!(await isFeatureEnabled("show_landing_page"))) {
     redirect("/signin");
   }
 

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { SetupWizard } from "@/app/setup/setup-wizard";
 import { hasAnyUser } from "@/lib/setup";
-import { portalBaseUrl } from "@/lib/urls";
+import { adminBaseUrl, portalBaseUrl } from "@/lib/urls";
 
 export const metadata = {
   title: "Set up your instance",
@@ -19,5 +19,5 @@ export default async function SetupPage() {
   const appHost =
     portalUrl.hostname + (portalUrl.port ? `:${portalUrl.port}` : "");
 
-  return <SetupWizard appHost={appHost} />;
+  return <SetupWizard adminUrl={adminBaseUrl()} appHost={appHost} />;
 }

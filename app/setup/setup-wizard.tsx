@@ -3,23 +3,32 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
+import { getIntegrationSettingsStatusAction } from "@/app/actions/integration-settings";
 import { createFirstAdminAction } from "@/app/actions/setup";
 import { createWorkspaceAction } from "@/app/actions/workspace";
 import { StepWorkspace } from "@/app/onboarding/_components/steps/step-workspace";
+import { IntegrationsPanel } from "@/components/settings/integrations/integrations-panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LOGO_PATH, PRODUCT_NAME } from "@/config/platform";
 import { authClient } from "@/lib/auth-client";
+import type { IntegrationSettingsStatus } from "@/lib/integration-settings-types";
 
 const MIN_PASSWORD_LENGTH = 8;
 
 interface SetupWizardProps {
+  adminUrl: string;
   appHost: string;
 }
 
-export function SetupWizard({ appHost }: SetupWizardProps) {
+export function SetupWizard({ appHost, adminUrl }: SetupWizardProps) {
   const router = useRouter();
-  const [step, setStep] = useState<"account" | "workspace">("account");
+  const [step, setStep] = useState<"account" | "workspace" | "integrations">(
+    "account"
+  );
+  const [workspaceSlug, setWorkspaceSlug] = useState<string | null>(null);
+  const [integrationsStatus, setIntegrationsStatus] =
+    useState<IntegrationSettingsStatus | null>(null);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -92,7 +101,15 @@ export function SetupWizard({ appHost }: SetupWizardProps) {
       return;
     }
 
-    router.push(`/${result.data.slug}`);
+    setWorkspaceSlug(result.data.slug);
+    setStep("integrations");
+    // Fetch in the background — the step renders its own loading state
+    // rather than blocking the transition on this request.
+    getIntegrationSettingsStatusAction().then(setIntegrationsStatus);
+  }
+
+  function finishSetup() {
+    router.push(`/${workspaceSlug}`);
   }
 
   if (step === "workspace") {
@@ -116,6 +133,52 @@ export function SetupWizard({ appHost }: SetupWizardProps) {
               name.trim() ? `${name.trim()}'s Workspace` : "My Workspace"
             }
           />
+        </div>
+      </main>
+    );
+  }
+
+  if (step === "integrations") {
+    return (
+      <main className="flex min-h-screen flex-col items-center bg-ir-primary-light/20 px-4 py-10">
+        <Image
+          alt={PRODUCT_NAME}
+          className="mb-8 h-auto w-[140px] sm:w-[160px] md:w-[180px]"
+          height={164}
+          priority
+          src={LOGO_PATH}
+          width={500}
+        />
+        <div className="w-full max-w-2xl rounded-ir-xl border border-ir-border bg-ir-surface p-8 shadow-ir-lg">
+          <div className="text-center">
+            <h1 className="text-xl font-bold text-ir-heading">
+              Connect your integrations
+            </h1>
+            <p className="mt-1.5 text-sm text-ir-muted">
+              Optional — configure now or skip and set these up any time from
+              Admin → Integrations.
+            </p>
+          </div>
+
+          <div className="mt-6">
+            {integrationsStatus ? (
+              <IntegrationsPanel
+                appUrl={adminUrl}
+                status={integrationsStatus}
+              />
+            ) : (
+              <p className="py-8 text-center text-sm text-ir-muted">Loading…</p>
+            )}
+          </div>
+
+          <div className="mt-6 flex justify-end gap-3 border-t border-ir-border pt-6">
+            <Button onClick={finishSetup} type="button" variant="ghost">
+              Skip for now
+            </Button>
+            <Button onClick={finishSetup} type="button">
+              Finish setup
+            </Button>
+          </div>
         </div>
       </main>
     );

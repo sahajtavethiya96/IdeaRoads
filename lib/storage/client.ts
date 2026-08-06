@@ -1,21 +1,17 @@
 import { S3Client } from "@aws-sdk/client-s3";
-import { env } from "@/lib/env";
+import type { StorageS3Settings } from "@/lib/integration-settings";
 
-let client: S3Client | null = null;
-
-// Only called after lib/storage/index.ts's requireStorageConfig() has
-// confirmed these are set, so the non-null assertions hold at runtime.
-export function getS3Client(): S3Client {
-  if (!client) {
-    client = new S3Client({
-      region: env.STORAGE_S3_REGION!,
-      endpoint: env.STORAGE_S3_ENDPOINT,
-      forcePathStyle: Boolean(env.STORAGE_S3_ENDPOINT),
-      credentials: {
-        accessKeyId: env.STORAGE_S3_ACCESS_KEY_ID!,
-        secretAccessKey: env.STORAGE_S3_SECRET_ACCESS_KEY!,
-      },
-    });
-  }
-  return client;
+// Built fresh per call (never cached) so a storage config change made via
+// Admin → Integrations applies to the very next upload, with no restart —
+// constructing an S3Client is local/synchronous, no network round trip.
+export function createS3Client(settings: StorageS3Settings): S3Client {
+  return new S3Client({
+    region: settings.region,
+    endpoint: settings.endpoint,
+    forcePathStyle: Boolean(settings.endpoint),
+    credentials: {
+      accessKeyId: settings.accessKeyId,
+      secretAccessKey: settings.secretAccessKey,
+    },
+  });
 }
