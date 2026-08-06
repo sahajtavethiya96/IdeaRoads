@@ -295,6 +295,19 @@ export async function updateStorageSettingsAction(input: {
 }): Promise<ActionResult> {
   const session = await requireAdmin();
   const secretAction = resolveSecretInput(input.secretAccessKey);
+  const localDir = input.localDir.trim();
+
+  // A filesystem path, not a URL — easy to mix up with "Public URL base"
+  // above it. Saving one here silently breaks every upload: files get
+  // written under a garbled relative path derived from the URL, while the
+  // served URL points at public/uploads where nothing was ever written.
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(localDir)) {
+    return {
+      success: false,
+      error:
+        "Local storage directory must be a filesystem path (e.g. public/uploads), not a URL.",
+    };
+  }
 
   try {
     await upsertIntegrationSettings({
@@ -303,7 +316,7 @@ export async function updateStorageSettingsAction(input: {
       storageS3AccessKeyId: input.accessKeyId.trim() || null,
       storageS3Endpoint: input.endpoint.trim() || null,
       storagePublicUrlBase: input.publicUrlBase.trim() || null,
-      storageLocalDir: input.localDir.trim() || null,
+      storageLocalDir: localDir || null,
       storageS3SecretAccessKeyEncrypted: secretColumnPatch(secretAction),
     });
 
