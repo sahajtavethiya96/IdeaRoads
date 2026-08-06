@@ -1,6 +1,12 @@
 "use client";
 
-import { ImageIcon, PencilIcon, PlusIcon, XIcon } from "@phosphor-icons/react";
+import {
+  PencilIcon,
+  PlusIcon,
+  SpinnerIcon,
+  UploadSimpleIcon,
+  XIcon,
+} from "@phosphor-icons/react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import {
@@ -119,7 +125,13 @@ export function ChangelogEditor({
   );
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [coverError, setCoverError] = useState<string | null>(null);
+  const [isCoverDragActive, setIsCoverDragActive] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  // Dragenter/dragleave fire on every child the pointer crosses, so a leave
+  // over an inner element (icon, text) would otherwise flicker the active
+  // state off before the drop zone is actually exited. Counting enter/leave
+  // pairs keeps the active state on until the outermost element is left.
+  const coverDragDepthRef = useRef(0);
   const [label, setLabel] = useState(initialEntry?.label ?? "new_feature");
   const [newLabel, setNewLabel] = useState("");
   const [labelModalOpen, setLabelModalOpen] = useState(false);
@@ -332,14 +344,8 @@ export function ChangelogEditor({
     };
   }, [title, doAutoSave]);
 
-  async function handleCoverImageChange(
-    e: React.ChangeEvent<HTMLInputElement>
-  ) {
-    const file = e.target.files?.[0];
+  async function uploadCoverFile(file: File) {
     setCoverError(null);
-    if (!file) {
-      return;
-    }
     if (!ALLOWED_COVER_IMAGE_TYPES.has(file.type)) {
       setCoverError("Use a PNG, JPEG, WEBP, or GIF image.");
       return;
@@ -362,6 +368,50 @@ export function ChangelogEditor({
       setCoverImageUrl(result.data.url);
     } finally {
       setIsUploadingCover(false);
+    }
+  }
+
+  function handleCoverImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) {
+      return;
+    }
+    uploadCoverFile(file);
+  }
+
+  function handleCoverDragEnter(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    if (isUploadingCover) {
+      return;
+    }
+    coverDragDepthRef.current += 1;
+    setIsCoverDragActive(true);
+  }
+
+  function handleCoverDragOver(e: React.DragEvent<HTMLLabelElement>) {
+    // Required for onDrop to fire at all — browsers otherwise treat the
+    // dragover target as "not a valid drop target" and reject the drop.
+    e.preventDefault();
+  }
+
+  function handleCoverDragLeave(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    coverDragDepthRef.current = Math.max(0, coverDragDepthRef.current - 1);
+    if (coverDragDepthRef.current === 0) {
+      setIsCoverDragActive(false);
+    }
+  }
+
+  function handleCoverDrop(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    coverDragDepthRef.current = 0;
+    setIsCoverDragActive(false);
+    if (isUploadingCover) {
+      return;
+    }
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      uploadCoverFile(file);
     }
   }
 
@@ -539,28 +589,59 @@ export function ChangelogEditor({
             </span>
           </label>
           {coverImageUrl ? (
-            <div className="relative block w-full">
+            <div className="group relative block w-full overflow-hidden rounded-ir-lg border border-ir-border bg-ir-muted-surface">
               <ImagePreviewThumbnail
-                className="max-h-64 w-full rounded-ir-sm border border-ir-border bg-ir-muted-surface object-contain"
+                alt="Cover image"
+                className="h-[220px] w-full animate-in fade-in-0 rounded-ir-lg object-cover duration-300 ease-ir-standard sm:h-[240px]"
+                key={coverImageUrl}
                 src={coverImageUrl}
               />
               <button
                 aria-label="Remove cover image"
-                className="absolute -top-2 -right-2 flex size-6 items-center justify-center rounded-ir-full border border-ir-border bg-ir-surface text-ir-danger shadow-ir-sm transition-opacity duration-150 ease-ir-standard hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                className="absolute top-3 right-3 flex size-8 items-center justify-center rounded-ir-full border border-ir-border bg-ir-surface text-ir-muted shadow-ir-md transition-colors duration-150 ease-ir-standard hover:border-ir-danger hover:bg-ir-danger hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
                 onClick={removeCoverImage}
                 type="button"
               >
-                <XIcon className="size-3.5" />
+                <XIcon className="size-4" weight="bold" />
               </button>
             </div>
           ) : (
             <label
-              className={`flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-ir-input border border-dashed border-ir-border px-3 py-8 text-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:border-ir-primary/40 hover:text-ir-heading ${
-                isUploadingCover ? "pointer-events-none opacity-50" : ""
+              className={`group flex w-full flex-col items-center justify-center gap-3 rounded-ir-input border border-dashed px-4 py-12 text-center transition-all duration-200 ease-ir-standard has-[:focus-visible]:border-ir-primary has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ir-primary/40 ${
+                isUploadingCover
+                  ? "cursor-default border-ir-border bg-ir-muted-surface/40"
+                  : isCoverDragActive
+                    ? "cursor-pointer border-ir-primary bg-ir-primary/5 shadow-ir-sm"
+                    : "cursor-pointer border-ir-border bg-ir-muted-surface/40 hover:border-ir-primary/50 hover:bg-ir-primary/5"
               }`}
+              onDragEnter={handleCoverDragEnter}
+              onDragLeave={handleCoverDragLeave}
+              onDragOver={handleCoverDragOver}
+              onDrop={handleCoverDrop}
             >
-              <ImageIcon className="size-4" />
-              {isUploadingCover ? "Uploading…" : "Add a cover image"}
+              <span
+                className={`flex size-11 items-center justify-center rounded-ir-full bg-ir-primary/10 text-ir-primary transition-transform duration-200 ease-ir-standard ${
+                  isCoverDragActive ? "scale-110" : "group-hover:scale-110"
+                }`}
+              >
+                {isUploadingCover ? (
+                  <SpinnerIcon className="size-5 animate-spin" />
+                ) : (
+                  <UploadSimpleIcon className="size-5" weight="bold" />
+                )}
+              </span>
+              <span className="space-y-1">
+                <span className="block text-sm font-medium text-ir-heading">
+                  {isUploadingCover
+                    ? "Uploading…"
+                    : "Drag & drop an image here or click to browse"}
+                </span>
+                {!isUploadingCover && (
+                  <span className="block text-xs text-ir-muted">
+                    PNG, JPEG, WEBP, or GIF • Max 4MB
+                  </span>
+                )}
+              </span>
               <input
                 accept="image/png,image/jpeg,image/webp,image/gif"
                 className="sr-only"
