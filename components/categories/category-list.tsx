@@ -339,7 +339,10 @@ export function CategoryList({
                   <CategoryChip color={cat.color} name={cat.name} />
                   {cat.isDefault && (
                     <span className="flex items-center gap-1 rounded-ir-sm border border-ir-border px-1.5 py-0.5 text-2xs font-medium text-ir-muted">
-                      <StarIcon className="size-2.5" />
+                      <StarIcon
+                        className="size-2.5 text-ir-warning"
+                        weight="fill"
+                      />
                       Default
                     </span>
                   )}
@@ -353,12 +356,16 @@ export function CategoryList({
                       {!cat.isDefault && (
                         <button
                           aria-label={`Set ${cat.name} as default`}
-                          className="cursor-pointer rounded-ir-xs p-1.5 text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                          className="group cursor-pointer rounded-ir-xs p-1.5 text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-warning focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
                           onClick={() => handleSetDefault(cat)}
                           title="Set as default"
                           type="button"
                         >
-                          <StarIcon className="size-3.5" />
+                          <StarIcon className="size-3.5 group-hover:hidden" />
+                          <StarIcon
+                            className="hidden size-3.5 group-hover:block"
+                            weight="fill"
+                          />
                         </button>
                       )}
                       <button

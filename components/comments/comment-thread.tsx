@@ -167,30 +167,40 @@ export default function CommentThread({
               </div>
             )}
 
-            {/* Inline reply form */}
+            {/* Inline reply form. Height (clipped via overflow-hidden) and
+                opacity animate on separate nested elements rather than one
+                — Chrome promotes an element that's simultaneously
+                overflow-hidden and opacity-animated to its own compositor
+                layer, which can snap that layer's edge to a different
+                device pixel than the rest of the page and leave a hairline
+                seam along the editor's border. Splitting them keeps the
+                bordered editor's box off that layer. */}
             <AnimatePresence>
               {thread.showReplyForm && (
                 <motion.div
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={
-                    shouldReduceMotion ? undefined : { height: 0, opacity: 0 }
-                  }
-                  initial={
-                    shouldReduceMotion ? false : { height: 0, opacity: 0 }
-                  }
+                  animate={{ height: "auto" }}
+                  exit={shouldReduceMotion ? undefined : { height: 0 }}
+                  initial={shouldReduceMotion ? false : { height: 0 }}
                   style={{ overflow: "hidden" }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
                 >
-                  <CommentReplyForm
-                    api={api}
-                    isSignedIn={canParticipate}
-                    onCancel={() => toggleReplyForm(thread.comment.id)}
-                    onSuccess={(reply) =>
-                      handleReplyAdded(thread.comment.id, reply)
-                    }
-                    parentId={thread.comment.id}
-                    postId={postId}
-                  />
+                  <motion.div
+                    animate={{ opacity: 1 }}
+                    exit={shouldReduceMotion ? undefined : { opacity: 0 }}
+                    initial={shouldReduceMotion ? false : { opacity: 0 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                  >
+                    <CommentReplyForm
+                      api={api}
+                      isSignedIn={canParticipate}
+                      onCancel={() => toggleReplyForm(thread.comment.id)}
+                      onSuccess={(reply) =>
+                        handleReplyAdded(thread.comment.id, reply)
+                      }
+                      parentId={thread.comment.id}
+                      postId={postId}
+                    />
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>

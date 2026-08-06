@@ -1,5 +1,5 @@
 import { AccountSettingsContent } from "@/components/profile/account-settings-content";
-import { ContentContainer } from "@/components/ui/page";
+import { ContentContainerLeft } from "@/components/ui/page";
 import { SetPageHeader } from "@/components/workspace/topbar";
 import { requireAdmin } from "@/lib/authz";
 
@@ -15,12 +15,12 @@ export default async function OrbitAccountPage() {
         portalHref={null}
         title="Account Settings"
       />
-      <ContentContainer>
+      <ContentContainerLeft>
         <AccountSettingsContent
           currentSessionToken={session.session.token}
           userId={session.user.id}
         />
-      </ContentContainer>
+      </ContentContainerLeft>
     </div>
   );
 }

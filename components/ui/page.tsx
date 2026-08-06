@@ -28,6 +28,17 @@ export function ContentContainer({ className, children }: ContentContainerProps)
   );
 }
 
+// Same fixed-width reading/form column as ContentContainer, but left-aligned
+// instead of centered — for Platform Admin pages, which hug the sidebar edge
+// rather than center in the viewport.
+export function ContentContainerLeft({ className, children }: ContentContainerProps) {
+  return (
+    <div className={cn("w-full max-w-5xl", PAGE_PADDING, className)}>
+      {children}
+    </div>
+  );
+}
+
 interface PageBodyProps {
   className?: string;
   children: ReactNode;

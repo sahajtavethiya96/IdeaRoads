@@ -1,6 +1,6 @@
 import { getIntegrationSettingsStatusAction } from "@/app/actions/integration-settings";
 import { IntegrationsPanel } from "@/components/settings/integrations/integrations-panel";
-import { ContentContainer } from "@/components/ui/page";
+import { ContentContainerLeft } from "@/components/ui/page";
 import { SetPageHeader } from "@/components/workspace/topbar";
 import { adminBaseUrl } from "@/lib/urls";
 
@@ -17,9 +17,9 @@ export default async function IntegrationsPage() {
         title="Integrations"
       />
 
-      <ContentContainer>
+      <ContentContainerLeft>
         <IntegrationsPanel appUrl={adminBaseUrl()} status={status} />
-      </ContentContainer>
+      </ContentContainerLeft>
     </div>
   );
 }
