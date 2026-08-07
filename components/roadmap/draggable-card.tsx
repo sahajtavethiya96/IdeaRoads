@@ -35,11 +35,9 @@ interface DraggableCardProps {
 // path as before, and the existing enter/exit/layout animation on each
 // board's outer motion.div carries it into its new position.
 //
-// Every column is its own scroll container (overflow-y-auto, see
-// roadmap-column.tsx / manual-roadmap-board.tsx), and the CSS overflow spec
-// forces overflow-x to auto right along with it (a lone "visible" axis next
-// to a non-visible one gets coerced so scrolling isn't blocked). That clips
-// anything translated past the column's box — exactly what dragging a card
+// Every column is its own scroll container (overflow-y-auto with an explicit
+// overflow-x-hidden, see roadmap-column.tsx / manual-roadmap-board.tsx) so it
+// clips anything translated past the column's box — exactly what dragging a card
 // toward another column does — so the actual drag node gets invisible mid
 // gesture instead of following the pointer. It still needs to drive the real
 // gesture (pointer capture, movement threshold, dragSnapToOrigin) from its

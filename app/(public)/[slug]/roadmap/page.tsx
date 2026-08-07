@@ -15,6 +15,7 @@ import { ManualRoadmapProvider } from "@/components/roadmap/manual/manual-roadma
 import { RoadmapBoard } from "@/components/roadmap/roadmap-board";
 import { Button } from "@/components/ui/button";
 import { PortalHeader } from "@/components/workspace/portal-header";
+import { WORKSPACE_MEMBER } from "@/config/platform";
 import { getCurrentSession } from "@/lib/authz";
 import { listBoardsForWorkspace } from "@/lib/boards/queries";
 import { getActiveCategoriesForWorkspace } from "@/lib/categories/queries";
@@ -91,6 +92,13 @@ export default async function RoadmapPage({ params, searchParams }: Props) {
     : null;
   const isSignedIn = !!session;
   const isMember = !!member;
+  // Drag-to-retriage on the public portal: gated at the same thresholds as
+  // the internal /settings/roadmap board — any workspace member for the
+  // synced board (triage is a fixed Team Member permission, PLATFORM.md §4),
+  // admin-only for the manual board (matches the existing manual-roadmap
+  // curation threshold). Server actions re-check membership independently,
+  // this only controls whether the drag affordance renders.
+  const isAdmin = member ? member.role !== WORKSPACE_MEMBER : false;
 
   // When the roadmap is private it appears not to exist for non-members.
   if (!workspace.roadmapPublic && !isMember) {
@@ -269,23 +277,29 @@ export default async function RoadmapPage({ params, searchParams }: Props) {
                 />
                 <div className="flex-1">
                   <RoadmapBoard
+                    canManage={isMember}
                     columns={derivedColumns}
                     embedQuery={embedQuery}
                     isFiltering={!!(validCategoryId || searchQuery)}
                     isSignedIn={isSignedIn}
+                    workspaceId={workspace.id}
                     workspaceSlug={slug}
                   />
                 </div>
               </>
             ) : (
               <div className="flex-1">
-                {/* Manual roadmap is read-only on the public portal. The board
-                still reads its (unused, since canManage is false) manage/add
-                controls from this context internally, so it needs a provider
-                here too even though the public page never renders the
-                search/manage/add trigger buttons that normally supply it. */}
+                {/* The public portal never gets full item management (add/
+                edit/delete/manage-columns stay workspace-only, canManage
+                false) — but a signed-in admin can still drag a card to
+                retriage it, same as /settings/roadmap. The board still reads
+                its (unused, since canManage is false) manage/add controls
+                from this context internally, so it needs a provider here too
+                even though the public page never renders the search/manage/
+                add trigger buttons that normally supply it. */}
                 <ManualRoadmapProvider>
                   <ManualRoadmapBoard
+                    canDrag={isAdmin}
                     canManage={false}
                     items={manualItems}
                     statuses={manualStatuses}

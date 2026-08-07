@@ -454,12 +454,14 @@ body {
 /* ── Editor area ── */
 .ql-editor {
   min-height: var(--ql-min-height, 80px);
+  max-height: var(--ql-max-height, none);
   padding: 10px 12px;
   font-size: 0.875rem;
   line-height: 1.65;
   color: hsl(var(--foreground));
   word-break: break-word;
   overflow-wrap: anywhere;
+  overflow-y: auto;
 }
 .ql-editor.ql-blank::before {
   right: 12px;

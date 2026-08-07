@@ -54,22 +54,15 @@ export default async function EditChangelogEntryPage({ params }: Props) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <SetPageHeader
-        backHref={`/${slug}/settings/changelog`}
-        description={
-          isAdminOrOwner && entry.isPublished
-            ? "Changes are immediately live"
-            : undefined
-        }
-        portalHref={entry.isPublished ? `/${slug}/changelog/${entry.id}` : null}
-        title={
-          isAdminOrOwner
-            ? entry.isPublished
-              ? "Edit Published Entry"
-              : "Edit Draft"
-            : entry.title
-        }
-      />
+      {!isAdminOrOwner && (
+        <SetPageHeader
+          backHref={`/${slug}/settings/changelog`}
+          portalHref={
+            entry.isPublished ? `/${slug}/changelog/${entry.id}` : null
+          }
+          title={entry.title}
+        />
+      )}
       <div className="flex-1 overflow-y-auto">
         {isAdminOrOwner ? (
           <ChangelogEditor
@@ -83,6 +76,15 @@ export default async function EditChangelogEntryPage({ params }: Props) {
               linkedPosts: entry.linkedPosts,
             }}
             initialLabels={initialLabels}
+            pageDescription={
+              entry.isPublished ? "Changes are immediately live" : undefined
+            }
+            pageTitle={
+              entry.isPublished ? "Edit Published Entry" : "Edit Draft"
+            }
+            portalHref={
+              entry.isPublished ? `/${slug}/changelog/${entry.id}` : null
+            }
             workspaceId={workspace.id}
             workspaceSlug={slug}
           />

@@ -16,6 +16,9 @@ import { slugify } from "@/lib/utils";
 interface StepWorkspaceProps {
   appHost: string;
   error?: string | null;
+  /** When the error above applies to a specific field (e.g. "slug"), it's
+   * shown inline next to that field instead of in the generic banner. */
+  errorField?: string;
   /** Omit to hide the Back button (e.g. once a prior step can't be undone). */
   onBack?: () => void;
   onSubmit: (input: { description: string; slug: string }) => void;
@@ -32,6 +35,7 @@ export function StepWorkspace({
   onSubmit,
   submitting,
   error,
+  errorField,
 }: StepWorkspaceProps) {
   const [slug, setSlug] = useState(() => slugify(workspaceName));
   const [slugLocked, setSlugLocked] = useState(false);
@@ -105,6 +109,18 @@ export function StepWorkspace({
       setSlugMessage(null);
     }
   }
+
+  // A slug conflict can only be caught for certain on submit (e.g. someone
+  // else claimed it after the live availability check passed). Fold that
+  // into the same inline feedback under the URL field, where the visitor is
+  // already looking, instead of leaving it in the generic banner below the
+  // description field.
+  useEffect(() => {
+    if (error && errorField === "slug") {
+      setSlugState("taken");
+      setSlugMessage(error);
+    }
+  }, [error, errorField]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -195,7 +211,7 @@ export function StepWorkspace({
           />
         </label>
 
-        {error && (
+        {error && errorField !== "slug" && (
           <p className="rounded-ir-sm bg-ir-danger/10 p-3 text-sm text-ir-danger">
             {error}
           </p>

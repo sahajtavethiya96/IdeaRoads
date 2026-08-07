@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 
 interface StorageCardProps {
+  onDirtyChange?: (dirty: boolean) => void;
   status: IntegrationSettingsStatus["storage"];
 }
 
@@ -61,7 +62,7 @@ function inferStorageType(status: StorageCardProps["status"]): StorageType {
   return status.endpoint || status.region === "auto" ? "r2" : "s3";
 }
 
-function StorageCardImpl({ status }: StorageCardProps) {
+function StorageCardImpl({ status, onDirtyChange }: StorageCardProps) {
   const [isSaving, startSave] = useTransition();
   const [isTesting, startTest] = useTransition();
   const [justSaved, setJustSaved] = useState(false);
@@ -89,6 +90,10 @@ function StorageCardImpl({ status }: StorageCardProps) {
     publicUrlBase,
     localDir,
   });
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   useEffect(() => {
     if (!justSaved) {

@@ -76,7 +76,7 @@ export function PostRow({
         // biome-ignore lint/a11y/noNoninteractiveElementInteractions: only fences off row-click bubbling from the checkbox inside, not a new interaction
         // biome-ignore lint/a11y/useKeyWithClickEvents: same — stopPropagation only, no new behavior to make keyboard-reachable
         <td
-          className={`sticky left-0 z-10 border-r border-ir-border bg-ir-surface px-4 py-3 align-middle transition-colors duration-150 ease-ir-standard group-hover:bg-ir-border/60 ${
+          className={`sticky left-0 z-10 border-r border-ir-border bg-ir-surface px-4 py-3 align-middle transition-colors duration-150 ease-ir-standard group-hover:bg-ir-muted-surface ${
             isMerged ? "bg-ir-muted-surface/40" : ""
           }`}
           onClick={(e) => e.stopPropagation()}

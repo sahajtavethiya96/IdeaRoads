@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ChangelogEditor } from "@/components/changelog/changelog-editor";
-import { SetPageHeader } from "@/components/workspace/topbar";
 import { WORKSPACE_MEMBER } from "@/config/platform";
 import { requireSession } from "@/lib/authz";
 import { listChangelogLabels } from "@/lib/changelog/labels";
@@ -34,14 +33,11 @@ export default async function NewChangelogEntryPage({ params }: Props) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <SetPageHeader
-        backHref={`/${slug}/settings/changelog`}
-        portalHref={null}
-        title="New Entry"
-      />
       <div className="flex-1 overflow-y-auto">
         <ChangelogEditor
           initialLabels={initialLabels}
+          pageTitle="New Entry"
+          portalHref={null}
           workspaceId={workspace.id}
           workspaceSlug={slug}
         />

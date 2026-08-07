@@ -189,7 +189,8 @@ export default function CommentReplyForm({
         ariaLabel="Reply"
         disabled={isPending}
         key={editorKey}
-        minHeight={72}
+        maxHeight={320}
+        minHeight={64}
         onChange={handleChange}
         onSubmit={submit}
         onUploadingChange={setUploading}

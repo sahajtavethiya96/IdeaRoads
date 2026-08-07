@@ -125,6 +125,7 @@ interface QuillEditorProps {
   // alone isn't a reliable accessible name for screen readers.
   ariaLabel?: string;
   disabled?: boolean;
+  maxHeight?: number;
   minHeight?: number;
   onChange: (html: string, text: string) => void;
   // Opt-in: when provided, pressing Enter (without Shift) calls this instead of
@@ -148,6 +149,7 @@ export default function QuillEditor({
   placeholder = "Write something…",
   disabled = false,
   minHeight = 80,
+  maxHeight,
   ariaLabel,
 }: QuillEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -459,9 +461,12 @@ export default function QuillEditor({
 
   return (
     <div
-      className="relative rounded-ir-input border border-ir-border bg-ir-surface focus-within:ring-2 focus-within:ring-ir-primary/40"
+      className="relative rounded-ir-input border border-ir-border bg-ir-surface focus-within:border-ir-primary focus-within:ring-2 focus-within:ring-ir-primary/20"
       ref={containerRef}
-      style={{ ["--ql-min-height" as string]: `${minHeight}px` }}
+      style={{
+        ["--ql-min-height" as string]: `${minHeight}px`,
+        ["--ql-max-height" as string]: maxHeight ? `${maxHeight}px` : "none",
+      }}
     >
       <div
         className={disabled ? "pointer-events-none opacity-50" : ""}

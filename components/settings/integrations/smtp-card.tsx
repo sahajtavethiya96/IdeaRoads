@@ -17,10 +17,11 @@ import {
 } from "@/lib/integration-settings-types";
 
 interface SmtpCardProps {
+  onDirtyChange?: (dirty: boolean) => void;
   status: IntegrationSettingsStatus["smtp"];
 }
 
-function SmtpCardImpl({ status }: SmtpCardProps) {
+function SmtpCardImpl({ status, onDirtyChange }: SmtpCardProps) {
   const [isSaving, startSave] = useTransition();
   const [isTesting, startTest] = useTransition();
   const [justSaved, setJustSaved] = useState(false);
@@ -40,6 +41,10 @@ function SmtpCardImpl({ status }: SmtpCardProps) {
     pass,
     passCleared,
   });
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   useEffect(() => {
     if (!justSaved) {
