@@ -12,10 +12,11 @@ import {
 } from "@/lib/integration-settings-types";
 
 interface WebhookCardProps {
+  onDirtyChange?: (dirty: boolean) => void;
   status: IntegrationSettingsStatus["webhook"];
 }
 
-function WebhookCardImpl({ status }: WebhookCardProps) {
+function WebhookCardImpl({ status, onDirtyChange }: WebhookCardProps) {
   const [isSaving, startSave] = useTransition();
   const [justSaved, setJustSaved] = useState(false);
 
@@ -23,6 +24,10 @@ function WebhookCardImpl({ status }: WebhookCardProps) {
   const [cleared, setCleared] = useState(false);
 
   const { baseline, isDirty, markClean } = useDirtyState({ secret, cleared });
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   useEffect(() => {
     if (!justSaved) {

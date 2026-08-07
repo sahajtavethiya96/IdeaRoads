@@ -9,8 +9,8 @@ import VoteButton from "@/components/voting/vote-button";
 import type { RoadmapPost } from "@/lib/roadmap/queries";
 
 interface RoadmapPostCardProps {
-  // Shows the drag handle — only the admin-shelled board passes this (see
-  // RoadmapBoard/RoadmapColumn), matching the manual roadmap card's same prop.
+  // Shows the drag handle when true — see RoadmapBoard for who gets it
+  // (workspace members only), matching the manual roadmap card's same prop.
   canManage?: boolean;
   dragControls?: DragControls;
   // Carries embed=1/theme/accentColor into the post-detail navigation so

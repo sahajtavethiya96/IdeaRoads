@@ -17,10 +17,15 @@ import {
 
 interface GoogleOAuthCardProps {
   appUrl: string;
+  onDirtyChange?: (dirty: boolean) => void;
   status: IntegrationSettingsStatus["google"];
 }
 
-function GoogleOAuthCardImpl({ status, appUrl }: GoogleOAuthCardProps) {
+function GoogleOAuthCardImpl({
+  status,
+  appUrl,
+  onDirtyChange,
+}: GoogleOAuthCardProps) {
   const [isSaving, startSave] = useTransition();
   const [justSaved, setJustSaved] = useState(false);
 
@@ -33,6 +38,10 @@ function GoogleOAuthCardImpl({ status, appUrl }: GoogleOAuthCardProps) {
     clientSecret,
     clientSecretCleared,
   });
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   useEffect(() => {
     if (!justSaved) {

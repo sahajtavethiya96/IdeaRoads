@@ -102,10 +102,14 @@ export function PostsPagination({
               <Link
                 aria-current={item === currentPage ? "page" : undefined}
                 aria-label={`Go to page ${item}`}
-                className={buttonVariants({
-                  variant: item === currentPage ? "outline" : "ghost",
-                  size: "icon-sm",
-                })}
+                className={cn(
+                  buttonVariants({
+                    variant: item === currentPage ? "outline" : "ghost",
+                    size: "icon-sm",
+                  }),
+                  item === currentPage &&
+                    "border-ir-primary/30 bg-ir-primary-light/20 text-ir-primary hover:bg-ir-primary-light/30"
+                )}
                 href={hrefForPage(item)}
               >
                 {item}

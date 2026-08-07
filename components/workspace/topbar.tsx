@@ -2,6 +2,7 @@
 
 import { ArrowLeftIcon } from "@phosphor-icons/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 import {
   createContext,
@@ -13,8 +14,16 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { PAGE_PADDING } from "@/components/ui/page";
+import { TopbarAccountMenu } from "@/components/workspace/account-menu";
 import { OpenPortalButton } from "@/components/workspace/open-portal-button";
 import { cn } from "@/lib/utils";
+
+export interface TopbarAccountInfo {
+  email: string;
+  isAdminOrOwner: boolean;
+  userImage: string | null;
+  workspaceSlug: string;
+}
 
 export interface PageHeaderState {
   actions?: ReactNode;
@@ -27,6 +36,11 @@ export interface PageHeaderState {
   // the action cluster, preserving today's left-to-right order.
   beforeActions?: ReactNode;
   description?: ReactNode;
+  // Intercepts a `backHref` click — e.g. to confirm discarding unsaved
+  // changes before leaving an editor. Receives `proceed`; call it to
+  // continue the navigation (immediately, or after the user confirms),
+  // don't call it to cancel. Omit for a plain, unguarded back-link.
+  onBeforeBack?: (proceed: () => void) => void;
   // Overrides OpenPortalButton's own pathname-based guess for pages editing
   // one specific public-facing item (e.g. a changelog entry) — that guess
   // only has the URL to go on, so it can't know things like "this entry is
@@ -95,10 +109,14 @@ export function TopbarProvider({
   );
 }
 
-// Rendered once by the workspace layout, above {children}.
-export function Topbar() {
+// Rendered once by the workspace layout, above {children}. `account` is
+// omitted in the platform admin layout (/orbit), which has no workspace
+// context for the menu's settings links and already shows the account's
+// avatar + sign-out in AdminSidebar.
+export function Topbar({ account }: { account?: TopbarAccountInfo }) {
   const header = useContext(HeaderStateContext);
   const headerActions = useContext(HeaderActionsContext);
+  const router = useRouter();
 
   // Registers the real `beforeActions`/`actions` DOM containers so
   // SetPageHeader — mounted wherever the calling page put it in the tree,
@@ -128,14 +146,27 @@ export function Topbar() {
     return null;
   }
 
+  const backLinkClassName =
+    "inline-flex items-center gap-1.5 text-lg font-semibold text-ir-heading transition-colors duration-150 ease-ir-standard hover:text-ir-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40";
+
   const titleContent = header.backHref ? (
-    <Link
-      className="inline-flex items-center gap-1.5 text-lg font-semibold text-ir-heading transition-colors duration-150 ease-ir-standard hover:text-ir-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-      href={header.backHref}
-    >
-      <ArrowLeftIcon className="size-4 shrink-0" />
-      {header.title}
-    </Link>
+    header.onBeforeBack ? (
+      <button
+        className={backLinkClassName}
+        onClick={() =>
+          header.onBeforeBack?.(() => router.push(header.backHref!))
+        }
+        type="button"
+      >
+        <ArrowLeftIcon className="size-4 shrink-0" />
+        {header.title}
+      </button>
+    ) : (
+      <Link className={backLinkClassName} href={header.backHref}>
+        <ArrowLeftIcon className="size-4 shrink-0" />
+        {header.title}
+      </Link>
+    )
   ) : (
     <h1 className="text-lg font-semibold text-ir-heading">{header.title}</h1>
   );
@@ -160,6 +191,14 @@ export function Topbar() {
           <div className="contents" ref={setBeforeActionsSlot} />
           <OpenPortalButton override={header.portalHref} />
           <div className="contents" ref={setActionsSlot} />
+          {account && (
+            <TopbarAccountMenu
+              email={account.email}
+              isAdminOrOwner={account.isAdminOrOwner}
+              userImage={account.userImage}
+              workspaceSlug={account.workspaceSlug}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -186,6 +225,7 @@ export function SetPageHeader({
   actions,
   beforeActions,
   backHref,
+  onBeforeBack,
   portalHref,
 }: PageHeaderState) {
   const ctx = useContext(HeaderActionsContext);
@@ -195,9 +235,9 @@ export function SetPageHeader({
     if (!ctx) {
       return;
     }
-    ctx.setHeader({ title, description, backHref, portalHref });
+    ctx.setHeader({ title, description, backHref, onBeforeBack, portalHref });
     return () => ctx.setHeader(ctx.defaultHeader);
-  }, [ctx, title, description, backHref, portalHref]);
+  }, [ctx, title, description, backHref, onBeforeBack, portalHref]);
 
   return (
     <>

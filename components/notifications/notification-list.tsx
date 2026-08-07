@@ -85,6 +85,7 @@ export function NotificationList({
     // synchronized" instead of waiting on the next poll or a page refresh.
     const previousItems = items;
     const previousUnread = notificationsCtx?.unreadCount;
+    const markedCount = previousItems.filter((n) => !n.isRead).length;
     setItems((prev) => prev.map((n) => ({ ...n, isRead: true })));
     notificationsCtx?.setUnreadCount(0);
 
@@ -98,7 +99,11 @@ export function NotificationList({
         if (!res.ok) {
           throw new Error("Failed to mark all notifications as read");
         }
-        toast.success("All notifications marked as read");
+        toast.success(
+          markedCount > 0
+            ? `${markedCount} notification${markedCount === 1 ? "" : "s"} marked as read`
+            : "All notifications marked as read"
+        );
       } catch {
         setItems(previousItems);
         if (previousUnread !== undefined) {

@@ -11,12 +11,13 @@ import { RoadmapStatusHeader } from "./roadmap-status-header";
 const PAGE_SIZE = 10;
 
 interface RoadmapColumnProps {
-  // Drag-and-drop is an opt-in enhancement, only wired up by the admin-shelled
-  // board (see RoadmapBoard) — the public roadmap page never passes these.
+  // Drag-and-drop is an opt-in enhancement (see RoadmapBoard for who gets
+  // `canManage`) — off entirely for anonymous/non-member visitors on the
+  // public roadmap page.
   canManage?: boolean;
   color: string;
   // Registers this column's drop-zone element for RoadmapBoard's pointer
-  // hit-testing (see useKanbanDrag). Absent on the public (read-only) board.
+  // hit-testing (see useKanbanDrag). Absent when dragging is off.
   columnRef?: (el: HTMLDivElement | null) => void;
   draggingId?: string | null;
   embedQuery?: string;
@@ -74,7 +75,7 @@ export function RoadmapColumn({
           manual roadmap board (see DraggableCard — it can be started from
           anywhere on the card, see RoadmapPostCard). */}
       <div
-        className={`flex min-h-16 flex-1 flex-col gap-2 overflow-y-auto rounded-ir-md p-1 transition-colors duration-150 ease-ir-standard ${
+        className={`flex min-h-16 flex-1 flex-col gap-2 overflow-x-hidden overflow-y-auto rounded-ir-md p-1 transition-colors duration-150 ease-ir-standard ${
           isDropTarget && canManage
             ? "bg-ir-primary-light/10 ring-1 ring-inset ring-ir-primary/30"
             : ""

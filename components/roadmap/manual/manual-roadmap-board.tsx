@@ -31,6 +31,11 @@ export interface BoardStatus {
 }
 
 interface ManualRoadmapBoardProps {
+  // Gates the drag gesture on its own, separate from `canManage` (which also
+  // gates add/edit/delete/manage-columns) — lets the public roadmap page
+  // allow team members to drag-to-retriage without exposing full item
+  // management on a public URL. Defaults to `canManage` when omitted.
+  canDrag?: boolean;
   canManage: boolean;
   items: BoardItem[];
   statuses: BoardStatus[];
@@ -64,6 +69,7 @@ export function ManualRoadmapBoard({
   statuses,
   items,
   canManage,
+  canDrag,
   syncToggle,
 }: ManualRoadmapBoardProps) {
   const router = useRouter();
@@ -98,7 +104,7 @@ export function ManualRoadmapBoard({
   // using a partial (filtered) view of its cards.
   const q = query.trim().toLowerCase();
   const isFiltering = q.length > 0;
-  const dragEnabled = canManage && !isFiltering;
+  const dragEnabled = (canDrag ?? canManage) && !isFiltering;
   const matchesQuery = (it: BoardItem) =>
     !q ||
     it.title.toLowerCase().includes(q) ||
@@ -182,15 +188,21 @@ export function ManualRoadmapBoard({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {(canManage || syncToggle) && (
+      {(canManage || dragEnabled || syncToggle) && (
         <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 px-6 pt-2 pb-4">
           <div className="flex justify-start">{syncToggle}</div>
           <div className="flex justify-end">
-            {canManage && (
+            {canManage ? (
               <p className="text-xs text-ir-muted">
                 Manual roadmap · {totalItems} item
                 {totalItems === 1 ? "" : "s"} · drag cards between columns
               </p>
+            ) : (
+              dragEnabled && (
+                <p className="text-xs text-ir-muted">
+                  Drag a card into another column to change its status.
+                </p>
+              )
             )}
           </div>
         </div>
@@ -245,8 +257,8 @@ export function ManualRoadmapBoard({
                       pointer-only enhancement (see DraggableCard — it can
                       only be started from each card's drag handle). */}
                   <div
-                    className={`flex min-h-24 flex-1 flex-col gap-2 overflow-y-auto rounded-ir-md p-1 transition-colors duration-150 ease-ir-standard ${
-                      isDropTarget && canManage
+                    className={`flex min-h-24 flex-1 flex-col gap-2 overflow-x-hidden overflow-y-auto rounded-ir-md p-1 transition-colors duration-150 ease-ir-standard ${
+                      isDropTarget && dragEnabled
                         ? "bg-ir-primary-light/10 ring-1 ring-inset ring-ir-primary/30"
                         : ""
                     }`}
@@ -257,7 +269,7 @@ export function ManualRoadmapBoard({
                         label={
                           isFiltering
                             ? "No matches"
-                            : canManage
+                            : dragEnabled
                               ? "Drop items here"
                               : "Nothing here yet."
                         }
@@ -291,6 +303,7 @@ export function ManualRoadmapBoard({
                             >
                               {(dragControls, wasDragged) => (
                                 <ManualRoadmapCard
+                                  canDrag={dragEnabled}
                                   canManage={canManage}
                                   dragControls={dragControls}
                                   dragging={draggingId === item.id}

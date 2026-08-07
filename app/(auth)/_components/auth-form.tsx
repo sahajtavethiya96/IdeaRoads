@@ -103,6 +103,10 @@ function AuthFormInner({
     rawNext.startsWith("/") && !rawNext.startsWith("//")
       ? rawNext
       : "/post-auth";
+  // Invite links route here with `next=/invite/...` — the visitor is
+  // frequently brand new, so "Welcome back" reads as wrong. Greet them as
+  // an invitee instead.
+  const isInviteFlow = callbackURL.startsWith("/invite/");
 
   useEffect(() => {
     if (session) {
@@ -203,14 +207,22 @@ function AuthFormInner({
           </Link>
 
           <h1 className="text-xl font-bold text-ir-heading sm:text-2xl">
-            {sent ? "Check your email" : "Welcome back"}
+            {sent
+              ? "Check your email"
+              : isInviteFlow
+                ? "You're invited"
+                : "Welcome back"}
           </h1>
           <p className="mt-1.5 text-sm text-ir-muted">
             {sent
               ? "Your sign-in link is on its way. Click it to continue."
-              : passwordEnabled
-                ? "Sign in with your email and password."
-                : "Sign in or create a free account — no password needed."}
+              : isInviteFlow
+                ? passwordEnabled
+                  ? "Sign in or create an account to accept your invitation."
+                  : "Sign in or create a free account to accept your invitation."
+                : passwordEnabled
+                  ? "Sign in with your email and password."
+                  : "Sign in or create a free account — no password needed."}
           </p>
 
           <div className="mt-6">
@@ -340,11 +352,14 @@ function AuthFormInner({
                 {/* There is no self-serve sign-up on this instance: accounts
                     come from the /setup wizard or an invitation. Say so
                     plainly, rather than leaving people hunting for a
-                    registration link that does not exist. */}
-                <p className="text-center text-xs text-ir-muted">
-                  Accounts are created by invitation. Ask an admin to invite you
-                  if you don't have one yet.
-                </p>
+                    registration link that does not exist. Skip it in the
+                    invite flow — the visitor already has one. */}
+                {!isInviteFlow && (
+                  <p className="text-center text-xs text-ir-muted">
+                    Accounts are created by invitation. Ask an admin to invite
+                    you if you don't have one yet.
+                  </p>
+                )}
               </div>
             )}
           </div>

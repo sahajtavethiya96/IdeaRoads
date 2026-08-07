@@ -9,10 +9,12 @@ import { RoadmapColumn } from "./roadmap-column";
 import { useKanbanDrag } from "./use-kanban-drag";
 
 interface RoadmapBoardProps {
-  // Only the admin-shelled /settings/roadmap page passes this — dragging a
-  // card to another column changes the post's status (triage, permitted for
-  // any workspace member per PLATFORM.md §4). The public /roadmap page never
-  // sets this; it's read-only for visitors.
+  // Dragging a card to another column changes the post's status (triage,
+  // permitted for any workspace member per PLATFORM.md §4). Passed as `true`
+  // by the admin-shelled /settings/roadmap page for any member, and as
+  // `isMember` by the public /roadmap page — a signed-in team member gets
+  // the same drag capability there; anonymous visitors and non-members never
+  // get it.
   canManage?: boolean;
   columns: RoadmapStatusColumn[];
   // Threaded through to each card's post-detail link so opening an item from

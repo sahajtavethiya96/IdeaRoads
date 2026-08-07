@@ -34,6 +34,115 @@ interface AccountMenuProps {
   workspaceSlug: string;
 }
 
+// Shared dropdown body for both the sidebar's full account bar and the
+// topbar's icon-only trigger (see TopbarAccountMenu below) — same account,
+// same menu, just two different places to open it from.
+function AccountMenuDropdownContent({
+  email,
+  isAdminOrOwner,
+  userImage,
+  workspaceSlug,
+  align = "start",
+  side = "top",
+}: Omit<AccountMenuProps, "collapsed"> & {
+  align?: "start" | "end";
+  side?: "top" | "bottom";
+}) {
+  const pathname = usePathname();
+
+  const itemClass = (href: string) =>
+    pathname.startsWith(href)
+      ? "bg-ir-primary-light/20 text-ir-primary focus:bg-ir-primary-light/20 focus:text-ir-primary"
+      : "";
+
+  return (
+    <DropdownMenuContent
+      align={align}
+      className="w-64 max-w-[calc(100vw-1rem)]"
+      side={side}
+      sideOffset={6}
+    >
+      <DropdownMenuLabel className="flex items-center gap-2.5 font-normal normal-case tracking-normal">
+        <SquareAvatar
+          alt={email}
+          className="rounded-full"
+          fallback={email.charAt(0).toUpperCase()}
+          imageUrl={userImage}
+        />
+        <span
+          className="flex-1 truncate text-xs font-medium text-ir-heading"
+          title={email}
+        >
+          {email}
+        </span>
+      </DropdownMenuLabel>
+      <DropdownMenuSeparator />
+
+      {isAdminOrOwner && (
+        <>
+          <DropdownMenuGroup>
+            <DropdownMenuItem
+              asChild
+              className={itemClass(`/${workspaceSlug}/settings/general`)}
+            >
+              <Link href={`/${workspaceSlug}/settings/general`}>
+                <Sliders />
+                General
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              asChild
+              className={itemClass(`/${workspaceSlug}/settings/moderation`)}
+            >
+              <Link href={`/${workspaceSlug}/settings/moderation`}>
+                <Shield />
+                Moderation
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              asChild
+              className={itemClass(`/${workspaceSlug}/settings/audit-log`)}
+            >
+              <Link href={`/${workspaceSlug}/settings/audit-log`}>
+                <Scroll />
+                Audit Log
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+        </>
+      )}
+
+      <DropdownMenuGroup>
+        <DropdownMenuItem
+          asChild
+          className={itemClass(`/${workspaceSlug}/settings/notifications`)}
+        >
+          <Link href={`/${workspaceSlug}/settings/notifications`}>
+            <Bell />
+            Notification Preferences
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          asChild
+          className={itemClass(`/${workspaceSlug}/settings/account`)}
+        >
+          <Link href={`/${workspaceSlug}/settings/account`}>
+            <UserCircle />
+            Account
+          </Link>
+        </DropdownMenuItem>
+      </DropdownMenuGroup>
+
+      <DropdownMenuSeparator />
+      <DropdownMenuItem onClick={() => logoutAction()} variant="destructive">
+        <SignOut />
+        Log out
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  );
+}
+
 export function AccountMenu({
   email,
   isAdminOrOwner,
@@ -41,14 +150,8 @@ export function AccountMenu({
   workspaceSlug,
   collapsed = false,
 }: AccountMenuProps) {
-  const pathname = usePathname();
   const shouldReduceMotion = useReducedMotion();
   const [open, setOpen] = useState(false);
-
-  const itemClass = (href: string) =>
-    pathname.startsWith(href)
-      ? "bg-ir-primary-light/20 text-ir-primary focus:bg-ir-primary-light/20 focus:text-ir-primary"
-      : "";
 
   return (
     <DropdownMenu onOpenChange={setOpen} open={open}>
@@ -63,7 +166,7 @@ export function AccountMenu({
         >
           <SquareAvatar
             alt={email}
-            className="shrink-0 rounded-ir-md"
+            className="shrink-0 rounded-full"
             fallback={email.charAt(0).toUpperCase()}
             imageUrl={userImage}
           />
@@ -90,90 +193,51 @@ export function AccountMenu({
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent
-        align="start"
-        className="w-64 max-w-[calc(100vw-1rem)]"
-        side="top"
-        sideOffset={6}
-      >
-        <DropdownMenuLabel className="flex items-center gap-2.5 font-normal normal-case tracking-normal">
+      <AccountMenuDropdownContent
+        email={email}
+        isAdminOrOwner={isAdminOrOwner}
+        userImage={userImage}
+        workspaceSlug={workspaceSlug}
+      />
+    </DropdownMenu>
+  );
+}
+
+// Icon-only trigger for the Topbar (top-right, every workspace page) — same
+// account and menu as the sidebar's AccountMenu, so signing out or jumping to
+// Account settings works identically from either entry point.
+export function TopbarAccountMenu({
+  email,
+  isAdminOrOwner,
+  userImage,
+  workspaceSlug,
+}: Omit<AccountMenuProps, "collapsed">) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          aria-label="Account menu"
+          className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-all duration-150 ease-ir-standard hover:ring-2 hover:ring-ir-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+          title={email}
+          type="button"
+        >
           <SquareAvatar
             alt={email}
-            className="rounded-ir-md"
+            className="size-9 rounded-full ring-1 ring-ir-border"
             fallback={email.charAt(0).toUpperCase()}
             imageUrl={userImage}
           />
-          <span
-            className="flex-1 truncate text-xs font-medium text-ir-heading"
-            title={email}
-          >
-            {email}
-          </span>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
+        </button>
+      </DropdownMenuTrigger>
 
-        {isAdminOrOwner && (
-          <>
-            <DropdownMenuGroup>
-              <DropdownMenuItem
-                asChild
-                className={itemClass(`/${workspaceSlug}/settings/general`)}
-              >
-                <Link href={`/${workspaceSlug}/settings/general`}>
-                  <Sliders />
-                  General
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                asChild
-                className={itemClass(`/${workspaceSlug}/settings/moderation`)}
-              >
-                <Link href={`/${workspaceSlug}/settings/moderation`}>
-                  <Shield />
-                  Moderation
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                asChild
-                className={itemClass(`/${workspaceSlug}/settings/audit-log`)}
-              >
-                <Link href={`/${workspaceSlug}/settings/audit-log`}>
-                  <Scroll />
-                  Audit Log
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-          </>
-        )}
-
-        <DropdownMenuGroup>
-          <DropdownMenuItem
-            asChild
-            className={itemClass(`/${workspaceSlug}/settings/notifications`)}
-          >
-            <Link href={`/${workspaceSlug}/settings/notifications`}>
-              <Bell />
-              Notification Preferences
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            asChild
-            className={itemClass(`/${workspaceSlug}/settings/account`)}
-          >
-            <Link href={`/${workspaceSlug}/settings/account`}>
-              <UserCircle />
-              Account
-            </Link>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => logoutAction()} variant="destructive">
-          <SignOut />
-          Log out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
+      <AccountMenuDropdownContent
+        align="end"
+        email={email}
+        isAdminOrOwner={isAdminOrOwner}
+        side="bottom"
+        userImage={userImage}
+        workspaceSlug={workspaceSlug}
+      />
     </DropdownMenu>
   );
 }

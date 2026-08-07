@@ -188,7 +188,8 @@ export default function CommentForm({
         ariaLabel="Comment"
         disabled={isPending}
         key={editorKey}
-        minHeight={100}
+        maxHeight={320}
+        minHeight={64}
         onChange={handleChange}
         onSubmit={submit}
         onUploadingChange={setUploading}

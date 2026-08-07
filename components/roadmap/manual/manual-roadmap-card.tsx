@@ -22,6 +22,12 @@ export interface BoardItem {
 }
 
 interface ManualRoadmapCardProps {
+  // Gates the drag gesture specifically — separate from `canManage` (which
+  // also gates edit/delete) so a viewer can be allowed to drag without
+  // getting the rest of the management surface. Defaults to `canManage` when
+  // omitted, so the internal settings-page caller (full manage) doesn't need
+  // to pass it explicitly.
+  canDrag?: boolean;
   canManage: boolean;
   dragControls?: DragControls;
   dragging?: boolean;
@@ -58,6 +64,7 @@ function htmlToText(html: string): string {
 export function ManualRoadmapCard({
   item,
   canManage,
+  canDrag,
   onEdit,
   onDelete,
   onView,
@@ -67,18 +74,19 @@ export function ManualRoadmapCard({
 }: ManualRoadmapCardProps) {
   const launch = formatLaunch(item.launchDate);
   const descPreview = item.description ? htmlToText(item.description) : "";
+  const dragAllowed = canDrag ?? canManage;
 
   return (
     <div
       className={`group relative rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs transition-all duration-150 ease-ir-standard hover:border-ir-primary/30 hover:shadow-ir-sm ${
-        canManage ? "cursor-grab active:cursor-grabbing" : ""
+        dragAllowed ? "cursor-grab active:cursor-grabbing" : ""
       } ${dragging ? "opacity-95 shadow-ir-lg" : ""}`}
       // Starts the drag from anywhere on the card, not just the handle icon
       // below — a plain press+release never crosses framer's movement
       // threshold, so it never fires onDragStart and falls through to the
       // title button's normal click. Only a real drag needs guarding (see
       // wasDragged below), so this can't reintroduce click-vs-drag ambiguity.
-      onPointerDown={canManage ? (e) => dragControls?.start(e) : undefined}
+      onPointerDown={dragAllowed ? (e) => dragControls?.start(e) : undefined}
     >
       {item.coverImage && (
         // Cover image is an arbitrary user-supplied external URL (like the

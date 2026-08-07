@@ -6,7 +6,7 @@ import {
   GoogleLogoIcon,
   WebhooksLogoIcon,
 } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { GoogleOAuthCard } from "@/components/settings/integrations/google-oauth-card";
 import { IntegrationCard } from "@/components/settings/integrations/integration-card";
 import { SetupProgress } from "@/components/settings/integrations/setup-progress";
@@ -19,6 +19,7 @@ import type { IntegrationSettingsStatus } from "@/lib/integration-settings-types
 
 interface IntegrationsPanelProps {
   appUrl: string;
+  onDirtyChange?: (dirty: boolean) => void;
   status: IntegrationSettingsStatus;
 }
 
@@ -29,7 +30,11 @@ interface IntegrationsPanelProps {
  * getIntegrationSettingsStatusAction and save through the same server
  * actions, so either surface leaves the database in an identical state.
  */
-export function IntegrationsPanel({ status, appUrl }: IntegrationsPanelProps) {
+export function IntegrationsPanel({
+  status,
+  appUrl,
+  onDirtyChange,
+}: IntegrationsPanelProps) {
   const smtpConfigured = status.smtp.hasPass && !!status.smtp.host;
   const googleConfigured =
     status.google.hasClientSecret && !!status.google.clientId;
@@ -62,6 +67,26 @@ export function IntegrationsPanel({ status, appUrl }: IntegrationsPanelProps) {
     smtpConfigured ? undefined : "smtp"
   );
 
+  // Each card reports its own unsaved-changes state here so the wizard /
+  // admin page can warn before navigating away with edits still pending —
+  // collapsed cards can be dirty too, so this can't be read off `openItem`.
+  const [dirtySections, setDirtySections] = useState<Record<string, boolean>>(
+    {}
+  );
+  const handleSectionDirtyChange = useCallback(
+    (key: string, dirty: boolean) => {
+      setDirtySections((prev) =>
+        prev[key] === dirty ? prev : { ...prev, [key]: dirty }
+      );
+    },
+    []
+  );
+  const anyDirty = Object.values(dirtySections).some(Boolean);
+
+  useEffect(() => {
+    onDirtyChange?.(anyDirty);
+  }, [anyDirty, onDirtyChange]);
+
   return (
     <div className="space-y-4">
       <SetupProgress
@@ -88,7 +113,10 @@ export function IntegrationsPanel({ status, appUrl }: IntegrationsPanelProps) {
             title="Email (SMTP)"
             value="smtp"
           >
-            <SmtpCard status={status.smtp} />
+            <SmtpCard
+              onDirtyChange={(dirty) => handleSectionDirtyChange("smtp", dirty)}
+              status={status.smtp}
+            />
           </IntegrationCard>
 
           <IntegrationCard
@@ -98,7 +126,13 @@ export function IntegrationsPanel({ status, appUrl }: IntegrationsPanelProps) {
             title="Google sign-in"
             value="google"
           >
-            <GoogleOAuthCard appUrl={appUrl} status={status.google} />
+            <GoogleOAuthCard
+              appUrl={appUrl}
+              onDirtyChange={(dirty) =>
+                handleSectionDirtyChange("google", dirty)
+              }
+              status={status.google}
+            />
           </IntegrationCard>
 
           <IntegrationCard
@@ -109,7 +143,12 @@ export function IntegrationsPanel({ status, appUrl }: IntegrationsPanelProps) {
             title="File storage"
             value="storage"
           >
-            <StorageCard status={status.storage} />
+            <StorageCard
+              onDirtyChange={(dirty) =>
+                handleSectionDirtyChange("storage", dirty)
+              }
+              status={status.storage}
+            />
           </IntegrationCard>
 
           <IntegrationCard
@@ -119,7 +158,12 @@ export function IntegrationsPanel({ status, appUrl }: IntegrationsPanelProps) {
             title="Inbound email webhook"
             value="webhook"
           >
-            <WebhookCard status={status.webhook} />
+            <WebhookCard
+              onDirtyChange={(dirty) =>
+                handleSectionDirtyChange("webhook", dirty)
+              }
+              status={status.webhook}
+            />
           </IntegrationCard>
         </Accordion>
       </div>

@@ -30,6 +30,7 @@ import {
 import { ChangelogLabelBadge } from "@/components/changelog/changelog-label-badge";
 import { LinkedPostsSelector } from "@/components/changelog/linked-posts-selector";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Dialog,
   DialogContent,
@@ -40,7 +41,9 @@ import {
 } from "@/components/ui/dialog";
 import { ImagePreviewThumbnail } from "@/components/ui/image-preview-thumbnail";
 import { ContentContainer } from "@/components/ui/page";
+import { SetPageHeader } from "@/components/workspace/topbar";
 import { useDirtyState } from "@/hooks/use-dirty-state";
+import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import {
   CHANGELOG_LABEL_VALUES,
   getLabelInfo,
@@ -102,6 +105,13 @@ interface ChangelogEditorProps {
   // Persisted custom labels for this workspace (built-ins excluded). Managed
   // (create/rename/delete) inline from the label section below.
   initialLabels?: ChangelogLabel[];
+  // Passed through to the page header (title/description/back-link/portal
+  // button) — the page's SetPageHeader call lives here, not in page.tsx,
+  // because the back-link needs to be guarded against this component's own
+  // dirty state (see useUnsavedChangesGuard below).
+  pageDescription?: string;
+  pageTitle: string;
+  portalHref?: string | null;
   workspaceId: string;
   workspaceSlug: string;
 }
@@ -111,6 +121,9 @@ export function ChangelogEditor({
   workspaceSlug,
   initialEntry,
   initialLabels = [],
+  pageTitle,
+  pageDescription,
+  portalHref,
 }: ChangelogEditorProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -265,6 +278,9 @@ export function ChangelogEditor({
     label,
     linkedPosts: linkedPostsKey(linkedPosts),
   });
+
+  const { isConfirmOpen, guardNavigation, confirmLeave, cancelLeave } =
+    useUnsavedChangesGuard(isDirty);
 
   // Auto-save: debounced, fires after 30s of idle
   const autoSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -578,388 +594,418 @@ export function ChangelogEditor({
   }
 
   return (
-    <ContentContainer>
-      <div className="flex flex-col gap-6 rounded-ir-card border border-ir-border bg-ir-surface p-6 shadow-ir-xs sm:p-8">
-        {/* Cover image — first, so it can be chosen before the details */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wide text-ir-heading">
-            Cover image
-            <span className="ml-1 font-normal normal-case text-ir-muted">
-              (optional)
-            </span>
-          </label>
-          {coverImageUrl ? (
-            <div className="group relative block w-full overflow-hidden rounded-ir-lg border border-ir-border bg-ir-muted-surface">
-              <ImagePreviewThumbnail
-                alt="Cover image"
-                className="h-[220px] w-full animate-in fade-in-0 rounded-ir-lg object-cover duration-300 ease-ir-standard sm:h-[240px]"
-                key={coverImageUrl}
-                src={coverImageUrl}
-              />
-              <button
-                aria-label="Remove cover image"
-                className="absolute top-3 right-3 flex size-8 items-center justify-center rounded-ir-full border border-ir-border bg-ir-surface text-ir-muted shadow-ir-md transition-colors duration-150 ease-ir-standard hover:border-ir-danger hover:bg-ir-danger hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-                onClick={removeCoverImage}
-                type="button"
-              >
-                <XIcon className="size-4" weight="bold" />
-              </button>
-            </div>
-          ) : (
-            <label
-              className={`group flex w-full flex-col items-center justify-center gap-3 rounded-ir-input border border-dashed px-4 py-12 text-center transition-all duration-200 ease-ir-standard has-[:focus-visible]:border-ir-primary has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ir-primary/40 ${
-                isUploadingCover
-                  ? "cursor-default border-ir-border bg-ir-muted-surface/40"
-                  : isCoverDragActive
-                    ? "cursor-pointer border-ir-primary bg-ir-primary/5 shadow-ir-sm"
-                    : "cursor-pointer border-ir-border bg-ir-muted-surface/40 hover:border-ir-primary/50 hover:bg-ir-primary/5"
-              }`}
-              onDragEnter={handleCoverDragEnter}
-              onDragLeave={handleCoverDragLeave}
-              onDragOver={handleCoverDragOver}
-              onDrop={handleCoverDrop}
-            >
-              <span
-                className={`flex size-11 items-center justify-center rounded-ir-full bg-ir-primary/10 text-ir-primary transition-transform duration-200 ease-ir-standard ${
-                  isCoverDragActive ? "scale-110" : "group-hover:scale-110"
-                }`}
-              >
-                {isUploadingCover ? (
-                  <SpinnerIcon className="size-5 animate-spin" />
-                ) : (
-                  <UploadSimpleIcon className="size-5" weight="bold" />
-                )}
+    <>
+      <SetPageHeader
+        backHref={`/${workspaceSlug}/settings/changelog`}
+        description={pageDescription}
+        onBeforeBack={guardNavigation}
+        portalHref={portalHref}
+        title={pageTitle}
+      />
+      <ContentContainer>
+        <div className="flex flex-col gap-6 rounded-ir-card border border-ir-border bg-ir-surface p-6 shadow-ir-xs sm:p-8">
+          {/* Cover image — first, so it can be chosen before the details */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wide text-ir-heading">
+              Cover image
+              <span className="ml-1 font-normal normal-case text-ir-muted">
+                (optional)
               </span>
-              <span className="space-y-1">
-                <span className="block text-sm font-medium text-ir-heading">
-                  {isUploadingCover
-                    ? "Uploading…"
-                    : "Drag & drop an image here or click to browse"}
-                </span>
-                {!isUploadingCover && (
-                  <span className="block text-xs text-ir-muted">
-                    PNG, JPEG, WEBP, or GIF • Max 4MB
-                  </span>
-                )}
-              </span>
-              <input
-                accept="image/png,image/jpeg,image/webp,image/gif"
-                className="sr-only"
-                disabled={isUploadingCover}
-                onChange={handleCoverImageChange}
-                ref={coverInputRef}
-                type="file"
-              />
             </label>
-          )}
-          {coverError && <p className="text-xs text-ir-danger">{coverError}</p>}
-        </div>
-
-        {/* Title */}
-        <div className="space-y-1.5">
-          <label
-            className="text-xs font-semibold uppercase tracking-wide text-ir-heading"
-            htmlFor="title"
-          >
-            Title
-          </label>
-          <div className="relative">
-            <input
-              className="w-full rounded-ir-input border border-ir-border bg-ir-surface px-3 py-2.5 text-sm text-ir-body placeholder:text-ir-muted focus:ring-2 focus:ring-ir-primary/40 focus:outline-none"
-              id="title"
-              maxLength={200}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="What shipped?"
-              type="text"
-              value={title}
-            />
-            <span className="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-ir-muted">
-              {countCharacters(title)}/200
-            </span>
-          </div>
-        </div>
-
-        {/* Content — immediately after the title */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wide text-ir-heading">
-            Content
-          </label>
-          <QuillEditor
-            minHeight={240}
-            onChange={(html) => setBody(html)}
-            placeholder="What shipped in this update?"
-            value={body}
-          />
-        </div>
-
-        {/* Label — built-in labels, custom label chips, and an "Add label" modal */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wide text-ir-heading">
-            Label
-          </label>
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Built-in labels — always available, not editable. */}
-            {CHANGELOG_LABEL_VALUES.map((l) => {
-              const info = getLabelInfo(l);
-              const isActive = label === l;
-              return (
+            {coverImageUrl ? (
+              <div className="group relative block w-full overflow-hidden rounded-ir-lg border border-ir-border bg-ir-muted-surface">
+                <ImagePreviewThumbnail
+                  alt="Cover image"
+                  className="h-[220px] w-full animate-in fade-in-0 rounded-ir-lg object-cover duration-300 ease-ir-standard sm:h-[240px]"
+                  key={coverImageUrl}
+                  src={coverImageUrl}
+                />
                 <button
-                  className={`cursor-pointer rounded-ir-sm border px-3 py-1.5 text-xs font-semibold transition-all duration-150 ease-ir-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 ${
-                    isActive
-                      ? "border-current"
-                      : "border-ir-border text-ir-muted hover:border-ir-primary/30"
-                  }`}
-                  key={l}
-                  onClick={() => setLabel(l)}
-                  style={
-                    isActive
-                      ? {
-                          color: info.color,
-                          backgroundColor: `${info.color}12`,
-                          borderColor: `${info.color}60`,
-                        }
-                      : {}
-                  }
+                  aria-label="Remove cover image"
+                  className="absolute top-3 right-3 flex size-8 items-center justify-center rounded-ir-full border border-ir-border bg-ir-surface text-ir-muted shadow-ir-md transition-colors duration-150 ease-ir-standard hover:border-ir-danger hover:bg-ir-danger hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                  onClick={removeCoverImage}
                   type="button"
                 >
-                  {info.label}
+                  <XIcon className="size-4" weight="bold" />
                 </button>
-              );
-            })}
-
-            {/* Custom labels — selectable, with inline rename + delete. */}
-            {labels.map((l) => {
-              const isActive = label === l.name;
-              if (editingLabelId === l.id) {
-                return (
-                  <input
-                    aria-label={`Rename ${l.name}`}
-                    autoFocus
-                    className="rounded-ir-sm border border-ir-primary bg-ir-surface px-2 py-1.5 text-xs text-ir-body focus:ring-2 focus:ring-ir-primary/40 focus:outline-none"
-                    key={l.id}
-                    maxLength={40}
-                    onBlur={() => renameLabel(l.id)}
-                    onChange={(e) => setEditingLabelName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        renameLabel(l.id);
-                      } else if (e.key === "Escape") {
-                        e.preventDefault();
-                        setEditingLabelId(null);
-                      }
-                    }}
-                    value={editingLabelName}
-                  />
-                );
-              }
-              return (
-                <span
-                  className={`inline-flex items-center gap-1 rounded-ir-sm border py-1.5 pr-1.5 pl-3 text-xs font-semibold transition-all duration-150 ease-ir-standard ${
-                    isActive
-                      ? "border-current"
-                      : "border-ir-border text-ir-muted hover:border-ir-primary/30"
-                  }`}
-                  key={l.id}
-                  style={
-                    isActive
-                      ? {
-                          color: l.color,
-                          backgroundColor: `${l.color}12`,
-                          borderColor: `${l.color}60`,
-                        }
-                      : {}
-                  }
-                >
-                  <button
-                    className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-                    onClick={() => setLabel(l.name)}
-                    type="button"
-                  >
-                    {l.name}
-                  </button>
-                  <button
-                    aria-label={`Rename ${l.name}`}
-                    className="cursor-pointer text-ir-muted hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:opacity-50"
-                    disabled={labelBusy}
-                    onClick={() => {
-                      setEditingLabelId(l.id);
-                      setEditingLabelName(l.name);
-                    }}
-                    type="button"
-                  >
-                    <PencilIcon className="size-3" />
-                  </button>
-                  <button
-                    aria-label={`Delete ${l.name}`}
-                    className="cursor-pointer text-ir-muted hover:text-ir-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:opacity-50"
-                    disabled={labelBusy}
-                    onClick={() => removeLabel(l.id, l.name)}
-                    type="button"
-                  >
-                    <XIcon className="size-3" />
-                  </button>
-                </span>
-              );
-            })}
-
-            {/* The selected label whose row was deleted — read-only. */}
-            {orphanLabel && (
-              <span
-                className="rounded-ir-sm border border-current px-3 py-1.5 text-xs font-semibold"
-                style={{
-                  color: getLabelInfo(orphanLabel).color,
-                  backgroundColor: `${getLabelInfo(orphanLabel).color}12`,
-                  borderColor: `${getLabelInfo(orphanLabel).color}60`,
-                }}
-              >
-                {orphanLabel}
-              </span>
-            )}
-
-            <button
-              aria-label="Add label"
-              className="inline-flex cursor-pointer items-center justify-center rounded-ir-sm border border-dashed border-ir-border p-1.5 text-ir-muted transition-colors duration-150 ease-ir-standard hover:border-ir-primary/40 hover:text-ir-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-              onClick={() => setLabelModalOpen(true)}
-              title="Add label"
-              type="button"
-            >
-              <PlusIcon className="size-3.5" />
-            </button>
-          </div>
-          <div className="mt-1">
-            <ChangelogLabelBadge label={label} size="md" />
-          </div>
-        </div>
-
-        <Dialog onOpenChange={handleLabelModalOpenChange} open={labelModalOpen}>
-          <DialogContent className="sm:max-w-sm">
-            <DialogHeader>
-              <DialogTitle>Add Label</DialogTitle>
-              <DialogDescription>
-                Create a custom label for this workspace's changelog entries.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-1.5">
+              </div>
+            ) : (
               <label
-                className="text-xs font-medium text-ir-heading"
-                htmlFor="new-label"
+                className={`group flex w-full flex-col items-center justify-center gap-3 rounded-ir-input border border-dashed px-4 py-12 text-center transition-all duration-200 ease-ir-standard has-[:focus-visible]:border-ir-primary has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ir-primary/40 ${
+                  isUploadingCover
+                    ? "cursor-default border-ir-border bg-ir-muted-surface/40"
+                    : isCoverDragActive
+                      ? "cursor-pointer border-ir-primary bg-ir-primary/5 shadow-ir-sm"
+                      : "cursor-pointer border-ir-border bg-ir-muted-surface/40 hover:border-ir-primary/50 hover:bg-ir-primary/5"
+                }`}
+                onDragEnter={handleCoverDragEnter}
+                onDragLeave={handleCoverDragLeave}
+                onDragOver={handleCoverDragOver}
+                onDrop={handleCoverDrop}
               >
-                Name
+                <span
+                  className={`flex size-11 items-center justify-center rounded-ir-full bg-ir-primary/10 text-ir-primary transition-transform duration-200 ease-ir-standard ${
+                    isCoverDragActive ? "scale-110" : "group-hover:scale-110"
+                  }`}
+                >
+                  {isUploadingCover ? (
+                    <SpinnerIcon className="size-5 animate-spin" />
+                  ) : (
+                    <UploadSimpleIcon className="size-5" weight="bold" />
+                  )}
+                </span>
+                <span className="space-y-1">
+                  <span className="block text-sm font-medium text-ir-heading">
+                    {isUploadingCover
+                      ? "Uploading…"
+                      : "Drag & drop an image here or click to browse"}
+                  </span>
+                  {!isUploadingCover && (
+                    <span className="block text-xs text-ir-muted">
+                      PNG, JPEG, WEBP, or GIF • Max 4MB
+                    </span>
+                  )}
+                </span>
+                <input
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  className="sr-only"
+                  disabled={isUploadingCover}
+                  onChange={handleCoverImageChange}
+                  ref={coverInputRef}
+                  type="file"
+                />
               </label>
+            )}
+            {coverError && (
+              <p className="text-xs text-ir-danger">{coverError}</p>
+            )}
+          </div>
+
+          {/* Title */}
+          <div className="space-y-1.5">
+            <label
+              className="text-xs font-semibold uppercase tracking-wide text-ir-heading"
+              htmlFor="title"
+            >
+              Title
+            </label>
+            <div className="relative">
               <input
-                autoFocus
-                className="w-full rounded-ir-input border border-ir-border bg-ir-surface px-3 py-2 text-sm text-ir-body placeholder:text-ir-muted focus:outline-none focus:ring-2 focus:ring-ir-primary/40"
-                disabled={labelBusy}
-                id="new-label"
-                maxLength={40}
-                onChange={(e) => setNewLabel(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addCustomLabel();
-                  }
-                }}
-                placeholder="e.g. Security Fix"
+                className="w-full rounded-ir-input border border-ir-border bg-ir-surface px-3 py-2.5 pr-16 text-sm text-ir-body placeholder:text-ir-muted focus:ring-2 focus:ring-ir-primary/40 focus:outline-none"
+                id="title"
+                maxLength={200}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="What shipped?"
                 type="text"
-                value={newLabel}
+                value={title}
               />
+              <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-ir-muted tabular-nums">
+                {countCharacters(title)}/200
+              </span>
             </div>
-            <DialogFooter>
+          </div>
+
+          {/* Content — immediately after the title */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wide text-ir-heading">
+              Content
+            </label>
+            <QuillEditor
+              minHeight={240}
+              onChange={(html) => setBody(html)}
+              placeholder="What shipped in this update?"
+              value={body}
+            />
+          </div>
+
+          {/* Label — built-in labels, custom label chips, and an "Add label" modal */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wide text-ir-heading">
+              Label
+            </label>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Built-in labels — always available, not editable. */}
+              {CHANGELOG_LABEL_VALUES.map((l) => {
+                const info = getLabelInfo(l);
+                const isActive = label === l;
+                return (
+                  <button
+                    className={`cursor-pointer rounded-ir-sm border px-3 py-1.5 text-xs font-semibold transition-all duration-150 ease-ir-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 ${
+                      isActive
+                        ? "border-current"
+                        : "border-ir-border text-ir-muted hover:border-ir-primary/30"
+                    }`}
+                    key={l}
+                    onClick={() => setLabel(l)}
+                    style={
+                      isActive
+                        ? {
+                            color: info.color,
+                            backgroundColor: `${info.color}12`,
+                            borderColor: `${info.color}60`,
+                          }
+                        : {}
+                    }
+                    type="button"
+                  >
+                    {info.label}
+                  </button>
+                );
+              })}
+
+              {/* Custom labels — selectable, with inline rename + delete. */}
+              {labels.map((l) => {
+                const isActive = label === l.name;
+                if (editingLabelId === l.id) {
+                  return (
+                    <input
+                      aria-label={`Rename ${l.name}`}
+                      autoFocus
+                      className="rounded-ir-sm border border-ir-primary bg-ir-surface px-2 py-1.5 text-xs text-ir-body focus:ring-2 focus:ring-ir-primary/40 focus:outline-none"
+                      key={l.id}
+                      maxLength={40}
+                      onBlur={() => renameLabel(l.id)}
+                      onChange={(e) => setEditingLabelName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          renameLabel(l.id);
+                        } else if (e.key === "Escape") {
+                          e.preventDefault();
+                          setEditingLabelId(null);
+                        }
+                      }}
+                      value={editingLabelName}
+                    />
+                  );
+                }
+                return (
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-ir-sm border py-1.5 pr-1.5 pl-3 text-xs font-semibold transition-all duration-150 ease-ir-standard ${
+                      isActive
+                        ? "border-current"
+                        : "border-ir-border text-ir-muted hover:border-ir-primary/30"
+                    }`}
+                    key={l.id}
+                    style={
+                      isActive
+                        ? {
+                            color: l.color,
+                            backgroundColor: `${l.color}12`,
+                            borderColor: `${l.color}60`,
+                          }
+                        : {}
+                    }
+                  >
+                    <button
+                      className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                      onClick={() => setLabel(l.name)}
+                      type="button"
+                    >
+                      {l.name}
+                    </button>
+                    <button
+                      aria-label={`Rename ${l.name}`}
+                      className="cursor-pointer text-ir-muted hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:opacity-50"
+                      disabled={labelBusy}
+                      onClick={() => {
+                        setEditingLabelId(l.id);
+                        setEditingLabelName(l.name);
+                      }}
+                      type="button"
+                    >
+                      <PencilIcon className="size-3" />
+                    </button>
+                    <button
+                      aria-label={`Delete ${l.name}`}
+                      className="cursor-pointer text-ir-muted hover:text-ir-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:opacity-50"
+                      disabled={labelBusy}
+                      onClick={() => removeLabel(l.id, l.name)}
+                      type="button"
+                    >
+                      <XIcon className="size-3" />
+                    </button>
+                  </span>
+                );
+              })}
+
+              {/* The selected label whose row was deleted — read-only. */}
+              {orphanLabel && (
+                <span
+                  className="rounded-ir-sm border border-current px-3 py-1.5 text-xs font-semibold"
+                  style={{
+                    color: getLabelInfo(orphanLabel).color,
+                    backgroundColor: `${getLabelInfo(orphanLabel).color}12`,
+                    borderColor: `${getLabelInfo(orphanLabel).color}60`,
+                  }}
+                >
+                  {orphanLabel}
+                </span>
+              )}
+
+              <button
+                aria-label="Add label"
+                className="inline-flex cursor-pointer items-center justify-center rounded-ir-sm border border-dashed border-ir-border p-1.5 text-ir-muted transition-colors duration-150 ease-ir-standard hover:border-ir-primary/40 hover:text-ir-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                onClick={() => setLabelModalOpen(true)}
+                title="Add label"
+                type="button"
+              >
+                <PlusIcon className="size-3.5" />
+              </button>
+            </div>
+            <div className="mt-1">
+              <ChangelogLabelBadge label={label} size="md" />
+            </div>
+          </div>
+
+          <Dialog
+            onOpenChange={handleLabelModalOpenChange}
+            open={labelModalOpen}
+          >
+            <DialogContent className="sm:max-w-sm">
+              <DialogHeader>
+                <DialogTitle>Add Label</DialogTitle>
+                <DialogDescription>
+                  Create a custom label for this workspace's changelog entries.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-1.5">
+                <label
+                  className="text-xs font-medium text-ir-heading"
+                  htmlFor="new-label"
+                >
+                  Name
+                </label>
+                <input
+                  autoFocus
+                  className="w-full rounded-ir-input border border-ir-border bg-ir-surface px-3 py-2 text-sm text-ir-body placeholder:text-ir-muted focus:outline-none focus:ring-2 focus:ring-ir-primary/40"
+                  disabled={labelBusy}
+                  id="new-label"
+                  maxLength={40}
+                  onChange={(e) => setNewLabel(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addCustomLabel();
+                    }
+                  }}
+                  placeholder="e.g. Security Fix"
+                  type="text"
+                  value={newLabel}
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  disabled={labelBusy}
+                  onClick={() => handleLabelModalOpenChange(false)}
+                  type="button"
+                  variant="ghost"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  disabled={!newLabel.trim() || labelBusy}
+                  onClick={addCustomLabel}
+                  type="button"
+                >
+                  {labelBusy ? "Creating…" : "Create"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Linked Posts */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wide text-ir-heading">
+              Linked Feedback Posts
+              <span className="ml-1 font-normal normal-case text-ir-muted">
+                (optional)
+              </span>
+            </label>
+            <p className="text-xs text-ir-muted">
+              Link feedback posts that shipped in this update. Voters will be
+              notified on first publish.
+            </p>
+            <LinkedPostsSelector
+              onChange={setLinkedPosts}
+              selectedPosts={linkedPosts}
+              workspaceId={workspaceId}
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-ir-border pt-4">
+            <div className="flex items-center gap-1.5">
+              {saveStatus === "saving" && (
+                <span className="animate-pulse text-xs text-ir-muted">
+                  Saving…
+                </span>
+              )}
+              {saveStatus === "saved" && (
+                <span className="text-xs text-ir-success">Saved</span>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
               <Button
-                disabled={labelBusy}
-                onClick={() => handleLabelModalOpenChange(false)}
+                disabled={isPending}
+                onClick={() =>
+                  guardNavigation(() =>
+                    router.push(`/${workspaceSlug}/settings/changelog`)
+                  )
+                }
                 type="button"
                 variant="ghost"
               >
                 Cancel
               </Button>
-              <Button
-                disabled={!newLabel.trim() || labelBusy}
-                onClick={addCustomLabel}
-                type="button"
-              >
-                {labelBusy ? "Creating…" : "Create"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
-        {/* Linked Posts */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wide text-ir-heading">
-            Linked Feedback Posts
-            <span className="ml-1 font-normal normal-case text-ir-muted">
-              (optional)
-            </span>
-          </label>
-          <p className="text-xs text-ir-muted">
-            Link feedback posts that shipped in this update. Voters will be
-            notified on first publish.
-          </p>
-          <LinkedPostsSelector
-            onChange={setLinkedPosts}
-            selectedPosts={linkedPosts}
-            workspaceId={workspaceId}
-          />
-        </div>
+              {!isPublished && (
+                <Button
+                  disabled={isPending || !title.trim() || !isDirty}
+                  onClick={handleSaveDraft}
+                  type="button"
+                  variant="outline"
+                >
+                  Save Draft
+                </Button>
+              )}
 
-        {/* Actions */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-ir-border pt-4">
-          <div className="flex items-center gap-1.5">
-            {saveStatus === "saving" && (
-              <span className="animate-pulse text-xs text-ir-muted">
-                Saving…
-              </span>
-            )}
-            {saveStatus === "saved" && (
-              <span className="text-xs text-ir-success">Saved</span>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              disabled={isPending}
-              onClick={() =>
-                router.push(`/${workspaceSlug}/settings/changelog`)
-              }
-              type="button"
-              variant="ghost"
-            >
-              Cancel
-            </Button>
-
-            {!isPublished && (
-              <Button
-                disabled={isPending || !title.trim() || !isDirty}
-                onClick={handleSaveDraft}
-                type="button"
-                variant="outline"
-              >
-                Save Draft
-              </Button>
-            )}
-
-            {isPublished ? (
-              <Button
-                disabled={isPending || !title.trim() || !isDirty}
-                onClick={handleUpdate}
-                type="button"
-              >
-                {isPending ? "Saving…" : "Update"}
-              </Button>
-            ) : (
-              <Button
-                disabled={isPending || !title.trim()}
-                onClick={handlePublish}
-                type="button"
-              >
-                {isPending ? "Publishing…" : "Publish →"}
-              </Button>
-            )}
+              {isPublished ? (
+                <Button
+                  disabled={isPending || !title.trim() || !isDirty}
+                  onClick={handleUpdate}
+                  type="button"
+                >
+                  {isPending ? "Saving…" : "Update"}
+                </Button>
+              ) : (
+                <Button
+                  disabled={isPending || !title.trim()}
+                  onClick={handlePublish}
+                  type="button"
+                >
+                  {isPending ? "Publishing…" : "Publish →"}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </ContentContainer>
+      </ContentContainer>
+
+      <ConfirmDialog
+        cancelLabel="Keep editing"
+        confirmLabel="Discard changes"
+        description="You have unsaved changes to this entry. If you leave now, they'll be lost."
+        onConfirm={confirmLeave}
+        onOpenChange={(open) => {
+          if (!open) {
+            cancelLeave();
+          }
+        }}
+        open={isConfirmOpen}
+        title="Discard unsaved changes?"
+      />
+    </>
   );
 }
