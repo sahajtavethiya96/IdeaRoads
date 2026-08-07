@@ -107,7 +107,7 @@ export function ManualRoadmapCard({
                 by a dialog instead of navigation (manual items have no
                 detail route). */}
             <button
-              className="cursor-pointer text-left text-sm leading-snug font-medium text-ir-heading after:absolute after:inset-0 after:content-[''] hover:text-ir-primary hover:underline focus-visible:underline focus-visible:outline-none"
+              className="block w-full cursor-pointer text-left text-sm leading-snug font-medium break-words text-ir-heading after:absolute after:inset-0 after:content-[''] hover:text-ir-primary hover:underline focus-visible:underline focus-visible:outline-none"
               onClick={() => {
                 if (wasDragged?.()) {
                   return;
@@ -119,7 +119,7 @@ export function ManualRoadmapCard({
               {item.title}
             </button>
             {descPreview && (
-              <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-ir-muted">
+              <p className="mt-1 line-clamp-2 text-xs leading-relaxed break-words text-ir-muted">
                 {descPreview}
               </p>
             )}
@@ -147,7 +147,7 @@ export function ManualRoadmapCard({
           </div>
 
           {canManage && (onEdit || onDelete) && (
-            <div className="relative z-10 flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+            <div className="relative z-10 flex shrink-0 items-center gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
               {onEdit && (
                 <button
                   aria-label="Edit item"

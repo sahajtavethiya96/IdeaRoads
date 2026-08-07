@@ -101,7 +101,7 @@ export function RoadmapPostCard({
                 framer-motion one) hijacks the gesture the instant a
                 whole-card drag starts over it. */}
             <Link
-              className="text-sm leading-snug font-medium text-ir-heading underline-offset-2 transition-colors after:absolute after:inset-0 after:content-[''] group-hover:text-ir-primary group-hover:underline focus-visible:outline-none focus-visible:underline"
+              className="min-w-0 flex-1 break-words text-sm leading-snug font-medium text-ir-heading underline-offset-2 transition-colors after:absolute after:inset-0 after:content-[''] group-hover:text-ir-primary group-hover:underline focus-visible:outline-none focus-visible:underline"
               draggable={false}
               href={postHref}
               onClick={(e) => {
