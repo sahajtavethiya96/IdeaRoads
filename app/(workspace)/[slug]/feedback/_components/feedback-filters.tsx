@@ -99,7 +99,7 @@ export function FeedbackFilters({
       </div>
 
       {/* Search + filters */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-ir-border px-4 py-3 sm:px-8">
+      <div className="flex flex-col gap-2.5 border-b border-ir-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-8">
         <div className="flex justify-start">
           <SearchInput
             className="w-full sm:max-w-sm"
@@ -109,7 +109,7 @@ export function FeedbackFilters({
           />
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5 sm:justify-end">
           {/* Category filter */}
           {activeCategories.length > 0 && (
             <Select
@@ -118,7 +118,7 @@ export function FeedbackFilters({
               }
               value={activeCategoryId || "all"}
             >
-              <SelectTrigger size="sm">
+              <SelectTrigger className="shrink-0" size="sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -139,7 +139,7 @@ export function FeedbackFilters({
             }
             value={activeStatus || "all"}
           >
-            <SelectTrigger size="sm">
+            <SelectTrigger className="shrink-0" size="sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -159,7 +159,7 @@ export function FeedbackFilters({
             }
             value={activeDraft}
           >
-            <SelectTrigger size="sm">
+            <SelectTrigger className="shrink-0" size="sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

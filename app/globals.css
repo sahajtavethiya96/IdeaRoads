@@ -72,15 +72,20 @@ body {
   background-size: 32px 32px;
 }
 
-/* Single global scrollbar style — the sidebar nav's thin scrollbar, applied
-   to every scrollable element in the app (tables, modals, dropdowns,
-   popovers, command lists, etc.) so nothing needs its own per-component
-   scrollbar styling. `scrollbar-color`/`scrollbar-width` are the standard
-   properties (Firefox); the `::-webkit-scrollbar*` pseudo-elements cover
-   Chrome/Edge/Safari. Browsers that support neither (e.g. older Safari)
-   simply fall back to their native scrollbar. */
+/* Single global thin scrollbar style, applied to every scrollable element in
+   the app (tables, modals, dropdowns, popovers, command lists, etc.) so
+   nothing needs its own per-component scrollbar styling. Uses --ir-text-muted
+   rather than the sidebar's --sidebar-border/--sidebar-ring (those are fixed
+   "always dark" tokens meant only for the sidebar's own dark surface — reused
+   here they rendered every scrollbar near-black even on light surfaces like
+   the feedback table). --ir-text-muted already flips under .dark, so the
+   thumb stays visible-but-subtle on both themes. `scrollbar-color`/
+   `scrollbar-width` are the standard properties (Firefox); the
+   `::-webkit-scrollbar*` pseudo-elements cover Chrome/Edge/Safari. Browsers
+   that support neither (e.g. older Safari) simply fall back to their native
+   scrollbar. */
 * {
-  scrollbar-color: var(--sidebar-border) transparent;
+  scrollbar-color: var(--ir-text-muted) transparent;
   scrollbar-width: thin;
 }
 *::-webkit-scrollbar {
@@ -91,11 +96,11 @@ body {
   background: transparent;
 }
 *::-webkit-scrollbar-thumb {
-  background-color: var(--sidebar-border);
+  background-color: var(--ir-text-muted);
   border-radius: 9999px;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background-color: var(--sidebar-ring);
+  background-color: var(--ir-text-body);
 }
 
 @theme inline {

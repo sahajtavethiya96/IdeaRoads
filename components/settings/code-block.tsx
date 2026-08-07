@@ -18,13 +18,13 @@ export function CodeBlock({ code }: CodeBlockProps) {
   }
 
   return (
-    <div className="relative rounded-ir-sm border border-ir-border bg-ir-muted-surface">
-      <pre className="overflow-x-auto p-3 pr-10 text-xs leading-relaxed text-ir-heading">
+    <div className="flex items-start justify-between gap-2 rounded-ir-sm border border-ir-border bg-ir-muted-surface">
+      <pre className="min-w-0 flex-1 overflow-x-auto p-3 text-xs leading-relaxed text-ir-heading">
         <code>{code}</code>
       </pre>
       <button
         aria-label="Copy code"
-        className="absolute top-2 right-2 flex size-6 cursor-pointer items-center justify-center rounded-ir-xs text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+        className="m-2 flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-ir-xs text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
         onClick={handleCopy}
         type="button"
       >

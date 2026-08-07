@@ -41,7 +41,7 @@ export function SaveBar({
     : { duration: 0.15, ease: "easeOut" as const };
 
   return (
-    <div className="mt-5 flex items-center justify-end gap-2 border-t border-ir-border pt-4">
+    <div className="mt-5 flex flex-wrap items-center justify-end gap-y-2 gap-x-2 border-t border-ir-border pt-4">
       {onTest && (
         <Button
           disabled={isTesting || testDisabled}

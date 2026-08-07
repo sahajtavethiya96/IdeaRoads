@@ -304,50 +304,56 @@ export function NotificationList({
         title="Notifications"
       />
 
-      {/* List */}
-      {items.length === 0 ? (
-        <NotificationEmptyState />
-      ) : visibleGroups.length === 0 ? (
-        <div className="px-1 py-16 text-center">
-          <p className="text-sm text-ir-muted">
-            You're all caught up — no unread notifications.
-          </p>
-        </div>
-      ) : (
-        <div className="px-1 pb-2">
-          {visibleGroups.map((group) => (
-            <div className="mt-8 first:mt-4" key={group.label}>
-              <p className="mb-3 px-1 text-xs font-semibold tracking-widest text-base-content/50 uppercase">
-                {group.label}
-              </p>
-              <div className="flex flex-col gap-2">
-                {group.items.map((notification) => (
-                  <NotificationItem
-                    key={notification.id}
-                    notification={notification}
-                    onRead={handleRead}
-                    onRequestClear={setClearTarget}
-                  />
-                ))}
+      {/* List — wrapped in the same bordered surface card every other
+          ContentContainer page uses (settings forms, account page, etc.),
+          so this page's body reads as a panel on the workspace canvas
+          instead of leaving the canvas color exposed directly under the
+          sticky header. */}
+      <div className="mt-4 rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+        {items.length === 0 ? (
+          <NotificationEmptyState />
+        ) : visibleGroups.length === 0 ? (
+          <div className="px-5 py-16 text-center">
+            <p className="text-sm text-ir-muted">
+              You're all caught up — no unread notifications.
+            </p>
+          </div>
+        ) : (
+          <div className="p-4">
+            {visibleGroups.map((group) => (
+              <div className="mt-6 first:mt-0" key={group.label}>
+                <p className="mb-3 px-1 text-xs font-semibold tracking-widest text-base-content/50 uppercase">
+                  {group.label}
+                </p>
+                <div className="flex flex-col gap-2">
+                  {group.items.map((notification) => (
+                    <NotificationItem
+                      key={notification.id}
+                      notification={notification}
+                      onRead={handleRead}
+                      onRequestClear={setClearTarget}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
-          {hasMore && filter === "all" && (
-            <div className="pt-6 text-center">
-              <Button
-                disabled={isPending}
-                onClick={handleLoadMore}
-                size="sm"
-                type="button"
-                variant="outline"
-              >
-                {isPending ? "Loading…" : "Load more"}
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
+            {hasMore && filter === "all" && (
+              <div className="pt-6 pb-2 text-center">
+                <Button
+                  disabled={isPending}
+                  onClick={handleLoadMore}
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                >
+                  {isPending ? "Loading…" : "Load more"}
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       <ConfirmDialog
         confirmLabel="Clear All"

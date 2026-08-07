@@ -99,7 +99,7 @@ export default async function WorkspaceLayout({
 
         {/* Main content */}
         <main
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[#F7F9FB]"
+          className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto bg-[#F7F9FB]"
           id="main-content"
         >
           <PortalHrefProvider href={portalHref}>

@@ -101,9 +101,11 @@ function buildSnippet(input: { appUrl: string; workspaceSlug: string }) {
 }
 
 function CopyButton({
+  className,
   disabled,
   value,
 }: {
+  className?: string;
   disabled?: boolean;
   value: string;
 }) {
@@ -118,6 +120,7 @@ function CopyButton({
 
   return (
     <Button
+      className={className}
       disabled={disabled}
       onClick={copy}
       size="xs"
@@ -790,24 +793,28 @@ export function EmbedSection({
               </div>
             </section>
 
-            <div className="flex items-center justify-end gap-3">
-              {isDirty && (
-                <Badge className="gap-1">
-                  <WarningCircleIcon weight="fill" />
-                  Unsaved changes
-                </Badge>
-              )}
-              <Button
-                disabled={isPending || !isDirty}
-                onClick={handleDiscard}
-                type="button"
-                variant="outline"
-              >
-                Discard
-              </Button>
-              <Button disabled={isPending || !isDirty} type="submit">
-                {isPending ? "Saving…" : "Save Widget Settings"}
-              </Button>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center">
+                {isDirty && (
+                  <Badge className="gap-1">
+                    <WarningCircleIcon weight="fill" />
+                    Unsaved changes
+                  </Badge>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center justify-end gap-3">
+                <Button
+                  disabled={isPending || !isDirty}
+                  onClick={handleDiscard}
+                  type="button"
+                  variant="outline"
+                >
+                  Discard
+                </Button>
+                <Button disabled={isPending || !isDirty} type="submit">
+                  {isPending ? "Saving…" : "Save Widget Settings"}
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -854,10 +861,14 @@ export function EmbedSection({
           </div>
           <div className="p-5">
             <div className="flex items-start gap-2 rounded-ir-sm border border-ir-border bg-ir-muted-surface p-3">
-              <pre className="min-w-0 flex-1 overflow-x-auto font-mono text-xs whitespace-pre text-ir-heading">
+              <pre className="min-w-0 flex-1 font-mono text-xs break-all whitespace-pre-wrap text-ir-heading">
                 {snippet ?? "// select a board to generate this snippet"}
               </pre>
-              <CopyButton disabled={!snippet} value={snippet ?? ""} />
+              <CopyButton
+                className="shrink-0"
+                disabled={!snippet}
+                value={snippet ?? ""}
+              />
             </div>
           </div>
         </div>

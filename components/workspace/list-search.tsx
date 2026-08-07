@@ -45,7 +45,7 @@ export function ListSearch({
     <div className={className ?? "border-border px-4 py-4 sm:px-8"}>
       <SearchInput
         aria-label={placeholder}
-        className="h-9 min-w-50 max-w-md"
+        className="h-9 w-full sm:w-auto sm:min-w-50 sm:max-w-md"
         defaultValue={defaultValue}
         onSearch={update}
         placeholder={placeholder}

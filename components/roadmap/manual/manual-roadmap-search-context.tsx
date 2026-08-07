@@ -79,7 +79,7 @@ export function ManualRoadmapSearchInput() {
 export function ManualRoadmapManageColumnsButton() {
   const { setManageOpen } = useManualRoadmapControls();
   return (
-    <Button onClick={() => setManageOpen(true)} size="sm" variant="outline">
+    <Button onClick={() => setManageOpen(true)} variant="outline">
       <SlidersIcon data-icon="inline-start" />
       Manage columns
     </Button>
@@ -101,7 +101,6 @@ export function ManualRoadmapAddItemButton({
         setEditItem(null);
         setAddOpen(true);
       }}
-      size="sm"
     >
       <PlusIcon data-icon="inline-start" />
       Add Roadmap Item
