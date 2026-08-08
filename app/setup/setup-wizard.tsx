@@ -334,14 +334,14 @@ export function SetupWizard({ appHost, adminUrl }: SetupWizardProps) {
                 </p>
                 <div className="flex shrink-0 gap-3">
                   <button
-                    className="text-xs font-semibold text-ir-warning underline hover:no-underline"
+                    className="rounded-ir-xs text-xs font-semibold text-ir-warning underline hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
                     onClick={acceptEmailSuggestion}
                     type="button"
                   >
                     Use this
                   </button>
                   <button
-                    className="text-xs text-ir-muted underline hover:no-underline"
+                    className="rounded-ir-xs text-xs text-ir-muted underline hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
                     onClick={dismissEmailSuggestion}
                     type="button"
                   >

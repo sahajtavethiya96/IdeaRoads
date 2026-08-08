@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -22,30 +21,35 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-const inputGroupAddonVariants = cva(
-  "flex h-auto cursor-text items-center justify-center gap-2 py-2 text-sm font-medium text-ir-muted select-none group-data-[disabled=true]/input-group:opacity-50 **:data-[slot=kbd]:rounded-ir-xs **:data-[slot=kbd]:bg-ir-muted-surface **:data-[slot=kbd]:px-1.5 [&>svg:not([class*='size-'])]:size-3.5",
-  {
-    variants: {
-      align: {
-        "inline-start": "order-first",
-        "inline-end": "order-last",
-        "block-start":
-          "order-first w-full justify-start pt-3 group-has-[>input]/input-group:pt-3.5 [.border-b]:pb-3.5",
-        "block-end":
-          "order-last w-full justify-start pb-3 group-has-[>input]/input-group:pb-3.5 [.border-t]:pt-3.5",
-      },
-    },
-    defaultVariants: {
-      align: "inline-start",
-    },
-  }
-)
+const INPUT_GROUP_ADDON_BASE =
+  "flex h-auto cursor-text items-center justify-center gap-2 py-2 text-sm font-medium text-ir-muted select-none group-data-[disabled=true]/input-group:opacity-50 **:data-[slot=kbd]:rounded-ir-xs **:data-[slot=kbd]:bg-ir-muted-surface **:data-[slot=kbd]:px-1.5 [&>svg:not([class*='size-'])]:size-3.5"
+
+export type InputGroupAddonAlign =
+  | "inline-start"
+  | "inline-end"
+  | "block-start"
+  | "block-end"
+
+const INPUT_GROUP_ADDON_ALIGN_CLASSES: Record<InputGroupAddonAlign, string> = {
+  "inline-start": "order-first",
+  "inline-end": "order-last",
+  "block-start":
+    "order-first w-full justify-start pt-3 group-has-[>input]/input-group:pt-3.5 [.border-b]:pb-3.5",
+  "block-end":
+    "order-last w-full justify-start pb-3 group-has-[>input]/input-group:pb-3.5 [.border-t]:pt-3.5",
+}
+
+function inputGroupAddonVariants({
+  align = "inline-start",
+}: { align?: InputGroupAddonAlign } = {}) {
+  return cn(INPUT_GROUP_ADDON_BASE, INPUT_GROUP_ADDON_ALIGN_CLASSES[align])
+}
 
 function InputGroupAddon({
   className,
   align = "inline-start",
   ...props
-}: React.ComponentProps<"div"> & VariantProps<typeof inputGroupAddonVariants>) {
+}: React.ComponentProps<"div"> & { align?: InputGroupAddonAlign }) {
   return (
     <div
       role="group"
@@ -63,22 +67,23 @@ function InputGroupAddon({
   )
 }
 
-const inputGroupButtonVariants = cva(
-  "flex items-center gap-2 rounded-ir-sm text-sm shadow-none",
-  {
-    variants: {
-      size: {
-        xs: "h-6 gap-1 rounded-ir-sm px-1.5 text-xs [&>svg:not([class*='size-'])]:size-3.5",
-        sm: "",
-        "icon-xs": "size-6 p-0 text-xs has-[>svg]:p-0",
-        "icon-sm": "size-8 p-0 has-[>svg]:p-0",
-      },
-    },
-    defaultVariants: {
-      size: "xs",
-    },
-  }
-)
+const INPUT_GROUP_BUTTON_BASE =
+  "flex items-center gap-2 rounded-ir-sm text-sm shadow-none"
+
+export type InputGroupButtonSize = "xs" | "sm" | "icon-xs" | "icon-sm"
+
+const INPUT_GROUP_BUTTON_SIZE_CLASSES: Record<InputGroupButtonSize, string> = {
+  xs: "h-6 gap-1 rounded-ir-sm px-1.5 text-xs [&>svg:not([class*='size-'])]:size-3.5",
+  sm: "",
+  "icon-xs": "size-6 p-0 text-xs has-[>svg]:p-0",
+  "icon-sm": "size-8 p-0 has-[>svg]:p-0",
+}
+
+function inputGroupButtonVariants({
+  size = "xs",
+}: { size?: InputGroupButtonSize } = {}) {
+  return cn(INPUT_GROUP_BUTTON_BASE, INPUT_GROUP_BUTTON_SIZE_CLASSES[size])
+}
 
 function InputGroupButton({
   className,
@@ -86,8 +91,9 @@ function InputGroupButton({
   variant = "ghost",
   size = "xs",
   ...props
-}: Omit<React.ComponentProps<typeof Button>, "size"> &
-  VariantProps<typeof inputGroupButtonVariants>) {
+}: Omit<React.ComponentProps<typeof Button>, "size"> & {
+  size?: InputGroupButtonSize
+}) {
   return (
     <Button
       type={type}

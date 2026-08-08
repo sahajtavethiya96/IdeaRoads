@@ -622,7 +622,7 @@ export function ChangelogEditor({
                 />
                 <button
                   aria-label="Remove cover image"
-                  className="absolute top-3 right-3 flex size-8 items-center justify-center rounded-ir-full border border-ir-border bg-ir-surface text-ir-muted shadow-ir-md transition-colors duration-150 ease-ir-standard hover:border-ir-danger hover:bg-ir-danger hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                  className="absolute top-3 right-3 flex size-8 items-center justify-center rounded-ir-full border border-ir-border bg-ir-surface text-ir-muted shadow-ir-md transition-colors duration-150 ease-ir-standard hover:border-ir-danger hover:bg-ir-danger hover:text-ir-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
                   onClick={removeCoverImage}
                   type="button"
                 >
@@ -899,7 +899,7 @@ export function ChangelogEditor({
                   disabled={labelBusy}
                   onClick={() => handleLabelModalOpenChange(false)}
                   type="button"
-                  variant="ghost"
+                  variant="outline"
                 >
                   Cancel
                 </Button>
@@ -955,7 +955,7 @@ export function ChangelogEditor({
                   )
                 }
                 type="button"
-                variant="ghost"
+                variant="outline"
               >
                 Cancel
               </Button>

@@ -1,52 +1,49 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
 @import "./design-tokens.css";
 
-/* DaisyUI — single custom theme whose colors are indirected through the
-   existing --ir-* tokens (design-tokens.css), which already flip values
-   under the .dark class via next-themes. No second daisyui theme or
-   prefersdark logic is needed: the var() references pick up dark values
-   automatically wherever the .dark class is present. */
+/* Standard built-in daisyUI themes only — migration phase. The
+   product-specific theme (mapped through this app's own --ir-* tokens in
+   design-tokens.css) is deliberately deferred to a follow-up branding pass;
+   see the migration task this change was part of. */
 @plugin "daisyui" {
-  themes: idearoads --default;
-}
-
-@plugin "daisyui/theme" {
-  name: "idearoads";
-  default: true;
-  color-scheme: light;
-  --color-base-100: var(--ir-surface);
-  --color-base-200: var(--ir-muted-surface);
-  --color-base-300: var(--ir-border);
-  --color-base-content: var(--ir-text-heading);
-  --color-primary: var(--ir-primary);
-  --color-primary-content: var(--ir-primary-foreground);
-  --color-secondary: var(--ir-text-body);
-  --color-secondary-content: var(--ir-surface);
-  --color-accent: var(--ir-primary-light);
-  --color-accent-content: var(--ir-text-heading);
-  --color-neutral: var(--ir-text-heading);
-  --color-neutral-content: var(--ir-surface);
-  --color-info: var(--info);
-  --color-info-content: #ffffff;
-  --color-success: var(--ir-success);
-  --color-success-content: var(--ir-success-foreground);
-  --color-warning: var(--ir-warning);
-  --color-warning-content: var(--ir-warning-foreground);
-  --color-error: var(--ir-danger);
-  --color-error-content: var(--ir-danger-foreground);
-  --radius-selector: var(--radius-ir-sm);
-  --radius-field: var(--radius-ir-sm);
-  --radius-box: var(--radius-ir-card);
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  --border: 1px;
-  --depth: 0;
-  --noise: 0;
+  themes:
+    light --default,
+    dark;
 }
 
 @custom-variant dark (&:is(.dark *));
+
+/* Local replacements for the subset of the (now-removed) shadcn package's
+   custom variants that are still consumed in this codebase — data-closed
+   (Headless UI Dialog/Menu exit transitions), data-selected (cmdk Command
+   items), data-disabled (Headless UI Menu items), data-active (Tabs). Kept
+   verbatim from the shadcn package's own definitions. data-open, data-checked,
+   data-unchecked, data-horizontal and data-vertical were audited and have zero
+   consumers, so they were dropped rather than carried forward. */
+@custom-variant data-closed {
+  &:where([data-state="closed"]),
+  &:where([data-closed]:not([data-closed="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-selected {
+  &:where([data-selected="true"]) {
+    @slot;
+  }
+}
+@custom-variant data-disabled {
+  &:where([data-disabled="true"]),
+  &:where([data-disabled]:not([data-disabled="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-active {
+  &:where([data-state="active"]),
+  &:where([data-active]:not([data-active="false"])) {
+    @slot;
+  }
+}
 
 * {
   box-sizing: border-box;
@@ -61,7 +58,7 @@
 }
 
 html {
-  background: var(--background);
+  background: var(--color-base-200);
   scroll-behavior: smooth;
 }
 
@@ -115,15 +112,15 @@ body {
   /* Page & brand */
   --color-page: var(--page);
 
-  /* Semantic status — --color-success/-warning/-info deliberately omitted:
-     DaisyUI's theme (below) owns those exact token names for
-     already-migrated components. Only the non-colliding derived tokens
-     stay mapped here for components not yet converted. */
+  /* Status colors — genuinely product-specific, not part of daisyUI's theme
+     vocabulary or the old shadcn token set. */
   --color-success-foreground: var(--success-foreground);
   --color-success-subtle: var(--success-subtle);
   --color-success-light: var(--success-light);
 
-  /* Shadcn core */
+  /* Admin sidebar — a fixed always-dark surface, independent of the active
+     daisyUI theme (see components/admin/admin-sidebar.tsx,
+     components/workspace/workspace-sidebar.tsx). Not a daisyUI concept. */
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -132,36 +129,6 @@ body {
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  /* --color-accent and --color-primary omitted for the same reason as the
-     status colors above — DaisyUI's theme owns those names now. */
-  --color-accent-foreground: var(--accent-foreground);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  /* --color-secondary omitted — collides with DaisyUI's theme too. */
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
-  --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 :root {
@@ -175,32 +142,6 @@ body {
   --success-light: oklch(0.78 0.13 145); /* emerald-300 (on dark bg) */
   --warning: oklch(0.58 0.15 65); /* amber-700   */
   --info: oklch(0.5 0.16 255); /* blue-700    */
-
-  /* ── Shadcn core ──────────────────────────── */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0rem;
 
   /* ── Sidebar — always dark (admin panel) ───── */
   --sidebar: oklch(0.145 0 0);
@@ -223,30 +164,6 @@ body {
   --warning: oklch(0.72 0.15 65);
   --info: oklch(0.7 0.14 255); /* blue-300 (on dark bg) */
 
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-
   --sidebar: oklch(0.145 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.985 0 0);
@@ -259,10 +176,10 @@ body {
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-base-300 outline-primary/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-base-200 text-base-content;
   }
   html {
     @apply font-sans;
@@ -300,7 +217,7 @@ body {
   font-family: inherit;
   line-height: 1;
   border: none !important;
-  border-bottom: 1px solid hsl(var(--border)) !important;
+  border-bottom: 1px solid var(--ir-border) !important;
 }
 
 /* Toolbar format groups */
@@ -330,17 +247,17 @@ body {
 
 .ql-snow .ql-toolbar button:hover,
 .ql-snow.ql-toolbar button:hover {
-  background: hsl(var(--muted));
+  background: var(--ir-muted-surface);
 }
 
 .ql-snow.ql-toolbar button.ql-active,
 .ql-snow .ql-toolbar button.ql-active {
-  background: hsl(var(--muted));
+  background: var(--ir-muted-surface);
 }
 
 /* Toolbar button tooltips — Quill's snow theme renders these buttons as
-   plain DOM nodes outside React, so they can't use the app's Radix-based
-   Tooltip component. This reproduces its look (ir-heading bubble, ir-surface
+   plain DOM nodes outside React, so they can't use the app's own Tooltip
+   component. This reproduces its look (ir-heading bubble, ir-surface
    text, shadow-ir-md) with pure CSS instead of a native `title` attribute,
    which shows in OS styling after a ~1s delay. */
 .ql-snow.ql-toolbar button[data-tooltip],
@@ -388,23 +305,23 @@ body {
 
 /* Icon stroke/fill colors */
 .ql-snow .ql-stroke {
-  stroke: hsl(var(--muted-foreground));
+  stroke: var(--ir-text-muted);
 }
 .ql-snow .ql-fill,
 .ql-snow .ql-stroke.ql-fill {
-  fill: hsl(var(--muted-foreground));
+  fill: var(--ir-text-muted);
 }
 .ql-snow.ql-toolbar button:hover .ql-stroke,
 .ql-snow .ql-toolbar button:hover .ql-stroke,
 .ql-snow.ql-toolbar button.ql-active .ql-stroke,
 .ql-snow .ql-toolbar button.ql-active .ql-stroke {
-  stroke: hsl(var(--foreground));
+  stroke: var(--ir-text-body);
 }
 .ql-snow.ql-toolbar button:hover .ql-fill,
 .ql-snow .ql-toolbar button:hover .ql-fill,
 .ql-snow.ql-toolbar button.ql-active .ql-fill,
 .ql-snow .ql-toolbar button.ql-active .ql-fill {
-  fill: hsl(var(--foreground));
+  fill: var(--ir-text-body);
 }
 
 /* Picker (header / size dropdowns) */
@@ -413,47 +330,47 @@ body {
   align-items: center;
   height: 24px;
   font-size: 0.8125rem;
-  color: hsl(var(--muted-foreground));
+  color: var(--ir-text-muted);
 }
 .ql-snow .ql-picker-label {
   display: inline-flex;
   align-items: center;
   padding: 0 6px;
-  color: hsl(var(--muted-foreground));
+  color: var(--ir-text-muted);
   cursor: pointer;
   border: none !important;
 }
 .ql-snow .ql-picker-label:hover {
-  color: hsl(var(--foreground));
+  color: var(--ir-text-body);
 }
 .ql-snow .ql-picker-label .ql-stroke {
-  stroke: hsl(var(--muted-foreground));
+  stroke: var(--ir-text-muted);
 }
 .ql-snow .ql-picker-label:hover .ql-stroke {
-  stroke: hsl(var(--foreground));
+  stroke: var(--ir-text-body);
 }
 .ql-snow .ql-picker-options {
   z-index: 100;
   padding: 4px;
-  background: hsl(var(--background));
-  border: 1px solid hsl(var(--border)) !important;
+  background: var(--ir-surface);
+  border: 1px solid var(--ir-border) !important;
   border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 .ql-snow .ql-picker-item {
   padding: 4px 8px;
   font-size: 0.8125rem;
-  color: hsl(var(--foreground));
+  color: var(--ir-text-body);
   cursor: pointer;
   border-radius: 3px;
 }
 .ql-snow .ql-picker-item:hover {
-  color: hsl(var(--foreground));
-  background: hsl(var(--muted));
+  color: var(--ir-text-body);
+  background: var(--ir-muted-surface);
 }
 .ql-snow .ql-picker-item.ql-selected {
   font-weight: 600;
-  color: hsl(var(--primary));
+  color: var(--ir-primary);
 }
 
 /* ── Editor area ── */
@@ -463,7 +380,7 @@ body {
   padding: 10px 12px;
   font-size: 0.875rem;
   line-height: 1.65;
-  color: hsl(var(--foreground));
+  color: var(--ir-text-body);
   word-break: break-word;
   overflow-wrap: anywhere;
   overflow-y: auto;
@@ -472,7 +389,7 @@ body {
   right: 12px;
   left: 12px;
   font-style: normal;
-  color: hsl(var(--muted-foreground));
+  color: var(--ir-text-muted);
 }
 
 /* Editor content formatting */
@@ -491,15 +408,15 @@ body {
   text-decoration: line-through;
 }
 .ql-editor a {
-  color: hsl(var(--primary));
+  color: var(--ir-primary);
   text-decoration: underline;
 }
 .ql-editor blockquote {
   padding-left: 12px;
   margin: 6px 0;
   font-style: italic;
-  color: var(--muted-foreground);
-  border-left: 3px solid var(--border);
+  color: var(--ir-text-muted);
+  border-left: 3px solid var(--ir-border);
 }
 .ql-editor pre.ql-syntax {
   padding: 10px 12px;
@@ -507,18 +424,18 @@ body {
   overflow-x: auto;
   font-family: ui-monospace, monospace;
   font-size: 0.8125rem;
-  color: var(--foreground);
+  color: var(--ir-text-body);
   word-break: break-word;
   white-space: pre-wrap;
-  background: var(--muted);
+  background: var(--ir-muted-surface);
   border-radius: 4px;
 }
 .ql-editor code {
   padding: 1px 4px;
   font-family: ui-monospace, monospace;
   font-size: 0.8125rem;
-  color: var(--foreground);
-  background: var(--muted);
+  color: var(--ir-text-body);
+  background: var(--ir-muted-surface);
   border-radius: 3px;
 }
 .ql-editor ol,
@@ -540,10 +457,10 @@ body {
 .ql-snow .ql-tooltip {
   z-index: 100;
   padding: 6px 10px;
-  color: hsl(var(--foreground));
+  color: var(--ir-text-body);
   white-space: nowrap;
-  background: hsl(var(--background));
-  border: 1px solid hsl(var(--border));
+  background: var(--ir-surface);
+  border: 1px solid var(--ir-border);
   border-radius: 4px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
@@ -551,7 +468,7 @@ body {
   margin-right: 8px;
   font-size: 0.75rem;
   line-height: 26px;
-  color: hsl(var(--muted-foreground));
+  color: var(--ir-text-muted);
   content: "URL:";
 }
 .ql-snow .ql-tooltip input[type="text"] {
@@ -559,21 +476,21 @@ body {
   height: 26px;
   padding: 0 8px;
   font-size: 0.8125rem;
-  color: hsl(var(--foreground));
+  color: var(--ir-text-body);
   outline: none;
-  background: hsl(var(--background));
-  border: 1px solid hsl(var(--border));
+  background: var(--ir-surface);
+  border: 1px solid var(--ir-border);
   border-radius: 3px;
 }
 .ql-snow .ql-tooltip input[type="text"]:focus {
-  border-color: hsl(var(--ring));
-  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+  border-color: var(--ir-primary);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--ir-primary) 20%, transparent);
 }
 .ql-snow .ql-tooltip a.ql-action,
 .ql-snow .ql-tooltip a.ql-remove {
   margin-left: 8px;
   font-size: 0.75rem;
-  color: hsl(var(--primary));
+  color: var(--ir-primary);
   text-decoration: none;
   cursor: pointer;
 }
@@ -585,18 +502,18 @@ body {
 }
 .ql-snow .ql-tooltip a.ql-remove::before {
   margin-left: 8px;
-  color: hsl(var(--destructive));
+  color: var(--ir-danger);
   content: "Remove";
 }
 .ql-snow .ql-tooltip[data-mode="link"]::before {
   content: "Link URL:";
 }
 .ql-snow .ql-tooltip[data-mode="link"].ql-link-invalid::before {
-  color: hsl(var(--destructive));
+  color: var(--ir-danger);
   content: "Enter a valid URL:";
 }
 .ql-snow .ql-tooltip.ql-link-invalid input[type="text"] {
-  border-color: hsl(var(--destructive));
+  border-color: var(--ir-danger);
 }
 
 /* Comment body rendered HTML */
@@ -623,7 +540,7 @@ body {
   font-style: italic;
 }
 .comment-body a {
-  color: var(--primary);
+  color: var(--ir-primary);
   text-decoration: underline;
 }
 
@@ -753,10 +670,10 @@ body {
   overflow-x: auto;
   font-family: ui-monospace, monospace;
   font-size: 0.8125rem;
-  color: var(--foreground);
+  color: var(--ir-text-body);
   word-break: break-word;
   white-space: pre-wrap;
-  background: var(--muted);
+  background: var(--ir-muted-surface);
   border-radius: 4px;
 }
 /* Quill 2 code blocks: <div class="ql-code-block-container"> wrapping one
@@ -773,8 +690,8 @@ body {
   padding: 1px 4px;
   font-family: ui-monospace, monospace;
   font-size: 0.85em;
-  color: var(--foreground);
-  background: var(--muted);
+  color: var(--ir-text-body);
+  background: var(--ir-muted-surface);
   border-radius: 3px;
 }
 .comment-body pre code {
@@ -785,8 +702,8 @@ body {
   padding-left: 12px;
   margin: 0.375rem 0;
   font-style: italic;
-  color: var(--muted-foreground);
-  border-left: 3px solid var(--border);
+  color: var(--ir-text-muted);
+  border-left: 3px solid var(--ir-border);
 }
 .comment-body h1,
 .comment-body h2,
@@ -809,6 +726,6 @@ body {
   max-width: 100%;
   height: auto;
   margin: 0.5rem 0;
-  border: 1px solid var(--border);
+  border: 1px solid var(--ir-border);
   border-radius: 4px;
 }

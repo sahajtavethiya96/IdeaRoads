@@ -28,7 +28,7 @@ export function InviteMemberDialog({
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <UserPlusIcon />
+          <UserPlusIcon data-icon="inline-start" />
           Invite
         </Button>
       </DialogTrigger>

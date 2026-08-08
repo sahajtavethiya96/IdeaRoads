@@ -51,7 +51,7 @@ export function DatePicker({
           </span>
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-auto p-0">
+      <PopoverContent className="w-auto p-0">
         <Calendar
           autoFocus
           mode="single"

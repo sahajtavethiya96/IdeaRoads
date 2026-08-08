@@ -3,15 +3,18 @@
 import {
   Bell,
   CaretUpDown,
+  Moon,
   Scroll,
   Shield,
   SignOut,
   Sliders,
+  Sun,
   UserCircle,
 } from "@phosphor-icons/react";
 import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 import { useState } from "react";
 import { logoutAction } from "@/app/actions/auth";
 import {
@@ -20,6 +23,8 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -49,6 +54,7 @@ function AccountMenuDropdownContent({
   side?: "top" | "bottom";
 }) {
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
 
   const itemClass = (href: string) =>
     pathname.startsWith(href)
@@ -132,6 +138,21 @@ function AccountMenuDropdownContent({
             Account
           </Link>
         </DropdownMenuItem>
+      </DropdownMenuGroup>
+
+      <DropdownMenuSeparator />
+      <DropdownMenuGroup>
+        <DropdownMenuLabel>Theme</DropdownMenuLabel>
+        <DropdownMenuRadioGroup onValueChange={setTheme} value={theme}>
+          <DropdownMenuRadioItem value="light">
+            <Sun />
+            Light
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="dark">
+            <Moon />
+            Dark
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
       </DropdownMenuGroup>
 
       <DropdownMenuSeparator />

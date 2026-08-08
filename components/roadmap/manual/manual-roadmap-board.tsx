@@ -214,7 +214,7 @@ export function ManualRoadmapBoard({
             No roadmap columns yet.
             {canManage && (
               <button
-                className="ml-1 cursor-pointer text-ir-primary underline"
+                className="ml-1 cursor-pointer rounded-ir-xs text-ir-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
                 onClick={() => setManageOpen(true)}
                 type="button"
               >

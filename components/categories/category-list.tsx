@@ -354,50 +354,53 @@ export function CategoryList({
                   {canManage && (
                     <div className="flex shrink-0 items-center gap-1 sm:ml-auto">
                       {!cat.isDefault && (
-                        <button
+                        <Button
                           aria-label={`Set ${cat.name} as default`}
-                          className="group cursor-pointer rounded-ir-xs p-1.5 text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-warning focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                          className="group text-ir-muted hover:text-ir-warning"
                           onClick={() => handleSetDefault(cat)}
+                          size="icon-xs"
                           title="Set as default"
-                          type="button"
+                          variant="ghost"
                         >
-                          <StarIcon className="size-3.5 group-hover:hidden" />
+                          <StarIcon className="group-hover:hidden" />
                           <StarIcon
-                            className="hidden size-3.5 group-hover:block"
+                            className="hidden group-hover:block"
                             weight="fill"
                           />
-                        </button>
+                        </Button>
                       )}
-                      <button
+                      <Button
                         aria-label={`Edit ${cat.name}`}
-                        className="cursor-pointer rounded-ir-xs p-1.5 text-ir-primary transition-opacity duration-150 ease-ir-standard hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                        className="text-ir-primary"
                         onClick={() => openEdit(cat)}
+                        size="icon-xs"
                         title="Edit"
-                        type="button"
+                        variant="ghost"
                       >
-                        <PencilIcon className="size-3.5" />
-                      </button>
+                        <PencilIcon />
+                      </Button>
                       {!cat.isDefault && (
-                        <button
+                        <Button
                           aria-label={`Archive ${cat.name}`}
-                          className="cursor-pointer rounded-ir-xs p-1.5 text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
                           onClick={() => setArchiveTarget(cat)}
+                          size="icon-xs"
                           title="Archive"
-                          type="button"
+                          variant="ghost"
                         >
-                          <ArchiveIcon className="size-3.5" />
-                        </button>
+                          <ArchiveIcon />
+                        </Button>
                       )}
                       {!cat.isDefault && (
-                        <button
+                        <Button
                           aria-label={`Delete ${cat.name}`}
-                          className="cursor-pointer rounded-ir-xs p-1.5 text-ir-danger transition-opacity duration-150 ease-ir-standard hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                          className="text-ir-danger"
                           onClick={() => setDeleteTarget(cat)}
+                          size="icon-xs"
                           title="Delete"
-                          type="button"
+                          variant="ghost"
                         >
-                          <TrashIcon className="size-3.5" />
-                        </button>
+                          <TrashIcon />
+                        </Button>
                       )}
                     </div>
                   )}
@@ -427,24 +430,25 @@ export function CategoryList({
                   )}
                   {canManage && (
                     <div className="flex shrink-0 items-center gap-1 sm:ml-auto">
-                      <button
+                      <Button
                         aria-label={`Restore ${cat.name}`}
-                        className="cursor-pointer rounded-ir-xs p-1.5 text-xs text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
                         onClick={() => setArchiveTarget(cat)}
+                        size="xs"
                         title="Restore"
-                        type="button"
+                        variant="ghost"
                       >
                         Restore
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         aria-label={`Delete ${cat.name}`}
-                        className="cursor-pointer rounded-ir-xs p-1.5 text-ir-danger transition-opacity duration-150 ease-ir-standard hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                        className="text-ir-danger"
                         onClick={() => setDeleteTarget(cat)}
+                        size="icon-xs"
                         title="Delete"
-                        type="button"
+                        variant="ghost"
                       >
-                        <TrashIcon className="size-3.5" />
-                      </button>
+                        <TrashIcon />
+                      </Button>
                     </div>
                   )}
                 </div>

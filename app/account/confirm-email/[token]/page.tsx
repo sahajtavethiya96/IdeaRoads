@@ -51,13 +51,13 @@ export default async function ConfirmEmailChangePage({ params }: Props) {
   return (
     <ConfirmEmailLayout>
       <div className="space-y-1 text-center">
-        <p className="text-xs font-semibold uppercase tracking-eyebrow text-muted-foreground">
+        <p className="text-xs font-semibold uppercase tracking-eyebrow text-base-content/60">
           Confirm email change
         </p>
-        <h1 className="text-xl font-semibold text-foreground">
+        <h1 className="text-xl font-semibold text-base-content">
           Change your email to {pending.newEmail}?
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-base-content/60">
           Your current email stays active until you confirm.
         </p>
       </div>
@@ -73,7 +73,7 @@ function ConfirmEmailLayout({ children }: { children: React.ReactNode }) {
     <main className="grid min-h-screen place-items-center bg-page px-4 py-10">
       <div className="w-full max-w-sm">
         <Link
-          className="mb-8 flex justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="mb-8 flex justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           href="/"
         >
           <Image
@@ -85,7 +85,7 @@ function ConfirmEmailLayout({ children }: { children: React.ReactNode }) {
             width={500}
           />
         </Link>
-        <div className="border border-border bg-background px-4 py-8 sm:px-8">
+        <div className="border border-base-300 bg-base-100 px-4 py-8 sm:px-8">
           {children}
         </div>
       </div>
@@ -104,11 +104,11 @@ function ConfirmEmailStateCard({
 }) {
   return (
     <div className="space-y-3 text-center">
-      <h1 className="text-lg font-semibold text-foreground">{heading}</h1>
-      <p className="text-sm text-muted-foreground">{body}</p>
+      <h1 className="text-lg font-semibold text-base-content">{heading}</h1>
+      <p className="text-sm text-base-content/60">{body}</p>
       {link && (
         <Link
-          className="inline-block text-sm font-medium text-foreground underline underline-offset-4 hover:text-muted-foreground transition-colors duration-150"
+          className="inline-block text-sm font-medium text-base-content underline underline-offset-4 hover:text-base-content/60 transition-colors duration-150"
           href={link.href}
         >
           {link.label}

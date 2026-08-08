@@ -190,14 +190,15 @@ function DialogContent({
         >
           {children}
           {showCloseButton && (
-            <button
+            <Button
               aria-label="Close dialog"
-              className="absolute top-4 right-4 flex size-8 shrink-0 items-center justify-center rounded-md border border-base-300 bg-base-100 p-0 leading-none text-base-content/70 shadow-sm transition-all duration-200 hover:bg-base-200 hover:text-base-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="absolute top-4 right-4"
               onClick={() => setOpen(false)}
-              type="button"
+              size="icon-sm"
+              variant="outline"
             >
-              <X className="m-0 size-4 shrink-0 p-0" strokeWidth={2} />
-            </button>
+              <X strokeWidth={2} />
+            </Button>
           )}
         </DialogPanel>
       </div>

@@ -15,10 +15,11 @@ interface AuditTypeSelectProps {
   options: { label: string; value: string }[];
 }
 
-// Wraps the shared shadcn Select but keeps the surrounding native GET form's
+// Wraps the shared Select but keeps the surrounding native GET form's
 // submit behaviour intact: the chosen value is mirrored into a hidden input so
 // the "Filter" button posts it exactly as the old <select name="type"> did.
-// The empty "all" option uses a sentinel because Radix Select forbids "".
+// The empty "all" option uses a sentinel so the hidden input can distinguish
+// "no filter" (submits "") from an unselected control.
 export function AuditTypeSelect({
   name,
   defaultValue,

@@ -117,11 +117,14 @@ export function PendingInvitesList({
               variant="ghost"
             >
               {revokingAll ? (
-                <SpinnerIcon className="size-4 animate-spin" />
+                <SpinnerIcon
+                  className="size-4 animate-spin"
+                  data-icon="inline-start"
+                />
               ) : (
-                <XIcon className="size-4" />
+                <XIcon className="size-4" data-icon="inline-start" />
               )}
-              <span className="ml-1.5">
+              <span>
                 Revoke All
                 {revocableInvites.length > 1
                   ? ` (${revocableInvites.length})`
@@ -170,11 +173,14 @@ export function PendingInvitesList({
                       variant="ghost"
                     >
                       {revoking === invite.id ? (
-                        <SpinnerIcon className="size-4 animate-spin" />
+                        <SpinnerIcon
+                          className="size-4 animate-spin"
+                          data-icon="inline-start"
+                        />
                       ) : (
-                        <XIcon className="size-4" />
+                        <XIcon className="size-4" data-icon="inline-start" />
                       )}
-                      <span className="ml-1.5">Revoke</span>
+                      <span>Revoke</span>
                     </Button>
                   )}
                 </div>

@@ -4,9 +4,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import type { ReactNode } from "react";
 import { ImpersonateBanner } from "@/components/orbit/impersonate-banner";
+import { Providers } from "@/components/providers";
 import { SkipLink } from "@/components/ui/skip-link";
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { PRODUCT_DESCRIPTION, PRODUCT_NAME } from "@/config/platform";
 import { cn } from "@/lib/utils";
 import "./globals.css";
@@ -40,14 +39,13 @@ export default function RootLayout({
         GeistSans.variable,
         GeistMono.variable
       )}
-      data-theme="idearoads"
       lang="en"
+      suppressHydrationWarning
     >
       <body suppressHydrationWarning>
         <SkipLink />
         <ImpersonateBanner />
-        <TooltipProvider>{children}</TooltipProvider>
-        <Toaster position="bottom-right" />
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

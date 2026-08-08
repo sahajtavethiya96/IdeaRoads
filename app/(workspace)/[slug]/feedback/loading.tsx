@@ -1,8 +1,29 @@
-import { Skeleton } from "@/components/ui/skeleton";
+"use client";
 
+import { useParams } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
+import { SetPageHeader } from "@/components/workspace/topbar";
+import { AddFeedbackButton } from "./_components/add-feedback-button";
+
+// Mirrors the title/actions this route's page.tsx sets via SetPageHeader
+// (same title, same "Add Feedback" button) so the header never reverts to
+// the workspace-default (no actions) while this Suspense fallback is
+// showing — without it, any navigation slow enough to show this skeleton
+// makes the "Add Feedback" button momentarily disappear/reappear once the
+// real page mounts. `board` isn't known yet here (that's a DB read the real
+// page awaits), so the button always renders optimistically; the rare
+// workspace with no board yet loses it again the instant real data lands,
+// which is far less disruptive than hiding it for every load.
 export default function FeedbackLoading() {
+  const params = useParams<{ slug: string }>();
+
   return (
     <div className="flex flex-col">
+      <SetPageHeader
+        actions={<AddFeedbackButton slug={params.slug} />}
+        title="All Feedback"
+      />
+
       {/* Filters bar */}
       <div className="flex flex-wrap items-center gap-2.5 border-b border-ir-border px-4 py-4 sm:px-8">
         <Skeleton className="h-9 min-w-50 flex-1 rounded-ir-input" />

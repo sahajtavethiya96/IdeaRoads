@@ -156,7 +156,7 @@ export default function CommentForm({
       <>
         <p className="py-2 text-sm text-ir-muted">
           <button
-            className="cursor-pointer font-medium text-ir-primary transition-opacity duration-150 ease-ir-standard hover:underline"
+            className="cursor-pointer rounded-ir-xs font-medium text-ir-primary transition-opacity duration-150 ease-ir-standard hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
             onClick={() => setAuthOpen(true)}
             type="button"
           >

@@ -18,6 +18,7 @@ import {
   unpublishChangelogEntryAction,
 } from "@/app/actions/changelog";
 import { ChangelogLabelBadge } from "@/components/changelog/changelog-label-badge";
+import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { truncateHtmlToText } from "@/lib/changelog/html";
 
@@ -151,6 +152,7 @@ export function ChangelogAdminCard({
               className="flex cursor-pointer items-center gap-1.5 rounded-ir-sm border border-ir-border px-3 py-1.5 text-xs font-medium text-ir-muted transition-colors duration-150 ease-ir-standard hover:border-ir-primary/30 hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:opacity-50"
               disabled={isPending}
               onClick={handleUnpublish}
+              type="button"
             >
               <LockIcon className="size-3" />
               Unpublish
@@ -160,20 +162,23 @@ export function ChangelogAdminCard({
               className="flex cursor-pointer items-center gap-1.5 rounded-ir-sm bg-ir-primary px-3 py-1.5 text-xs font-medium text-ir-primary-foreground shadow-ir-xs transition-colors duration-150 ease-ir-standard hover:bg-ir-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:opacity-50"
               disabled={isPending}
               onClick={handlePublish}
+              type="button"
             >
               <GlobeIcon className="size-3" />
               Publish
             </button>
           )}
 
-          <button
+          <Button
             aria-label="Delete entry"
-            className="flex cursor-pointer items-center justify-center rounded-ir-sm p-1.5 text-ir-danger transition-opacity duration-150 ease-ir-standard hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:opacity-50"
+            className="text-ir-danger"
             disabled={isPending}
             onClick={() => setDeleteDialogOpen(true)}
+            size="icon-xs"
+            variant="ghost"
           >
-            <TrashIcon className="size-3.5" />
-          </button>
+            <TrashIcon />
+          </Button>
         </div>
       </div>
 

@@ -2,13 +2,14 @@
    IdeaRoads Design System — Design Tokens (Phase 1)
    ==========================================================================
    Centralized, namespaced ("ir-" = IdeaRoads) token layer for the UI/UX
-   redesign. Additive only: existing shadcn tokens (--background, --primary,
-   --border, etc.) and every utility class currently in use across the app
-   are untouched, so no page changes visually as a result of this file.
+   redesign — genuinely product-specific, independent of daisyUI's own theme
+   vocabulary (globals.css). The app's legacy shadcn token set has since been
+   removed; unconverted pages now use daisyUI's semantic classes directly
+   (bg-primary, text-base-content, ...) instead.
 
-   Usage: once a page/component is redesigned, swap its shadcn utility
-   classes (bg-primary, text-foreground, rounded-lg, shadow-md, ...) for the
-   ir- equivalents documented here (bg-ir-primary, text-ir-heading,
+   Usage: once a page/component is redesigned, swap its plain Tailwind/daisyUI
+   utility classes (bg-primary, text-base-content, rounded-lg, shadow-md, ...)
+   for the ir- equivalents documented here (bg-ir-primary, text-ir-heading,
    rounded-ir-card, shadow-ir-md, ...).
 
    Full reference + rationale: /DESIGN-TOKENS.md

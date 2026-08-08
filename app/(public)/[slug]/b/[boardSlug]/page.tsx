@@ -1,8 +1,4 @@
-import {
-  ChatCircleIcon,
-  PlusIcon,
-  PushPinIcon,
-} from "@phosphor-icons/react/dist/ssr";
+import { ChatCircleIcon, PushPinIcon } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -11,10 +7,10 @@ import { EmbedNav } from "@/components/embed/embed-nav";
 import { EmbedResizeReporter } from "@/components/embed/resize-reporter";
 import { EmbedWidgetShell } from "@/components/embed/widget/embed-widget-shell";
 import { CategorySidebar } from "@/components/portal/category-sidebar";
+import { NewFeedbackButton } from "@/components/portal/new-feedback-button";
 import { PoweredByBadge } from "@/components/portal/powered-by-badge";
 import { PostStatusBadge } from "@/components/posts/post-status-badge";
 import { PostsPagination } from "@/components/posts/posts-pagination";
-import { Button } from "@/components/ui/button";
 import { RelativeTime } from "@/components/ui/relative-time";
 import VoteButton from "@/components/voting/vote-button";
 import { PortalHeader } from "@/components/workspace/portal-header";
@@ -517,12 +513,7 @@ export default async function BoardPage({ params, searchParams }: Props) {
               "+ Feedback" button in the sidebar above instead. */}
           {isPanel && newPostHref && (
             <div className="shrink-0 border-t border-ir-border bg-ir-surface px-4 py-3 sm:px-8">
-              <Button asChild className="w-full">
-                <Link href={newPostHref}>
-                  <PlusIcon data-icon="inline-start" />
-                  Feedback
-                </Link>
-              </Button>
+              <NewFeedbackButton href={newPostHref} />
             </div>
           )}
         </main>

@@ -252,13 +252,13 @@ function AuthFormInner({
                 {googleEnabled && (
                   <>
                     <Button
-                      className="w-full gap-2"
+                      className="w-full"
                       disabled={submitting || googleLoading || magicLoading}
                       onClick={handleGoogleSignIn}
                       type="button"
                       variant="outline"
                     >
-                      <GoogleIcon className="size-4" />
+                      <GoogleIcon className="size-4" data-icon="inline-start" />
                       {googleLoading ? "Redirecting…" : "Continue with Google"}
                     </Button>
 

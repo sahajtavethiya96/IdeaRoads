@@ -4,6 +4,7 @@ import { CheckIcon, TrashIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { RelativeTime } from "@/components/ui/relative-time";
 import { commentPreviewText } from "@/lib/comments/preview";
@@ -102,26 +103,28 @@ function PendingCommentRow({
           </p>
         </div>
         <div className="flex shrink-0 items-start gap-2 pt-0.5">
-          <button
+          <Button
             aria-label="Approve comment"
-            className="cursor-pointer rounded-ir-sm p-1 text-xs text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface focus-visible:outline-none disabled:opacity-50"
+            className="text-ir-success"
             disabled={isApproving || isDeleting}
             onClick={handleApprove}
+            size="icon-xs"
             title="Approve"
-            type="button"
+            variant="ghost"
           >
-            <CheckIcon className="size-4 text-ir-success" />
-          </button>
-          <button
+            <CheckIcon />
+          </Button>
+          <Button
             aria-label="Delete comment"
-            className="cursor-pointer rounded-ir-sm p-1 text-xs text-ir-danger transition-opacity duration-150 hover:opacity-70 focus-visible:outline-none disabled:opacity-50"
+            className="text-ir-danger"
             disabled={isApproving || isDeleting}
             onClick={() => setShowDeleteDialog(true)}
+            size="icon-xs"
             title="Delete"
-            type="button"
+            variant="ghost"
           >
-            <TrashIcon className="size-4" />
-          </button>
+            <TrashIcon />
+          </Button>
         </div>
       </div>
 

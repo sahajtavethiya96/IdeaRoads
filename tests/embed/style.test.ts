@@ -115,15 +115,15 @@ describe("embedWrapperProps", () => {
     ).toBe("");
   });
 
-  it("overrides --primary with the accent color and picks a legible foreground", () => {
+  it("overrides --color-primary with the accent color and picks a legible foreground", () => {
     // A light accent color should get a dark foreground for contrast...
     const light = embedWrapperProps({
       isEmbed: true,
       isPanel: false,
       accentColor: "#f5f5f5",
     }).style as Record<string, string>;
-    expect(light["--primary"]).toBe("#f5f5f5");
-    expect(light["--primary-foreground"]).toBe("#111111");
+    expect(light["--color-primary"]).toBe("#f5f5f5");
+    expect(light["--color-primary-content"]).toBe("#111111");
 
     // ...and a dark accent color should get a light foreground.
     const dark = embedWrapperProps({
@@ -131,7 +131,7 @@ describe("embedWrapperProps", () => {
       isPanel: false,
       accentColor: "#111111",
     }).style as Record<string, string>;
-    expect(dark["--primary"]).toBe("#111111");
-    expect(dark["--primary-foreground"]).toBe("#ffffff");
+    expect(dark["--color-primary"]).toBe("#111111");
+    expect(dark["--color-primary-content"]).toBe("#ffffff");
   });
 });

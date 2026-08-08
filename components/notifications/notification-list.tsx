@@ -215,7 +215,6 @@ export function NotificationList({
             <>
               {unreadCount > 0 && (
                 <Button
-                  className="h-10 min-h-10 min-w-20 rounded-lg px-4 py-0 text-sm font-medium normal-case hover:border-primary/30 hover:bg-base-200 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   disabled={isPending}
                   onClick={handleMarkAllRead}
                   size="sm"
@@ -226,7 +225,7 @@ export function NotificationList({
                 </Button>
               )}
               <Button
-                className="h-10 min-h-10 min-w-20 rounded-lg px-4 py-0 text-sm font-medium normal-case hover:bg-ir-danger/10 hover:text-ir-danger focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="hover:bg-ir-danger/10 hover:text-ir-danger"
                 disabled={isPending}
                 onClick={() => setClearConfirmOpen(true)}
                 size="sm"
@@ -249,7 +248,7 @@ export function NotificationList({
               <button
                 aria-pressed={filter === "all"}
                 className={cn(
-                  "join-item btn h-10 min-h-10 min-w-20 shrink-0 cursor-pointer justify-center rounded-lg px-4 py-0 text-sm font-medium whitespace-nowrap normal-case shadow-none transition-all duration-200 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                  "join-item btn flex h-9 min-h-9 min-w-20 shrink-0 cursor-pointer items-center justify-center rounded-field px-4 text-xs font-semibold tracking-ui whitespace-nowrap uppercase shadow-none transition-all duration-150 ease-ir-standard focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-base-100",
                   filter === "all"
                     ? "btn-primary"
                     : "btn-outline border-base-300 bg-base-100 text-ir-muted hover:border-primary/30 hover:bg-base-200 hover:text-ir-heading"
@@ -262,7 +261,7 @@ export function NotificationList({
               <button
                 aria-pressed={filter === "unread"}
                 className={cn(
-                  "join-item btn flex h-10 min-h-10 min-w-20 shrink-0 cursor-pointer items-center justify-center rounded-lg px-4 py-0 text-sm font-medium whitespace-nowrap normal-case shadow-none transition-all duration-200 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                  "join-item btn flex h-9 min-h-9 min-w-20 shrink-0 cursor-pointer items-center justify-center rounded-field px-4 text-xs font-semibold tracking-ui whitespace-nowrap uppercase shadow-none transition-all duration-150 ease-ir-standard focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-base-100",
                   filter === "unread"
                     ? "btn-primary"
                     : "btn-outline border-base-300 bg-base-100 text-ir-muted hover:border-primary/30 hover:bg-base-200 hover:text-ir-heading"
