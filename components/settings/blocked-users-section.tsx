@@ -109,8 +109,8 @@ export function BlockedUsersSection({ workspaceId, blockedUsers }: Props) {
               <span className="font-normal text-ir-muted">(optional)</span>
             </label>
             <Input
-              disabled={isPending}
               autoComplete="off"
+              disabled={isPending}
               id="block-reason"
               maxLength={300}
               onChange={(e) => setReason(e.target.value)}

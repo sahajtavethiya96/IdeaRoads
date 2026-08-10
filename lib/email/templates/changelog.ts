@@ -6,8 +6,8 @@ import { renderEmailTemplate } from "@/lib/email/renderer";
 import { portalBaseUrl } from "@/lib/urls";
 
 export async function changelogEmailTemplate({
-  voterName,
-  voterEmail,
+  voterName: _voterName,
+  voterEmail: _voterEmail,
   entryTitle,
   entryLabel,
   entryId,

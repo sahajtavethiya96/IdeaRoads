@@ -39,6 +39,7 @@ export default function VoterListModal({
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only initial load
   useEffect(() => {
     loadVoters(1);
   }, []);
@@ -104,6 +105,7 @@ export default function VoterListModal({
                   <div className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ir-muted-surface">
                     {voter.image ? (
                       // eslint-disable-next-line @next/next/no-img-element
+                      // biome-ignore lint/performance/noImgElement: voter-provided avatar URL, not known at build time for next/image
                       <img
                         alt={voter.name ?? ""}
                         className="size-full object-cover"

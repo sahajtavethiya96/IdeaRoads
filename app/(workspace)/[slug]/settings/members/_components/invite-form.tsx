@@ -17,10 +17,10 @@ import {
 
 interface InviteFormProps {
   canInviteAdmin: boolean;
+  onInvited?: () => void;
   // Hide the built-in eyebrow heading when the form is embedded somewhere
   // that already provides its own title (e.g. a dialog's DialogTitle).
   showHeading?: boolean;
-  onInvited?: () => void;
   workspaceId: string;
 }
 

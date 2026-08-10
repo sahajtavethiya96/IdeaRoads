@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/authz";
-import { getFirstUserWorkspace } from "@/lib/workspaces/queries";
 import { getPendingInviteTokenForEmail } from "@/lib/workspaces/invites";
+import { getFirstUserWorkspace } from "@/lib/workspaces/queries";
 
 export default async function PostAuthPage() {
   const session = await requireSession();

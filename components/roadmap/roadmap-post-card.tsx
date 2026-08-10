@@ -1,7 +1,4 @@
-import {
-  ChatCircleIcon,
-  PushPinIcon,
-} from "@phosphor-icons/react/dist/ssr";
+import { ChatCircleIcon, PushPinIcon } from "@phosphor-icons/react/dist/ssr";
 import type { DragControls } from "framer-motion";
 import Link from "next/link";
 import { CategoryChip } from "@/components/categories/category-chip";

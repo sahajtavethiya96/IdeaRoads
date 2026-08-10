@@ -4,11 +4,18 @@
 
 This document is the **Phase 1** deliverable of the IdeaRoads UI/UX redesign: a centralized, reusable design token system, built additively on top of the existing codebase.
 
-**Nothing in this phase changes how any existing page looks.** No business logic, API, database schema, routing, or functionality was touched. Every token below lives in a new `ir-` (IdeaRoads) namespace, separate from the shadcn tokens (`bg-primary`, `text-foreground`, `border-border`, etc.) the app currently renders with. Existing tokens and components are untouched and still work exactly as before.
+Every token below lives in a dedicated `ir-` (IdeaRoads) namespace, separate from the rest of
+the app's styling layer. Since Phase 1 landed, the app has also completed a full **shadcn →
+daisyUI migration** (see `docs/migration/02-daisyui-migration-audit.md`): the old shadcn token
+set (`bg-primary`, `text-foreground`, `border-border`, etc. in shadcn's HSL-variable form) has
+been **fully removed**. Pages that haven't yet adopted the `ir-` tokens below now render with
+daisyUI's own semantic classes (`bg-primary`, `text-base-content`, `border-base-300`, ...)
+instead of shadcn's.
 
-Phase 2 (not part of this change) will migrate individual pages/components from the old shadcn tokens to the `ir-` tokens documented here, one surface at a time.
+Phase 2 — migrating individual pages/components from daisyUI's default classes to the `ir-`
+tokens documented here — is ongoing, one surface at a time.
 
-> Note: `DESIGN.md` in this repo is a captured reference analysis of an external brand (Vercel's marketing site) used as a design-language reference, not IdeaRoads' own spec — it predates this token system and uses a different palette (near-black ink primary). `DESIGN_SYSTEM.md` encodes today's *implementation rules* (e.g. "no shadows unless required," generic shadcn token names) for the *current* UI. Both will need a pass once pages actually adopt the tokens below — out of scope for Phase 1.
+> Note: `DESIGN.md` in this repo is a captured reference analysis of an external brand (Vercel's marketing site) used as a design-language reference, not IdeaRoads' own spec — it predates this token system and uses a different palette (near-black ink primary). `DESIGN_SYSTEM.md` encodes today's *implementation rules* for the *current* (daisyUI + `ir-*`) UI and has been updated to match — see that file directly rather than relying on this note.
 
 ---
 
@@ -91,7 +98,10 @@ Composed helper classes (`.ir-heading-1`…`.ir-heading-4`, `.ir-body`, `.ir-bod
 | Input | `--radius-ir-input` | `rounded-ir-input` | 6px |
 | Card | `--radius-ir-card` | `rounded-ir-card` | 12px |
 
-Note: the app's current live radius (`--radius` in `app/globals.css`) is `0` — every existing surface renders fully square. This is a deliberate departure the redesign will introduce in Phase 2; Phase 1 only makes the new scale available.
+Note: pages not yet on the `ir-` scale now render with daisyUI's own radius variables
+(`rounded-box`, `rounded-field`, `rounded-selector`, tracking the active daisyUI theme) rather
+than a fixed `0`/square radius — that was true only prior to the daisyUI migration. Phase 2
+moves individual surfaces from daisyUI's radius classes to the `ir-radius-*` scale below.
 
 ## Shadow Scale
 

@@ -11,10 +11,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { REACTION_EMOJIS } from "@/config/platform";
+import type { ReactionGroup } from "@/lib/changelog-comments/reactions";
 import { embedFetch } from "@/lib/embed/fetch";
 import { useEmbedReactionCorrections } from "@/lib/embed/personalization-context";
 import { useEmbedSignedIn } from "@/lib/embed/use-embed-signed-in";
-import type { ReactionGroup } from "@/lib/changelog-comments/reactions";
 
 function formatReactorNames(names: string[]): string {
   if (names.length <= 1) {
