@@ -82,7 +82,10 @@ function AccordionItem({
             group.setValue("")
           }
         }}
-        className={cn("not-last:border-b not-last:border-ir-border", className)}
+        className={cn(
+          "collapse rounded-none not-last:border-b not-last:border-ir-border",
+          className
+        )}
         {...props}
       />
     </AccordionItemContext.Provider>

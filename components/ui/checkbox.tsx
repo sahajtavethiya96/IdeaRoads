@@ -27,7 +27,7 @@ function Checkbox({
         type="checkbox"
         checked={checked}
         onChange={(event) => onCheckedChange?.(event.target.checked)}
-        className="peer absolute inset-0 m-0 size-full cursor-pointer appearance-none disabled:cursor-not-allowed"
+        className="checkbox peer absolute inset-0 m-0 size-full cursor-pointer appearance-none border-0 bg-transparent shadow-none before:content-none disabled:cursor-not-allowed"
         {...props}
       />
       <CheckIcon

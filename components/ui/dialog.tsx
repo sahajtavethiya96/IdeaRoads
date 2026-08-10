@@ -183,7 +183,7 @@ function DialogContent({
           data-slot="dialog-content"
           transition
           className={cn(
-            "relative grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] gap-6 overflow-y-auto rounded-box border border-base-300 bg-base-100 p-6 text-sm text-base-content shadow-ir-xl duration-100 data-closed:scale-95 data-closed:opacity-0 sm:max-w-md",
+            "relative grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] gap-6 overflow-y-auto rounded-ir-card border border-ir-border bg-ir-surface p-6 text-sm text-ir-body shadow-ir-xl duration-100 data-closed:scale-95 data-closed:opacity-0 sm:max-w-md",
             className
           )}
           {...props}
@@ -246,7 +246,7 @@ function DialogTitle({ className, ...props }: React.ComponentProps<"h2">) {
     <h2
       data-slot="dialog-title"
       className={cn(
-        "font-heading text-lg leading-none font-semibold tracking-wider text-base-content uppercase",
+        "font-heading text-lg leading-none font-semibold tracking-wider text-ir-heading uppercase",
         className
       )}
       {...props}
@@ -262,7 +262,7 @@ function DialogDescription({
     <p
       data-slot="dialog-description"
       className={cn(
-        "mt-0.5 text-sm leading-relaxed text-base-content/60 *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-primary",
+        "mt-0.5 text-sm leading-relaxed text-ir-muted *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-ir-primary",
         className
       )}
       {...props}

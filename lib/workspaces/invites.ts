@@ -82,6 +82,33 @@ export async function createInvite(
   return { inviteId };
 }
 
+/**
+ * Token of the oldest live invite addressed to this email, if any.
+ *
+ * Used to route a just-authenticated user who has no workspace yet back to
+ * `/invite/[token]` to finish accepting, instead of into the "create your
+ * own workspace" onboarding wizard — covers anyone who signed in without
+ * landing back on the invite page first (e.g. a bookmarked /signin link).
+ */
+export async function getPendingInviteTokenForEmail(
+  email: string
+): Promise<string | null> {
+  const [row] = await db
+    .select({ token: workspaceInvites.token })
+    .from(workspaceInvites)
+    .where(
+      and(
+        eq(sql`lower(${workspaceInvites.email})`, email.trim().toLowerCase()),
+        isNull(workspaceInvites.acceptedAt),
+        isNull(workspaceInvites.revokedAt),
+        gt(workspaceInvites.expiresAt, new Date())
+      )
+    )
+    .orderBy(workspaceInvites.createdAt)
+    .limit(1);
+  return row?.token ?? null;
+}
+
 export async function checkDuplicateInvite(
   workspaceId: string,
   email: string

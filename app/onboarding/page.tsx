@@ -4,6 +4,7 @@ import { OnboardingWizard } from "@/app/onboarding/_components/onboarding-wizard
 import { requireSession } from "@/lib/authz";
 import { portalBaseUrl } from "@/lib/urls";
 import { realNameOrEmpty } from "@/lib/users/profile-name";
+import { getPendingInviteTokenForEmail } from "@/lib/workspaces/invites";
 import { getFirstUserWorkspace } from "@/lib/workspaces/queries";
 
 export const metadata = {
@@ -26,6 +27,16 @@ export default async function OnboardingPage({
     const existing = await getFirstUserWorkspace(session.user.id);
     if (existing) {
       redirect(`/${existing.slug}`);
+    }
+
+    // No workspace, but a Brand Admin already invited this address — send
+    // them to finish accepting rather than let them create a separate
+    // workspace of their own. Mirrors the same guard in /post-auth.
+    const inviteToken = await getPendingInviteTokenForEmail(
+      session.user.email
+    );
+    if (inviteToken) {
+      redirect(`/invite/${inviteToken}`);
     }
   }
 

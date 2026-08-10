@@ -24,7 +24,7 @@ export function SetupProgress({ items, onSelect }: SetupProgressProps) {
   const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
 
   return (
-    <div className="rounded-ir-card border border-ir-border bg-ir-surface p-4 shadow-ir-xs">
+    <div className="rounded-ir-card border border-ir-border bg-ir-surface p-3 shadow-ir-xs">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-sm font-semibold text-ir-heading">
@@ -44,17 +44,17 @@ export function SetupProgress({ items, onSelect }: SetupProgressProps) {
 
       <Progress
         aria-label="Integrations configured"
-        className="mt-3"
+        className="mt-2.5"
         indicatorClassName="bg-ir-primary"
         value={percent}
       />
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-3 flex flex-wrap gap-2">
         {items.map((item) => {
           const done = item.variant === "configured";
           return (
             <button
-              className="flex cursor-pointer items-center gap-1.5 rounded-ir-full border border-ir-border bg-ir-muted-surface/60 px-2.5 py-1 text-xs font-medium text-ir-body transition-colors duration-150 ease-ir-standard hover:border-ir-primary/40 hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/30"
+              className="flex cursor-pointer items-center gap-1.5 rounded-ir-full border border-ir-border bg-ir-muted-surface/60 px-2.5 py-0.5 text-xs font-medium text-ir-body transition-colors duration-150 ease-ir-standard hover:border-ir-primary/40 hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/30"
               key={item.key}
               onClick={() => onSelect(item.key)}
               type="button"

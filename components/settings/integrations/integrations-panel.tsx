@@ -15,6 +15,7 @@ import type { StatusChipVariant } from "@/components/settings/integrations/statu
 import { StorageCard } from "@/components/settings/integrations/storage-card";
 import { WebhookCard } from "@/components/settings/integrations/webhook-card";
 import { Accordion } from "@/components/ui/accordion";
+import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import type { IntegrationSettingsStatus } from "@/lib/integration-settings-types";
 
 interface IntegrationsPanelProps {
@@ -87,8 +88,15 @@ export function IntegrationsPanel({
     onDirtyChange?.(anyDirty);
   }, [anyDirty, onDirtyChange]);
 
+  // Registers with the app-wide guard so navigating away — the Orbit
+  // sidebar, browser Back, a refresh — while any collapsed-or-not card is
+  // dirty gets the same confirmation prompt, on both consumers of this
+  // panel (Admin -> Integrations and the setup wizard) without either
+  // needing its own wiring.
+  useUnsavedChangesGuard(anyDirty);
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <SetupProgress
         items={[
           { key: "smtp", label: "Email", variant: smtpVariant },

@@ -30,7 +30,6 @@ import {
 import { ChangelogLabelBadge } from "@/components/changelog/changelog-label-badge";
 import { LinkedPostsSelector } from "@/components/changelog/linked-posts-selector";
 import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Dialog,
   DialogContent,
@@ -279,8 +278,7 @@ export function ChangelogEditor({
     linkedPosts: linkedPostsKey(linkedPosts),
   });
 
-  const { isConfirmOpen, guardNavigation, confirmLeave, cancelLeave } =
-    useUnsavedChangesGuard(isDirty);
+  const { guardNavigation } = useUnsavedChangesGuard(isDirty);
 
   // Auto-save: debounced, fires after 30s of idle
   const autoSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -992,20 +990,6 @@ export function ChangelogEditor({
           </div>
         </div>
       </ContentContainer>
-
-      <ConfirmDialog
-        cancelLabel="Keep editing"
-        confirmLabel="Discard changes"
-        description="You have unsaved changes to this entry. If you leave now, they'll be lost."
-        onConfirm={confirmLeave}
-        onOpenChange={(open) => {
-          if (!open) {
-            cancelLeave();
-          }
-        }}
-        open={isConfirmOpen}
-        title="Discard unsaved changes?"
-      />
     </>
   );
 }

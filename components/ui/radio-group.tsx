@@ -62,7 +62,7 @@ function RadioGroupItem({
         value={value}
         checked={group?.value === value}
         onChange={() => group?.onValueChange?.(value)}
-        className="peer absolute inset-0 m-0 size-full cursor-pointer appearance-none disabled:cursor-not-allowed"
+        className="radio peer absolute inset-0 m-0 size-full cursor-pointer appearance-none border-0 bg-transparent shadow-none before:content-none disabled:cursor-not-allowed"
         {...props}
       />
       <span className="pointer-events-none absolute top-1/2 left-1/2 hidden size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ir-primary peer-checked:block" />

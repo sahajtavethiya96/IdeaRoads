@@ -50,6 +50,22 @@ async function revalidateIntegrationsPages() {
   revalidatePath("/setup");
 }
 
+// Local storage only ever writes to disk on this server, so a pasted URL
+// (easy to mix up with "Public URL base") can be safely reduced to its path
+// instead of rejected — e.g. "http://localhost:3000/public/uploads" becomes
+// "public/uploads". Also used to self-heal rows saved before this existed.
+function normalizeLocalDir(value: string): string {
+  const trimmed = value.trim();
+  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  try {
+    return new URL(trimmed).pathname.replace(/^\/+/, "");
+  } catch {
+    return trimmed;
+  }
+}
+
 // ─────────────────────────────────────────────────────────────
 // Status — safe to send to the client. See IntegrationSettingsStatus
 // (lib/integration-settings-types.ts) for field-by-field notes.
@@ -91,7 +107,9 @@ export async function getIntegrationSettingsStatusAction(): Promise<IntegrationS
       endpoint: row?.storageS3Endpoint ?? env.STORAGE_S3_ENDPOINT ?? "",
       publicUrlBase:
         row?.storagePublicUrlBase ?? env.STORAGE_PUBLIC_URL_BASE ?? "",
-      localDir: row?.storageLocalDir ?? env.STORAGE_LOCAL_DIR ?? "",
+      localDir: normalizeLocalDir(
+        row?.storageLocalDir ?? env.STORAGE_LOCAL_DIR ?? ""
+      ),
       hasSecretAccessKey: !!(
         row?.storageS3SecretAccessKeyEncrypted ||
         env.STORAGE_S3_SECRET_ACCESS_KEY
@@ -295,19 +313,7 @@ export async function updateStorageSettingsAction(input: {
 }): Promise<ActionResult> {
   const session = await requireAdmin();
   const secretAction = resolveSecretInput(input.secretAccessKey);
-  const localDir = input.localDir.trim();
-
-  // A filesystem path, not a URL — easy to mix up with "Public URL base"
-  // above it. Saving one here silently breaks every upload: files get
-  // written under a garbled relative path derived from the URL, while the
-  // served URL points at public/uploads where nothing was ever written.
-  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(localDir)) {
-    return {
-      success: false,
-      error:
-        "Local storage directory must be a filesystem path (e.g. public/uploads), not a URL.",
-    };
-  }
+  const localDir = normalizeLocalDir(input.localDir);
 
   try {
     await upsertIntegrationSettings({

@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
+import { UnsavedChangesProvider } from "@/components/providers/unsaved-changes-provider";
 import { Toaster } from "@/components/ui/sonner";
 
 // Single global source of truth for the app's Light/Dark preference.
@@ -18,7 +19,7 @@ export function Providers({ children }: { children: ReactNode }) {
       disableTransitionOnChange
       enableSystem={false}
     >
-      {children}
+      <UnsavedChangesProvider>{children}</UnsavedChangesProvider>
       <Toaster position="bottom-right" />
     </ThemeProvider>
   );

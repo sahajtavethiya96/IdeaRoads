@@ -11,7 +11,7 @@ Inspired by Canny and Fider. MIT licensed. No paid services or cloud vendor lock
 | Layer           | Choice                                    |
 | --------------- | ----------------------------------------- |
 | Framework       | Next.js 16 (App Router, TypeScript)       |
-| UI              | shadcn/ui + Tailwind CSS v4               |
+| UI              | daisyUI + Tailwind CSS v4, custom `ir-*` design tokens |
 | Database        | PostgreSQL + Drizzle ORM                  |
 | Auth            | Better Auth — Magic Link + Google OAuth   |
 | Background Jobs | pg-boss (same PostgreSQL DB, no Redis)    |

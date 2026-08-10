@@ -54,6 +54,15 @@ export default async function WorkspaceLayout({
     notFound();
   }
 
+  // A workspace created by the one-time /setup wizard isn't usable until its
+  // owner configures SMTP there — required for password resets, invites, and
+  // notifications. Workspaces created through normal onboarding never set
+  // this flag, so they're unaffected. Enforced here (not just at the wizard's
+  // own "Finish setup" button) so a typed URL can't bypass it.
+  if (workspace.requiresIntegrationSetup) {
+    redirect("/setup");
+  }
+
   // A member who joined by invite has no password (magic link never sets one)
   // and, while email + password sign-in is enabled, no way to obtain one —
   // reset needs a credential row that does not exist yet. Finish that setup
@@ -99,7 +108,7 @@ export default async function WorkspaceLayout({
 
         {/* Main content */}
         <main
-          className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto bg-[#F7F9FB]"
+          className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto bg-base-100"
           id="main-content"
         >
           <PortalHrefProvider href={portalHref}>

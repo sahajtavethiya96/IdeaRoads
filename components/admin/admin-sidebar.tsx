@@ -92,7 +92,7 @@ function NavLink({
         "group relative flex cursor-pointer items-center gap-2.5 rounded-ir-md text-sm transition-colors duration-150 ease-ir-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40",
         collapsed ? "justify-center px-0 py-2" : "px-3 py-2",
         isActive
-          ? "bg-ir-primary/15 font-medium text-ir-primary-light"
+          ? "bg-ir-primary/15 font-medium text-ir-primary"
           : "text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-foreground"
       )}
       href={href}
@@ -132,7 +132,7 @@ function SidebarEdgeToggle({
   return (
     <button
       aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-      className="-right-3 absolute top-14 z-30 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-ir-border bg-base-100 text-ir-muted shadow-ir-xs transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+      className="-right-3 absolute top-14 z-30 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-ir-border bg-ir-surface text-ir-muted shadow-ir-xs transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
       onClick={onClick}
       title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
       type="button"

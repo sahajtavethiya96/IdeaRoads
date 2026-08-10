@@ -16,6 +16,7 @@ import { ContentContainer } from "@/components/ui/page";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useDirtyState } from "@/hooks/use-dirty-state";
+import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import { countCharacters } from "@/lib/text-metrics";
 
 interface GeneralSettingsFormProps {
@@ -162,6 +163,7 @@ export function GeneralSettingsForm({
     description,
     logoUrl,
   });
+  useUnsavedChangesGuard(infoDirty);
 
   // Delete workspace state
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);

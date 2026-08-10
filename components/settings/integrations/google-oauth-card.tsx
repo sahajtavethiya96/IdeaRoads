@@ -53,29 +53,35 @@ function GoogleOAuthCardImpl({
 
   function handleSave() {
     startSave(async () => {
-      const result = await updateGoogleOAuthSettingsAction({
-        clientId,
-        clientSecret: clientSecretCleared
-          ? ""
-          : clientSecret.trim() || UNCHANGED_SECRET,
-      });
+      try {
+        const result = await updateGoogleOAuthSettingsAction({
+          clientId,
+          clientSecret: clientSecretCleared
+            ? ""
+            : clientSecret.trim() || UNCHANGED_SECRET,
+        });
 
-      if (!result.success) {
-        toast.error(result.error);
-        return;
+        if (!result.success) {
+          toast.error(result.error);
+          return;
+        }
+
+        toast.info(
+          "Restart required for this change to take effect (a redeploy or dev-server reload)."
+        );
+        setClientSecret("");
+        setClientSecretCleared(false);
+        markClean({
+          clientId,
+          clientSecret: "",
+          clientSecretCleared: false,
+        });
+        setJustSaved(true);
+      } catch {
+        toast.error(
+          "Couldn't reach the server. Check your connection and try again."
+        );
       }
-
-      toast.info(
-        "Restart required for this change to take effect (a redeploy or dev-server reload)."
-      );
-      setClientSecret("");
-      setClientSecretCleared(false);
-      markClean({
-        clientId,
-        clientSecret: "",
-        clientSecretCleared: false,
-      });
-      setJustSaved(true);
     });
   }
 

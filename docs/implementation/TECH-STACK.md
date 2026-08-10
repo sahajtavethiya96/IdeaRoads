@@ -10,8 +10,8 @@
 | Layer | Tech |
 |---|---|
 | Frontend + Backend | Next.js 15 (App Router, TypeScript) |
-| UI Components | shadcn/ui (Radix primitives) |
-| Styling | Tailwind CSS v3 |
+| UI Components | daisyUI (Tailwind CSS v4 plugin) + custom `ir-*` design tokens; Headless UI for JS-driven overlays (dialog, menu, listbox) where a real popover/dialog primitive is needed |
+| Styling | Tailwind CSS v4 |
 | Forms | react-hook-form + zod (zodResolver) |
 | Client Data Fetching | SWR |
 | Date Utilities | date-fns |
@@ -58,7 +58,7 @@ Better Auth's Magic Link is the default and only method most deployments need �
 pg-boss uses the same PostgreSQL instance for the background job queue. One less service to operate in production.
 
 ### No Paid Services
-Everything is free and open-source: Better Auth (auth), Nodemailer (email), pg-boss (jobs), shadcn/ui (components), Drizzle ORM (database). Platform Admin is custom-built — not a third-party paid service.
+Everything is free and open-source: Better Auth (auth), Nodemailer (email), pg-boss (jobs), daisyUI (components), Drizzle ORM (database). Platform Admin is custom-built — not a third-party paid service.
 
 ### Denormalised Counters
 `vote_count` and `comment_count` on the `posts` table are maintained atomically inside `db.transaction()` with `GREATEST(count - 1, 0)` guards. Avoids expensive COUNT(*) queries on every page load.

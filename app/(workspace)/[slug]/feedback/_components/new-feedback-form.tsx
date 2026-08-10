@@ -16,6 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useDirtyState } from "@/hooks/use-dirty-state";
+import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 
 const QuillEditor = dynamic(
   () => import("@/components/comments/quill-editor"),
@@ -78,6 +80,15 @@ export function NewFeedbackForm({
   const [pendingAction, setPendingAction] = useState<
     null | "publish" | "draft"
   >(null);
+
+  const { isDirty } = useDirtyState({
+    title,
+    body,
+    categoryId,
+    status,
+    hasImage: !!imageFile,
+  });
+  const { guardNavigation } = useUnsavedChangesGuard(isDirty);
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -346,7 +357,9 @@ export function NewFeedbackForm({
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button
           disabled={isPending}
-          onClick={() => router.push(`/${workspaceSlug}/feedback`)}
+          onClick={() =>
+            guardNavigation(() => router.push(`/${workspaceSlug}/feedback`))
+          }
           type="button"
           variant="outline"
         >

@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { ContentContainer } from "@/components/ui/page";
 import { SetPageHeader } from "@/components/workspace/topbar";
 import { useDirtyState } from "@/hooks/use-dirty-state";
+import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import { CategoryChip } from "./category-chip";
 
 interface Category {
@@ -73,6 +74,7 @@ export function CategoryList({
     description: form?.description ?? "",
     color: form?.color ?? "",
   });
+  const { guardNavigation } = useUnsavedChangesGuard(isDirty);
 
   function openCreate() {
     setForm({ ...DEFAULT_FORM });
@@ -103,6 +105,11 @@ export function CategoryList({
   function closeForm() {
     setForm(null);
     setError(null);
+    // useDirtyState compares against `form?.field ?? ""` — once `form` goes
+    // back to null those computed values collapse to all-empty, so the
+    // baseline (still holding the pre-close values) must collapse the same
+    // way or isDirty falsely flips true right after a successful save.
+    markClean({ name: "", description: "", color: "" });
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -372,7 +379,7 @@ export function CategoryList({
                       <Button
                         aria-label={`Edit ${cat.name}`}
                         className="text-ir-primary"
-                        onClick={() => openEdit(cat)}
+                        onClick={() => guardNavigation(() => openEdit(cat))}
                         size="icon-xs"
                         title="Edit"
                         variant="ghost"

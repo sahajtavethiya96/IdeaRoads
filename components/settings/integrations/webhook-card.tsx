@@ -39,19 +39,25 @@ function WebhookCardImpl({ status, onDirtyChange }: WebhookCardProps) {
 
   function handleSave() {
     startSave(async () => {
-      const result = await updateEmailWebhookSecretAction({
-        secret: cleared ? "" : secret.trim() || UNCHANGED_SECRET,
-      });
+      try {
+        const result = await updateEmailWebhookSecretAction({
+          secret: cleared ? "" : secret.trim() || UNCHANGED_SECRET,
+        });
 
-      if (!result.success) {
-        toast.error(result.error);
-        return;
+        if (!result.success) {
+          toast.error(result.error);
+          return;
+        }
+
+        setSecret("");
+        setCleared(false);
+        markClean({ secret: "", cleared: false });
+        setJustSaved(true);
+      } catch {
+        toast.error(
+          "Couldn't reach the server. Check your connection and try again."
+        );
       }
-
-      setSecret("");
-      setCleared(false);
-      markClean({ secret: "", cleared: false });
-      setJustSaved(true);
     });
   }
 

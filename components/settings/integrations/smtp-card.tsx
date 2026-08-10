@@ -60,23 +60,29 @@ function SmtpCardImpl({ status, onDirtyChange }: SmtpCardProps) {
 
   function handleSave() {
     startSave(async () => {
-      const result = await updateSmtpSettingsAction({
-        host,
-        port: port.trim() ? Number(port) : null,
-        user,
-        from,
-        pass: passValue(),
-      });
+      try {
+        const result = await updateSmtpSettingsAction({
+          host,
+          port: port.trim() ? Number(port) : null,
+          user,
+          from,
+          pass: passValue(),
+        });
 
-      if (!result.success) {
-        toast.error(result.error);
-        return;
+        if (!result.success) {
+          toast.error(result.error);
+          return;
+        }
+
+        setPass("");
+        setPassCleared(false);
+        markClean({ host, port, user, from, pass: "", passCleared: false });
+        setJustSaved(true);
+      } catch {
+        toast.error(
+          "Couldn't reach the server. Check your connection and try again."
+        );
       }
-
-      setPass("");
-      setPassCleared(false);
-      markClean({ host, port, user, from, pass: "", passCleared: false });
-      setJustSaved(true);
     });
   }
 
@@ -91,19 +97,25 @@ function SmtpCardImpl({ status, onDirtyChange }: SmtpCardProps) {
 
   function handleTest() {
     startTest(async () => {
-      const result = await testSmtpConnectionAction({
-        host,
-        port: port.trim() ? Number(port) : null,
-        user,
-        from,
-        pass: passValue(),
-      });
+      try {
+        const result = await testSmtpConnectionAction({
+          host,
+          port: port.trim() ? Number(port) : null,
+          user,
+          from,
+          pass: passValue(),
+        });
 
-      if (!result.success) {
-        toast.error(`Connection failed: ${result.error}`);
-        return;
+        if (!result.success) {
+          toast.error(`Connection failed: ${result.error}`);
+          return;
+        }
+        toast.success("SMTP connection verified");
+      } catch {
+        toast.error(
+          "Couldn't reach the server. Check your connection and try again."
+        );
       }
-      toast.success("SMTP connection verified");
     });
   }
 

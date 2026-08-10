@@ -52,7 +52,7 @@ function Tabs({
 }
 
 const TABS_LIST_BASE =
-  "group/tabs-list inline-flex w-fit items-center justify-center rounded-ir-md p-1 text-ir-muted group-data-[orientation=horizontal]/tabs:h-10 group-data-[orientation=vertical]/tabs:h-fit group-data-[orientation=vertical]/tabs:flex-col";
+  "tabs group/tabs-list inline-flex w-fit flex-nowrap items-center justify-center rounded-ir-md p-1 text-ir-muted group-data-[orientation=horizontal]/tabs:h-10 group-data-[orientation=vertical]/tabs:h-fit group-data-[orientation=vertical]/tabs:flex-col";
 
 export type TabsListVariant = "default" | "line";
 
@@ -105,7 +105,7 @@ function TabsTrigger({
       aria-selected={isActive}
       tabIndex={isActive ? 0 : -1}
       className={cn(
-        "relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-2 rounded-ir-sm border border-transparent px-4 py-1.5 text-xs font-semibold tracking-wider whitespace-nowrap text-ir-muted uppercase transition-all duration-150 ease-ir-standard group-data-[orientation=vertical]/tabs:w-full group-data-[orientation=vertical]/tabs:justify-start group-data-[orientation=vertical]/tabs:px-4 group-data-[orientation=vertical]/tabs:py-2 hover:text-ir-heading focus-visible:border-ir-primary focus-visible:ring-[3px] focus-visible:ring-ir-primary/30 focus-visible:outline-1 focus-visible:outline-ir-primary disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
+        "tab relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-2 rounded-ir-sm border border-transparent px-4 py-1.5 text-xs font-semibold tracking-wider whitespace-nowrap text-ir-muted uppercase transition-all duration-150 ease-ir-standard group-data-[orientation=vertical]/tabs:w-full group-data-[orientation=vertical]/tabs:justify-start group-data-[orientation=vertical]/tabs:px-4 group-data-[orientation=vertical]/tabs:py-2 hover:text-ir-heading focus-visible:border-ir-primary focus-visible:ring-[3px] focus-visible:ring-ir-primary/30 focus-visible:outline-1 focus-visible:outline-ir-primary disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
         "group-data-[variant=line]/tabs-list:rounded-none group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent",
         "data-active:bg-ir-surface data-active:text-ir-heading data-active:shadow-ir-xs",
         "after:absolute after:bg-ir-primary after:opacity-0 after:transition-opacity group-data-[orientation=horizontal]/tabs:after:inset-x-0 group-data-[orientation=horizontal]/tabs:after:-bottom-1.25 group-data-[orientation=horizontal]/tabs:after:h-0.5 group-data-[orientation=vertical]/tabs:after:inset-y-0 group-data-[orientation=vertical]/tabs:after:-right-1 group-data-[orientation=vertical]/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",

@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { ContentContainer } from "@/components/ui/page";
 import { SetPageHeader } from "@/components/workspace/topbar";
 import { useDirtyState } from "@/hooks/use-dirty-state";
+import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 
 interface WorkspaceStatus {
   color: string;
@@ -82,6 +83,7 @@ export function StatusList({
     name: form?.name ?? "",
     color: form?.color ?? "",
   });
+  const { guardNavigation } = useUnsavedChangesGuard(isDirty);
 
   function openCreate() {
     setForm({ ...DEFAULT_FORM });
@@ -104,6 +106,11 @@ export function StatusList({
   function closeForm() {
     setForm(null);
     setError(null);
+    // useDirtyState compares against `form?.field ?? ""` — once `form` goes
+    // back to null those computed values collapse to all-empty, so the
+    // baseline (still holding the pre-close values) must collapse the same
+    // way or isDirty falsely flips true right after a successful save.
+    markClean({ name: "", color: "" });
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -378,7 +385,10 @@ export function StatusList({
 
                   {s.isDefault && (
                     <span className="flex items-center gap-1 rounded-ir-sm border border-ir-border px-1.5 py-0.5 text-2xs font-medium text-ir-muted">
-                      <StarIcon className="size-2.5" />
+                      <StarIcon
+                        className="size-2.5 text-ir-warning"
+                        weight="fill"
+                      />
                       Default
                     </span>
                   )}
@@ -443,19 +453,24 @@ export function StatusList({
                       {!s.isDefault && (
                         <Button
                           aria-label={`Set ${s.name} as default`}
+                          className="group text-ir-muted hover:text-ir-warning"
                           disabled={isPending}
                           onClick={() => handleSetDefault(s)}
                           size="icon-xs"
                           title="Set as default"
                           variant="ghost"
                         >
-                          <StarIcon />
+                          <StarIcon className="group-hover:hidden" />
+                          <StarIcon
+                            className="hidden group-hover:block"
+                            weight="fill"
+                          />
                         </Button>
                       )}
                       <Button
                         aria-label={`Edit ${s.name}`}
                         className="text-ir-primary"
-                        onClick={() => openEdit(s)}
+                        onClick={() => guardNavigation(() => openEdit(s))}
                         size="icon-xs"
                         title="Edit"
                         variant="ghost"

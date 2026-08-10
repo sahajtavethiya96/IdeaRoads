@@ -16,6 +16,7 @@ export interface CreateWorkspaceInput {
   name: string;
   ownerEmail: string;
   ownerId: string;
+  requiresIntegrationSetup?: boolean;
   slug: string;
 }
 
@@ -31,6 +32,7 @@ export async function createWorkspace(
       name: input.name.trim(),
       description: input.description?.trim() || null,
       ownerId: input.ownerId,
+      requiresIntegrationSetup: input.requiresIntegrationSetup ?? false,
     });
 
     await tx.insert(workspaceMembers).values({

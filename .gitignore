@@ -4,6 +4,7 @@ public/uploads
 Kanbanica-main
 
 # Next.js
+.idearoads-postgres
 .next/
 out/
 

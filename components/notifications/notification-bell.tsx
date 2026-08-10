@@ -39,7 +39,7 @@ export function NotificationBell({
         "group relative flex cursor-pointer items-center gap-2.5 rounded-ir-sm text-sm transition-colors duration-150 ease-ir-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40",
         collapsed ? "justify-center px-0 py-2" : "px-3 py-2",
         isActive
-          ? "bg-ir-primary/15 font-medium text-ir-primary-light"
+          ? "bg-ir-primary/15 font-medium text-ir-primary"
           : "text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-foreground"
       )}
       href={`/${workspaceSlug}/notifications`}
