@@ -41,6 +41,7 @@ export async function createWorkspaceAction(formData: {
   name: string;
   slug: string;
   description?: string;
+  requiresIntegrationSetup?: boolean;
 }): Promise<ActionResult<{ slug: string }>> {
   const session = await requireSession();
 
@@ -92,6 +93,7 @@ export async function createWorkspaceAction(formData: {
     description: description || null,
     ownerId: session.user.id,
     ownerEmail: session.user.email,
+    requiresIntegrationSetup: formData.requiresIntegrationSetup ?? false,
   });
 
   // Best-effort: a brand-new workspace ships with one example post so the

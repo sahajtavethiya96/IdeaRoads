@@ -13,8 +13,8 @@ const INCLUDED_ITEMS = [
 
 function CodeBlock({ command }: { command: string }) {
   return (
-    <div className="mt-3 flex items-start justify-between border border-primary-foreground/15 bg-primary-foreground/5 px-4 py-3">
-      <pre className="overflow-x-auto text-xs font-mono leading-6 text-primary-foreground/80">
+    <div className="mt-3 flex items-start justify-between border border-primary-content/15 bg-primary-content/5 px-4 py-3">
+      <pre className="overflow-x-auto text-xs font-mono leading-6 text-primary-content/80">
         <code>{command}</code>
       </pre>
       <CopyButton className="ml-4" text={command} />
@@ -24,17 +24,17 @@ function CodeBlock({ command }: { command: string }) {
 
 export function QuickStart() {
   return (
-    <section className="bg-primary text-primary-foreground">
+    <section className="bg-primary text-primary-content">
       <div className="mx-auto max-w-6xl px-4 py-24 sm:px-8">
         <p className="font-bold text-xs uppercase tracking-eyebrow text-success-light">
           Quick Start
         </p>
 
-        <h2 className="mt-4 font-black text-3xl text-primary-foreground sm:text-4xl">
+        <h2 className="mt-4 font-black text-3xl text-primary-content sm:text-4xl">
           Running in under 30 minutes.
         </h2>
 
-        <p className="mt-3 text-lg text-primary-foreground/70">
+        <p className="mt-3 text-lg text-primary-content/70">
           No cloud account. No credit card. No vendor relationship.
         </p>
 
@@ -42,14 +42,14 @@ export function QuickStart() {
           {/* Steps */}
           <div className="space-y-8">
             <div>
-              <p className="text-sm font-semibold text-primary-foreground/80">
+              <p className="text-sm font-semibold text-primary-content/80">
                 1. Clone the repo
               </p>
               <CodeBlock command={`git clone ${GITHUB_REPO_URL}`} />
             </div>
 
             <div>
-              <p className="text-sm font-semibold text-primary-foreground/80">
+              <p className="text-sm font-semibold text-primary-content/80">
                 2. Add your configuration
               </p>
               <CodeBlock
@@ -60,7 +60,7 @@ export function QuickStart() {
             </div>
 
             <div>
-              <p className="text-sm font-semibold text-primary-foreground/80">
+              <p className="text-sm font-semibold text-primary-content/80">
                 3. Start collecting feedback
               </p>
               <CodeBlock
@@ -75,7 +75,7 @@ export function QuickStart() {
                 <Link href="/signin">Get Started Free</Link>
               </Button>
               <Link
-                className="text-sm text-primary-foreground/60 transition-colors duration-150 hover:text-primary-foreground"
+                className="text-sm text-primary-content/60 transition-colors duration-150 hover:text-primary-content"
                 href={DOCS_URL}
                 rel="noopener noreferrer"
                 target="_blank"
@@ -86,14 +86,14 @@ export function QuickStart() {
           </div>
 
           {/* What's included panel */}
-          <div className="hidden border border-primary-foreground/15 bg-primary-foreground/5 p-6 lg:block lg:w-64">
-            <p className="text-xs font-semibold uppercase tracking-ui text-primary-foreground/60">
+          <div className="hidden border border-primary-content/15 bg-primary-content/5 p-6 lg:block lg:w-64">
+            <p className="text-xs font-semibold uppercase tracking-ui text-primary-content/60">
               What's Included
             </p>
             <ul className="mt-4 space-y-3">
               {INCLUDED_ITEMS.map((item) => (
                 <li
-                  className="flex items-start gap-2 text-sm text-primary-foreground/70"
+                  className="flex items-start gap-2 text-sm text-primary-content/70"
                   key={item}
                 >
                   <span

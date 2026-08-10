@@ -3,9 +3,12 @@
 import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { getIntegrationSettingsStatusAction } from "@/app/actions/integration-settings";
-import { createFirstAdminAction } from "@/app/actions/setup";
+import {
+  completeFirstRunSetupAction,
+  createFirstAdminAction,
+} from "@/app/actions/setup";
 import { createWorkspaceAction } from "@/app/actions/workspace";
 import { StepWorkspace } from "@/app/onboarding/_components/steps/step-workspace";
 import { IntegrationsPanel } from "@/components/settings/integrations/integrations-panel";
@@ -22,19 +25,36 @@ const MIN_PASSWORD_LENGTH = 8;
 interface SetupWizardProps {
   adminUrl: string;
   appHost: string;
+  /** Set when resuming an interrupted first-run session — see app/setup/page.tsx. */
+  resumeWorkspaceSlug?: string;
 }
 
-export function SetupWizard({ appHost, adminUrl }: SetupWizardProps) {
+export function SetupWizard({
+  appHost,
+  adminUrl,
+  resumeWorkspaceSlug,
+}: SetupWizardProps) {
   const router = useRouter();
   const [step, setStep] = useState<"account" | "workspace" | "integrations">(
-    "account"
+    resumeWorkspaceSlug ? "integrations" : "account"
   );
-  const [workspaceSlug, setWorkspaceSlug] = useState<string | null>(null);
+  const [workspaceSlug, setWorkspaceSlug] = useState<string | null>(
+    resumeWorkspaceSlug ?? null
+  );
   const [integrationsStatus, setIntegrationsStatus] =
     useState<IntegrationSettingsStatus | null>(null);
   const [integrationsDirty, setIntegrationsDirty] = useState(false);
   const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] =
     useState(false);
+  const [finishing, setFinishing] = useState(false);
+  const [finishError, setFinishError] = useState<string | null>(null);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only fetch for the resume case, not re-run when the slug prop happens to be re-passed the same value
+  useEffect(() => {
+    if (resumeWorkspaceSlug) {
+      getIntegrationSettingsStatusAction().then(setIntegrationsStatus);
+    }
+  }, []);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -136,6 +156,7 @@ export function SetupWizard({ appHost, adminUrl }: SetupWizardProps) {
       description: input.description,
       name: trimmedName ? `${trimmedName}'s Workspace` : "My Workspace",
       slug: input.slug,
+      requiresIntegrationSetup: true,
     });
 
     setCreatingWorkspace(false);
@@ -166,7 +187,19 @@ export function SetupWizard({ appHost, adminUrl }: SetupWizardProps) {
     setEmailSuggestion(null);
   }
 
-  function finishSetup() {
+  async function finishSetup() {
+    if (!workspaceSlug) {
+      return;
+    }
+    setFinishing(true);
+    setFinishError(null);
+    const result = await completeFirstRunSetupAction(workspaceSlug);
+    setFinishing(false);
+
+    if (!result.success) {
+      setFinishError(result.error);
+      return;
+    }
     router.push(`/${workspaceSlug}`);
   }
 
@@ -222,8 +255,8 @@ export function SetupWizard({ appHost, adminUrl }: SetupWizardProps) {
               Connect your integrations
             </h1>
             <p className="mt-1.5 text-sm text-ir-muted">
-              Optional — configure now or skip and set these up any time from
-              Admin → Integrations.
+              Email is required to continue. The rest is optional — configure
+              now or skip and set them up any time from Admin → Integrations.
             </p>
           </div>
 
@@ -239,16 +272,27 @@ export function SetupWizard({ appHost, adminUrl }: SetupWizardProps) {
             )}
           </div>
 
+          {finishError && (
+            <p className="mt-6 rounded-ir-sm bg-ir-danger/10 p-3 text-sm text-ir-danger">
+              {finishError}
+            </p>
+          )}
+
           <div className="mt-6 flex justify-end gap-3 border-t border-ir-border pt-6">
             <Button
+              disabled={finishing}
               onClick={handleLeaveIntegrationsStep}
               type="button"
               variant="ghost"
             >
               Skip for now
             </Button>
-            <Button onClick={handleLeaveIntegrationsStep} type="button">
-              Finish setup
+            <Button
+              disabled={finishing}
+              onClick={handleLeaveIntegrationsStep}
+              type="button"
+            >
+              {finishing ? "Finishing…" : "Finish setup"}
             </Button>
           </div>
         </div>
@@ -334,14 +378,14 @@ export function SetupWizard({ appHost, adminUrl }: SetupWizardProps) {
                 </p>
                 <div className="flex shrink-0 gap-3">
                   <button
-                    className="text-xs font-semibold text-ir-warning underline hover:no-underline"
+                    className="rounded-ir-xs text-xs font-semibold text-ir-warning underline hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
                     onClick={acceptEmailSuggestion}
                     type="button"
                   >
                     Use this
                   </button>
                   <button
-                    className="text-xs text-ir-muted underline hover:no-underline"
+                    className="rounded-ir-xs text-xs text-ir-muted underline hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
                     onClick={dismissEmailSuggestion}
                     type="button"
                   >

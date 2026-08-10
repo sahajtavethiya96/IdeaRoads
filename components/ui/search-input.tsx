@@ -18,7 +18,7 @@ interface SearchInputProps {
   placeholder?: string;
 }
 
-// Shared search field for filter toolbars. Built on the shadcn InputGroup so the
+// Shared search field for filter toolbars. Built on InputGroup so the
 // leading search icon and trailing clear button live in a flex row — the input
 // is `flex-1` and truncates within its own space, so even a very long query can
 // never overlap or hide the clear button. The value is controlled, so the clear

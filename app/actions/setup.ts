@@ -2,11 +2,14 @@
 
 import { randomUUID } from "node:crypto";
 import { hashPassword } from "better-auth/crypto";
-import { count } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 import { ADMIN_ROLE } from "@/config/platform";
-import { account, user } from "@/db/schema";
+import { account, user, workspaces } from "@/db/schema";
 import { audit } from "@/lib/audit";
+import { requireSession } from "@/lib/authz";
 import { db } from "@/lib/db";
+import { isSmtpConfigured } from "@/lib/integration-settings";
+import { getWorkspaceBySlug } from "@/lib/workspaces/queries";
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -117,4 +120,41 @@ export async function createFirstAdminAction(input: {
       error: "Something went wrong. Please try again.",
     };
   }
+}
+
+/**
+ * Clears `requiresIntegrationSetup` on the workspace created by the
+ * first-run wizard, letting its owner into the Dashboard. Re-validates SMTP
+ * server-side rather than trusting the client's cached integrations status
+ * — this is the one gate that's actually required; Google OAuth, storage,
+ * and the webhook secret stay optional. A no-op (still success) if the
+ * workspace never required this, so calling it twice is harmless.
+ */
+export async function completeFirstRunSetupAction(
+  workspaceSlug: string
+): Promise<ActionResult> {
+  const session = await requireSession();
+
+  const workspace = await getWorkspaceBySlug(workspaceSlug);
+  if (!workspace || workspace.ownerId !== session.user.id) {
+    return { success: false, error: "Workspace not found." };
+  }
+
+  if (!workspace.requiresIntegrationSetup) {
+    return { success: true, data: undefined };
+  }
+
+  if (!(await isSmtpConfigured())) {
+    return {
+      success: false,
+      error: "Email (SMTP) must be configured before you can finish setup.",
+    };
+  }
+
+  await db
+    .update(workspaces)
+    .set({ requiresIntegrationSetup: false })
+    .where(eq(workspaces.id, workspace.id));
+
+  return { success: true, data: undefined };
 }

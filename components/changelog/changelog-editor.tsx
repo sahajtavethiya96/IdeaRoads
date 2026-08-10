@@ -30,7 +30,6 @@ import {
 import { ChangelogLabelBadge } from "@/components/changelog/changelog-label-badge";
 import { LinkedPostsSelector } from "@/components/changelog/linked-posts-selector";
 import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Dialog,
   DialogContent,
@@ -279,8 +278,7 @@ export function ChangelogEditor({
     linkedPosts: linkedPostsKey(linkedPosts),
   });
 
-  const { isConfirmOpen, guardNavigation, confirmLeave, cancelLeave } =
-    useUnsavedChangesGuard(isDirty);
+  const { guardNavigation } = useUnsavedChangesGuard(isDirty);
 
   // Auto-save: debounced, fires after 30s of idle
   const autoSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -622,7 +620,7 @@ export function ChangelogEditor({
                 />
                 <button
                   aria-label="Remove cover image"
-                  className="absolute top-3 right-3 flex size-8 items-center justify-center rounded-ir-full border border-ir-border bg-ir-surface text-ir-muted shadow-ir-md transition-colors duration-150 ease-ir-standard hover:border-ir-danger hover:bg-ir-danger hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                  className="absolute top-3 right-3 flex size-8 items-center justify-center rounded-ir-full border border-ir-border bg-ir-surface text-ir-muted shadow-ir-md transition-colors duration-150 ease-ir-standard hover:border-ir-danger hover:bg-ir-danger hover:text-ir-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
                   onClick={removeCoverImage}
                   type="button"
                 >
@@ -899,7 +897,7 @@ export function ChangelogEditor({
                   disabled={labelBusy}
                   onClick={() => handleLabelModalOpenChange(false)}
                   type="button"
-                  variant="ghost"
+                  variant="outline"
                 >
                   Cancel
                 </Button>
@@ -955,7 +953,7 @@ export function ChangelogEditor({
                   )
                 }
                 type="button"
-                variant="ghost"
+                variant="outline"
               >
                 Cancel
               </Button>
@@ -992,20 +990,6 @@ export function ChangelogEditor({
           </div>
         </div>
       </ContentContainer>
-
-      <ConfirmDialog
-        cancelLabel="Keep editing"
-        confirmLabel="Discard changes"
-        description="You have unsaved changes to this entry. If you leave now, they'll be lost."
-        onConfirm={confirmLeave}
-        onOpenChange={(open) => {
-          if (!open) {
-            cancelLeave();
-          }
-        }}
-        open={isConfirmOpen}
-        title="Discard unsaved changes?"
-      />
     </>
   );
 }

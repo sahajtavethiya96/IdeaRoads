@@ -224,7 +224,7 @@ export default function CommentItem({
               {canDelete && (
                 <button
                   aria-label="Delete comment"
-                  className="inline-flex cursor-pointer items-center gap-1 text-xs text-ir-danger transition-opacity duration-150 hover:opacity-70 focus-visible:outline-none"
+                  className="inline-flex cursor-pointer items-center gap-1 text-xs text-ir-danger transition-opacity duration-150 hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
                   onClick={() => setShowDeleteDialog(true)}
                   type="button"
                 >

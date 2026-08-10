@@ -214,7 +214,7 @@ export default function StatusSelect({
     <Popover onOpenChange={setOpen} open={open}>
       <PopoverTrigger asChild>
         <button
-          className="inline-flex h-7 items-center gap-1.5 rounded-ir-md border-0 px-2.5 py-4.5 text-xs font-medium"
+          className="inline-flex h-7 items-center gap-1.5 rounded-ir-md border-0 px-2.5 text-xs font-medium transition-colors duration-150 ease-ir-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
           disabled={isPending}
           style={{
             backgroundColor: `color-mix(in oklab, ${triggerColor} 9%, transparent)`,
@@ -234,7 +234,6 @@ export default function StatusSelect({
       </PopoverTrigger>
 
       <PopoverContent
-        align="start"
         className="w-64 flex-col gap-0 p-0"
         onCloseAutoFocus={(e) => e.preventDefault()}
         onOpenAutoFocus={(e) => e.preventDefault()}

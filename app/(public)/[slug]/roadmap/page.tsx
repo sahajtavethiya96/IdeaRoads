@@ -1,10 +1,9 @@
-import { PlusIcon } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EmbedNav } from "@/components/embed/embed-nav";
 import { EmbedResizeReporter } from "@/components/embed/resize-reporter";
 import { EmbedModalHeader } from "@/components/embed/widget/embed-modal-header";
+import { NewFeedbackButton } from "@/components/portal/new-feedback-button";
 import { PoweredByBadge } from "@/components/portal/powered-by-badge";
 import {
   type BoardStatus,
@@ -13,7 +12,6 @@ import {
 import type { BoardItem } from "@/components/roadmap/manual/manual-roadmap-card";
 import { ManualRoadmapProvider } from "@/components/roadmap/manual/manual-roadmap-search-context";
 import { RoadmapBoard } from "@/components/roadmap/roadmap-board";
-import { Button } from "@/components/ui/button";
 import { PortalHeader } from "@/components/workspace/portal-header";
 import { WORKSPACE_MEMBER } from "@/config/platform";
 import { getCurrentSession } from "@/lib/authz";
@@ -250,12 +248,7 @@ export default async function RoadmapPage({ params, searchParams }: Props) {
                 </p>
               </div>
               {feedbackHref && (
-                <Button asChild>
-                  <Link href={feedbackHref}>
-                    <PlusIcon data-icon="inline-start" />
-                    Feedback
-                  </Link>
-                </Button>
+                <NewFeedbackButton className="" href={feedbackHref} />
               )}
             </div>
           )}
@@ -312,12 +305,7 @@ export default async function RoadmapPage({ params, searchParams }: Props) {
 
           {isPanel && panelFeedbackHref && (
             <div className="shrink-0 border-t border-ir-border bg-ir-surface px-4 py-3 sm:px-8">
-              <Button asChild className="w-full">
-                <Link href={panelFeedbackHref}>
-                  <PlusIcon data-icon="inline-start" />
-                  Feedback
-                </Link>
-              </Button>
+              <NewFeedbackButton href={panelFeedbackHref} />
             </div>
           )}
         </main>

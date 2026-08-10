@@ -137,27 +137,33 @@ function StorageCardImpl({ status, onDirtyChange }: StorageCardProps) {
 
   function handleSave() {
     startSave(async () => {
-      const result = await updateStorageSettingsAction(buildPayload());
+      try {
+        const result = await updateStorageSettingsAction(buildPayload());
 
-      if (!result.success) {
-        toast.error(result.error);
-        return;
+        if (!result.success) {
+          toast.error(result.error);
+          return;
+        }
+
+        setSecretAccessKey("");
+        setSecretCleared(false);
+        markClean({
+          storageType,
+          region,
+          bucket,
+          accessKeyId,
+          secretAccessKey: "",
+          secretCleared: false,
+          endpoint,
+          publicUrlBase,
+          localDir,
+        });
+        setJustSaved(true);
+      } catch {
+        toast.error(
+          "Couldn't reach the server. Check your connection and try again."
+        );
       }
-
-      setSecretAccessKey("");
-      setSecretCleared(false);
-      markClean({
-        storageType,
-        region,
-        bucket,
-        accessKeyId,
-        secretAccessKey: "",
-        secretCleared: false,
-        endpoint,
-        publicUrlBase,
-        localDir,
-      });
-      setJustSaved(true);
     });
   }
 
@@ -175,19 +181,25 @@ function StorageCardImpl({ status, onDirtyChange }: StorageCardProps) {
 
   function handleTest() {
     startTest(async () => {
-      const result = await testStorageConnectionAction({
-        region,
-        bucket,
-        accessKeyId,
-        secretAccessKey: secretValue(),
-        endpoint: storageType === "r2" ? endpoint : "",
-      });
+      try {
+        const result = await testStorageConnectionAction({
+          region,
+          bucket,
+          accessKeyId,
+          secretAccessKey: secretValue(),
+          endpoint: storageType === "r2" ? endpoint : "",
+        });
 
-      if (!result.success) {
-        toast.error(`Connection failed: ${result.error}`);
-        return;
+        if (!result.success) {
+          toast.error(`Connection failed: ${result.error}`);
+          return;
+        }
+        toast.success("Bucket reachable");
+      } catch {
+        toast.error(
+          "Couldn't reach the server. Check your connection and try again."
+        );
       }
-      toast.success("Bucket reachable");
     });
   }
 

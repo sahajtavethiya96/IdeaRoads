@@ -350,7 +350,7 @@ export function PostActionsMenu({
             <Button
               disabled={isPending}
               onClick={() => setMergeOpen(false)}
-              variant="ghost"
+              variant="outline"
             >
               Cancel
             </Button>

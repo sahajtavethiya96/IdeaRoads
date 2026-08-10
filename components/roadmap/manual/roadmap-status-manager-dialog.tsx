@@ -190,7 +190,7 @@ export function RoadmapStatusManagerDialog({
                     style={{ backgroundColor: s.color }}
                   />
                   <button
-                    className="min-w-0 flex-1 cursor-pointer truncate text-left text-sm font-medium text-ir-heading hover:underline"
+                    className="min-w-0 flex-1 cursor-pointer truncate rounded-ir-xs text-left text-sm font-medium text-ir-heading hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
                     onClick={() => startEdit(s)}
                     type="button"
                   >
@@ -198,38 +198,39 @@ export function RoadmapStatusManagerDialog({
                   </button>
                   <span className="text-xs text-ir-muted">{s.itemCount}</span>
                   <div className="flex items-center gap-0.5">
-                    <button
+                    <Button
                       aria-label="Move up"
-                      className="cursor-pointer rounded-ir-sm p-1 text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface hover:text-ir-heading disabled:opacity-30"
                       disabled={isPending || i === 0}
                       onClick={() => move(i, -1)}
-                      type="button"
+                      size="icon-xs"
+                      variant="ghost"
                     >
-                      <ArrowUpIcon className="size-3.5" />
-                    </button>
-                    <button
+                      <ArrowUpIcon />
+                    </Button>
+                    <Button
                       aria-label="Move down"
-                      className="cursor-pointer rounded-ir-sm p-1 text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface hover:text-ir-heading disabled:opacity-30"
                       disabled={isPending || i === statuses.length - 1}
                       onClick={() => move(i, 1)}
-                      type="button"
+                      size="icon-xs"
+                      variant="ghost"
                     >
-                      <ArrowDownIcon className="size-3.5" />
-                    </button>
-                    <button
+                      <ArrowDownIcon />
+                    </Button>
+                    <Button
                       aria-label="Delete column"
-                      className="cursor-pointer rounded-ir-sm p-1 text-ir-danger transition-colors duration-150 ease-ir-standard hover:bg-ir-danger/10 disabled:opacity-30"
+                      className="text-ir-danger hover:bg-ir-danger/10"
                       disabled={isPending || s.itemCount > 0}
                       onClick={() => handleDelete(s)}
+                      size="icon-xs"
                       title={
                         s.itemCount > 0
                           ? "Empty this column first"
                           : "Delete column"
                       }
-                      type="button"
+                      variant="ghost"
                     >
-                      <TrashIcon className="size-3.5" />
-                    </button>
+                      <TrashIcon />
+                    </Button>
                   </div>
                 </div>
               )}

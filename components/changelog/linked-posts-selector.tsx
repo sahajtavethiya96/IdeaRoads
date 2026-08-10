@@ -150,7 +150,6 @@ export function LinkedPostsSelector({
           </PopoverAnchor>
 
           <PopoverContent
-            align="start"
             className="w-(--radix-popover-trigger-width) max-h-52 flex-col gap-0 overflow-y-auto rounded-ir-md border border-ir-border bg-ir-surface p-0 shadow-ir-lg"
             onCloseAutoFocus={(e) => e.preventDefault()}
             onOpenAutoFocus={(e) => e.preventDefault()}

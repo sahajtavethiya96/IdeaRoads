@@ -1,4 +1,3 @@
-import { PlusIcon } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -15,6 +14,7 @@ import {
   getWorkspaceMember,
 } from "@/lib/workspaces/queries";
 import { ChangelogStatusFilter } from "./_components/changelog-status-filter";
+import { NewEntryButton } from "./_components/new-entry-button";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -71,12 +71,7 @@ export default async function WorkspaceChangelogPage({
           isAdmin ? (
             <>
               <ChangelogStatusFilter activeStatus={status} />
-              <Button asChild>
-                <Link href={`/${slug}/settings/changelog/new`}>
-                  <PlusIcon data-icon="inline-start" />
-                  New entry
-                </Link>
-              </Button>
+              <NewEntryButton slug={slug} />
             </>
           ) : undefined
         }

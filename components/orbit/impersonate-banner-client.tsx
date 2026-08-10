@@ -27,7 +27,7 @@ export function ImpersonateBannerClient({ email }: { email: string }) {
         <span className="font-mono text-xs opacity-80">{email}</span>
       </div>
       <button
-        className="shrink-0 cursor-pointer rounded-ir-button border border-amber-400/60 bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-ui text-amber-900 transition-colors hover:bg-amber-200 disabled:opacity-50 dark:bg-amber-900 dark:text-amber-100 dark:hover:bg-amber-800"
+        className="shrink-0 cursor-pointer rounded-ir-button border border-amber-400/60 bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-ui text-amber-900 transition-colors hover:bg-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:opacity-50 dark:bg-amber-900 dark:text-amber-100 dark:hover:bg-amber-800"
         disabled={isEnding}
         onClick={handleEndImpersonation}
         type="button"

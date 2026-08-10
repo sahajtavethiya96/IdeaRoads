@@ -140,7 +140,7 @@ export default function AssigneeSelect({
         </button>
       </PopoverTrigger>
 
-      <PopoverContent align="start" className="w-72 flex-col gap-0 p-0">
+      <PopoverContent className="w-72 flex-col gap-0 p-0">
         <Command>
           <CommandInput placeholder="Assign to..." />
           <CommandList>

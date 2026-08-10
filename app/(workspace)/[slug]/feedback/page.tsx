@@ -1,10 +1,7 @@
-import { PlusIcon } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PostsPaginationBar } from "@/components/posts/posts-pagination-bar";
 import { PostsTable } from "@/components/posts/posts-table";
-import { Button } from "@/components/ui/button";
 import { PageBody } from "@/components/ui/page";
 import { SetPageHeader } from "@/components/workspace/topbar";
 import { WORKSPACE_MEMBER } from "@/config/platform";
@@ -21,6 +18,7 @@ import {
   getWorkspaceBySlug,
   getWorkspaceMember,
 } from "@/lib/workspaces/queries";
+import { AddFeedbackButton } from "./_components/add-feedback-button";
 import { FeedbackFilters } from "./_components/feedback-filters";
 
 const DEFAULT_PAGE_SIZE = 25;
@@ -138,16 +136,7 @@ export default async function FeedbackPage({ params, searchParams }: Props) {
     // away and leaves the table as the only region that scrolls.
     <div className="flex min-h-0 flex-1 flex-col">
       <SetPageHeader
-        actions={
-          board ? (
-            <Button asChild>
-              <Link href={`/${slug}/feedback/new`}>
-                <PlusIcon data-icon="inline-start" />
-                Add Feedback
-              </Link>
-            </Button>
-          ) : undefined
-        }
+        actions={board ? <AddFeedbackButton slug={slug} /> : undefined}
         description={`Every piece of feedback in ${workspace.name}.`}
         title="All Feedback"
       />

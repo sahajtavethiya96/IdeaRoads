@@ -1,57 +1,65 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { Tooltip as TooltipPrimitive } from "radix-ui";
+import * as React from "react"
 
-import { cn } from "@/lib/utils";
-
-function TooltipProvider({
-  delayDuration = 0,
-  ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
-  return (
-    <TooltipPrimitive.Provider
-      data-slot="tooltip-provider"
-      delayDuration={delayDuration}
-      {...props}
-    />
-  );
+// DaisyUI's `tooltip` is CSS-only (shows on hover / :focus-visible via
+// `data-tip`'s attr() content, no JS) — both real consumers just show a
+// plain string on a static pill, so there's no positioning/portal/delay
+// behavior worth pulling in a library for. TooltipProvider/TooltipTrigger
+// exist only to keep the old call-site shape (<Tooltip><TooltipTrigger
+// asChild>...</TooltipTrigger><TooltipContent>...</TooltipContent></Tooltip>)
+// working unchanged.
+function nodeToText(node: React.ReactNode): string {
+  if (typeof node === "string" || typeof node === "number") {
+    return String(node)
+  }
+  return React.Children.toArray(node)
+    .map((child) =>
+      typeof child === "string" || typeof child === "number"
+        ? String(child)
+        : ""
+    )
+    .join("")
 }
 
-function Tooltip({
-  ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Root>) {
-  return <TooltipPrimitive.Root data-slot="tooltip" {...props} />;
+function TooltipProvider({ children }: { children?: React.ReactNode }) {
+  return <>{children}</>
 }
 
 function TooltipTrigger({
-  ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {
-  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
-}
-
-function TooltipContent({
-  className,
-  sideOffset = 0,
   children,
-  ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Content>) {
-  return (
-    <TooltipPrimitive.Portal>
-      <TooltipPrimitive.Content
-        data-slot="tooltip-content"
-        sideOffset={sideOffset}
-        className={cn(
-          "z-50 inline-flex w-fit max-w-xs origin-(--radix-tooltip-content-transform-origin) items-center gap-1.5 rounded-ir-sm bg-ir-heading px-3 py-1.5 text-xs text-ir-surface shadow-ir-md has-data-[slot=kbd]:pr-1.5 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:z-50 **:data-[slot=kbd]:rounded-ir-xs data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
-          className,
-        )}
-        {...props}
-      >
-        {children}
-        <TooltipPrimitive.Arrow className="z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-ir-xs bg-ir-heading fill-ir-heading" />
-      </TooltipPrimitive.Content>
-    </TooltipPrimitive.Portal>
-  );
+}: {
+  asChild?: boolean
+  children?: React.ReactNode
+}) {
+  return <>{children}</>
 }
 
-export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger };
+function TooltipContent({ children }: { children?: React.ReactNode }) {
+  return <>{children}</>
+}
+
+function Tooltip({ children }: { children?: React.ReactNode }) {
+  let trigger: React.ReactNode
+  let tip: string | undefined
+
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) {
+      return
+    }
+    const props = child.props as { children?: React.ReactNode }
+    if (child.type === TooltipTrigger) {
+      trigger = props.children
+    } else if (child.type === TooltipContent) {
+      tip = nodeToText(props.children)
+    }
+  })
+
+  return (
+    <span className="tooltip" data-tip={tip}>
+      {trigger}
+    </span>
+  )
+}
+
+export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger }

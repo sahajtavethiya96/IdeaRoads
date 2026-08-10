@@ -182,7 +182,7 @@ export function PortalVerifyPanel({ onVerified }: PortalVerifyPanelProps) {
 
         <div className="flex items-center justify-between text-xs">
           <button
-            className="cursor-pointer font-medium text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading hover:underline"
+            className="cursor-pointer rounded-ir-xs font-medium text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
             onClick={() => {
               setStep("email");
               setCode("");
@@ -193,7 +193,7 @@ export function PortalVerifyPanel({ onVerified }: PortalVerifyPanelProps) {
             Use a different email
           </button>
           <button
-            className="cursor-pointer font-medium text-ir-primary transition-opacity duration-150 ease-ir-standard hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+            className="cursor-pointer rounded-ir-xs font-medium text-ir-primary transition-opacity duration-150 ease-ir-standard hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 disabled:cursor-not-allowed disabled:opacity-50"
             disabled={resending || cooldown > 0}
             onClick={handleResend}
             type="button"

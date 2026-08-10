@@ -20,29 +20,29 @@ const PILLARS = [
 
 export function Differentiators() {
   return (
-    <section className="bg-background">
+    <section className="bg-base-200">
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-8">
         <p className="font-bold text-xs uppercase tracking-eyebrow text-success">
           Why Different
         </p>
 
-        <h2 className="mt-4 font-bold text-3xl text-foreground sm:text-4xl">
+        <h2 className="mt-4 font-bold text-3xl text-base-content sm:text-4xl">
           No per-voter fees. No lock-in. No black boxes.
         </h2>
 
-        <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
+        <p className="mt-3 max-w-2xl text-lg text-base-content/60">
           Built on a model that stays honest as you grow. Self-hosted, MIT
           licensed, and yours to run forever.
         </p>
 
         <div className="mt-12 grid gap-6 sm:grid-cols-3">
           {PILLARS.map(({ icon: Icon, title, body }) => (
-            <div className="border border-border bg-card p-6" key={title}>
-              <Icon aria-hidden="true" className="size-8 text-foreground" />
-              <h3 className="mt-4 font-semibold text-base text-foreground">
+            <div className="border border-base-300 bg-base-100 p-6" key={title}>
+              <Icon aria-hidden="true" className="size-8 text-base-content" />
+              <h3 className="mt-4 font-semibold text-base text-base-content">
                 {title}
               </h3>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              <p className="mt-2 text-sm leading-6 text-base-content/60">
                 {body}
               </p>
             </div>

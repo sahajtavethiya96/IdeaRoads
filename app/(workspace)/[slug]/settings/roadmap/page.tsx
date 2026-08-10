@@ -146,7 +146,7 @@ export default async function WorkspaceRoadmapPage({
         title="Roadmap"
       />
       {isAdmin && (
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-border px-4 py-4 sm:px-8">
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-base-300 px-4 py-4 sm:px-8">
           <RoadmapSyncToggle enabled={true} workspaceId={workspace.id} />
           <div className="flex items-center gap-2 rounded-ir-md border border-ir-warning/30 bg-ir-warning/10 px-3 py-2 text-xs font-medium text-ir-warning">
             <InfoIcon className="size-3.5 shrink-0" />

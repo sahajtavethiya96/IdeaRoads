@@ -79,17 +79,18 @@ export function buildEmbedQuery(params: ParsedEmbedParams): string {
 }
 
 // className + inline style to spread onto an embedded page's root wrapper —
-// applies the `.dark` class for a forced dark theme, and overrides the
-// --primary/--primary-foreground tokens so primary actions (vote button, "New
-// post", etc.) pick up the workspace's configured accent color.
+// applies the `.dark` class for a forced dark theme, and overrides daisyUI's
+// --color-primary/--color-primary-content theme variables so primary actions
+// (vote button, "New post", etc.) pick up the workspace's configured accent
+// color.
 export function embedWrapperProps(params: ParsedEmbedParams): {
   className: string;
   style: CSSProperties;
 } {
   const style: Record<string, string> = {};
   if (params.accentColor) {
-    style["--primary"] = params.accentColor;
-    style["--primary-foreground"] = contrastForeground(params.accentColor);
+    style["--color-primary"] = params.accentColor;
+    style["--color-primary-content"] = contrastForeground(params.accentColor);
   }
   return {
     className: params.theme === "dark" ? "dark" : "",

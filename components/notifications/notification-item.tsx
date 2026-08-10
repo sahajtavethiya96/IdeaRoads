@@ -92,7 +92,7 @@ export function NotificationItem({
   return (
     <article
       className={cn(
-        "group relative flex items-center gap-4 rounded-ir-lg border-t border-r border-b border-l-4 border-ir-border bg-ir-surface p-4 shadow-ir-xs transition-all duration-200 ease-ir-standard",
+        "group relative flex items-center gap-4 rounded-ir-lg border-t border-r border-b border-l-4 border-ir-border bg-ir-surface px-4 py-2.5 shadow-ir-xs transition-all duration-200 ease-ir-standard",
         "hover:-translate-y-0.5 hover:border-t-ir-primary/30 hover:border-r-ir-primary/30 hover:border-b-ir-primary/30 hover:shadow-ir-md",
         "has-[:focus-visible]:-translate-y-0.5 has-[:focus-visible]:shadow-ir-md has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ir-primary/40 has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-ir-background",
         isRead ? "border-l-transparent" : "border-l-ir-primary bg-ir-primary/5"
@@ -119,7 +119,7 @@ export function NotificationItem({
       {/* Content — the title itself is the single real navigation target,
           stretched via ::after to cover the whole row so the entire row
           stays clickable without nesting interactive elements. */}
-      <div className="min-w-0 flex-1 pr-16">
+      <div className="min-w-0 flex-1">
         <div className="flex items-start gap-2">
           {isRemoved ? (
             <button
@@ -155,37 +155,42 @@ export function NotificationItem({
         {isRemoved && (
           <p className="mt-1 text-sm text-base-content/60">{REMOVED_MESSAGE}</p>
         )}
-        <p className="mt-1.5 text-xs text-base-content/60">
-          <RelativeTime
-            date={notification.createdAt}
-            options={{ addSuffix: true }}
-          />
-        </p>
       </div>
 
-      {/* Hover actions — Gmail-style: mark as read (unread only) + clear,
-          layered above the stretched title link so they stay clickable. */}
-      <div className="absolute top-1/2 right-4 z-10 hidden -translate-y-1/2 items-center gap-1 group-hover:flex">
-        {!isRead && !isRemoved && (
+      {/* Time + hover actions — Gmail-style: a persistent timestamp plus
+          mark as read (unread only) and clear, layered above the stretched
+          title link so the buttons stay clickable. The action group stays
+          in flow but `invisible` until hover (rather than `hidden`) so it
+          keeps reserving its width — the row doesn't reflow when the icons
+          reveal themselves. */}
+      <div className="relative z-10 flex shrink-0 items-center gap-2">
+        <RelativeTime
+          className="text-xs whitespace-nowrap text-base-content/60"
+          date={notification.createdAt}
+          options={{ addSuffix: true }}
+        />
+        <div className="invisible flex shrink-0 items-center gap-1 group-hover:visible">
+          {!isRead && !isRemoved && (
+            <button
+              aria-label="Mark as read"
+              className="flex size-7 cursor-pointer items-center justify-center rounded-ir-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+              onClick={handleMarkReadClick}
+              title="Mark as read"
+              type="button"
+            >
+              <MailOpen className="size-3.5" />
+            </button>
+          )}
           <button
-            aria-label="Mark as read"
-            className="flex size-7 cursor-pointer items-center justify-center rounded-ir-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-            onClick={handleMarkReadClick}
-            title="Mark as read"
+            aria-label="Remove notification"
+            className="flex size-7 cursor-pointer items-center justify-center rounded-ir-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-danger/10 hover:text-ir-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+            onClick={handleRequestClear}
+            title="Remove notification"
             type="button"
           >
-            <MailOpen className="size-3.5" />
+            <Trash2 className="size-3.5" />
           </button>
-        )}
-        <button
-          aria-label="Remove notification"
-          className="flex size-7 cursor-pointer items-center justify-center rounded-ir-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-danger/10 hover:text-ir-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-          onClick={handleRequestClear}
-          title="Remove notification"
-          type="button"
-        >
-          <Trash2 className="size-3.5" />
-        </button>
+        </div>
       </div>
     </article>
   );

@@ -68,7 +68,7 @@ app/
 └── post-auth/                # Post-sign-in router (picks /orbit, /{workspace}, or /onboarding)
 
 components/                # ~182 .tsx files, organized by domain (voting/, comments/, changelog/,
-                            # roadmap/, embed/, portal/, workspace/, admin/, ui/ [shadcn primitives], …)
+                            # roadmap/, embed/, portal/, workspace/, admin/, ui/ [daisyUI + ir-* design tokens], …)
 
 lib/                        # ~118 .ts files — the domain/business-logic layer:
 ├── auth.ts / auth-client.ts # Better Auth server + client configuration
@@ -114,9 +114,9 @@ Directories requested by the template but **not present in this project**: `midd
 | Database         | PostgreSQL (via `postgres` driver); local dev uses `embedded-postgres`                                                                                | driver `^3.4.9`, embedded-postgres `18.4.0-beta.17`       |
 | ORM              | Drizzle ORM + Drizzle Kit                                                                                                                             | `^0.45.2` / `^0.31.10`                                    |
 | Authentication   | Better Auth (Magic Link, Email-OTP, Google OAuth, Admin plugin)                                                                                       | `^1.6.18`                                                 |
-| UI Library       | shadcn/ui (Radix UI + `radix-ui` + `@base-ui/react` primitives), Tailwind CSS v4                                                                      | `radix-ui ^1.5.0`, `tailwindcss ^4.3.1`                   |
+| UI Library       | daisyUI (Tailwind CSS v4 plugin) + Headless UI (JS-driven overlays: dialog, menu, listbox), Tailwind CSS v4                                            | `daisyui ^5.7.14`, `@headlessui/react ^2.2.10`, `tailwindcss ^4.3.1` |
 | State Management | React state/hooks + Server Components; no global client store (no Redux/Zustand/Jotai)                                                                | —                                                         |
-| Styling          | Tailwind CSS v4 + `tailwind-merge`, `class-variance-authority`, custom `ir-*` design tokens (`DESIGN-TOKENS.md`)                                      | —                                                         |
+| Styling          | Tailwind CSS v4 + `tailwind-merge`, custom `ir-*` design tokens (`DESIGN-TOKENS.md`)                                      | —                                                         |
 | Deployment       | Not automated — `Dockerfile.worker` exists for the worker only; no app-level Dockerfile, no hosting config found (no `vercel.json`, no k8s manifests) | **Not Implemented**                                       |
 | Package Manager  | pnpm                                                                                                                                                  | 11.6.0 (`packageManager` field)                           |
 | Background Jobs  | pg-boss (Postgres-backed queue, no Redis)                                                                                                             | `^12.19.1`                                                |
@@ -590,7 +590,8 @@ Selected notable dependencies (full list in [§3](#3-tech-stack) / `package.json
 | `better-auth` 1.6.18                            | Auth                | Actively maintained, fast-moving | Pin carefully — this project already reads deep into its internals (plugin source) to understand behavior, a sign the API surface/docs move faster than is fully comfortable |
 | `drizzle-orm` / `drizzle-kit`                   | ORM/migrations      | Actively maintained              | —                                                                                                                                                                            |
 | `pg-boss`                                       | Job queue           | Actively maintained, niche       | Good no-Redis-needed choice for this project's scale                                                                                                                         |
-| `radix-ui` / `@base-ui/react`                   | UI primitives       | Both actively maintained         | Having **both** in dependencies is worth a deliberate check — confirm this isn't accidental duplication of the same concern via two libraries                                |
+| `daisyui`                                       | UI component classes | Actively maintained             | Tailwind CSS v4 plugin; project-specific `ir-*` design tokens layer on top (`DESIGN-TOKENS.md`)                                |
+| `@headlessui/react`                             | JS-driven overlay primitives | Actively maintained     | Used only where real interaction logic (focus trap, outside-click, transitions) is needed — dialog, menu, listbox                                |
 | `quill` 2.x                                     | Rich text editor    | Maintained                       | —                                                                                                                                                                            |
 | `recharts` 3.8.0                                | Charts              | Maintained                       | Used in platform admin dashboards presumably; not deeply reviewed                                                                                                               |
 | `isomorphic-dompurify`                          | HTML sanitization   | Maintained                       | Correctly used for changelog HTML (see §14)                                                                                                                                  |
@@ -614,7 +615,7 @@ Selected notable dependencies (full list in [§3](#3-tech-stack) / `package.json
 
 ## 21. Accessibility
 
-- **Keyboard navigation:** Radix UI primitives (Dialog, Select, etc.) provide keyboard support by default for the components built on them; not independently re-verified per custom component in this review.
+- **Keyboard navigation:** Headless UI primitives (Dialog, Menu, Listbox) provide keyboard support by default for the components built on them; other controls (Tabs, Accordion, RadioGroup) are hand-built with their own keyboard handling. Not independently re-verified per custom component in this review.
 - **Screen reader support:** `aria-label`s were observed on icon-only buttons in reviewed components (e.g. vote button, comment reactions); not exhaustively audited across all 182 components.
 - **Color contrast:** Not measured (would require a rendered-page audit, out of scope for a static review).
 - **Semantic HTML:** Generally good in files reviewed (`<nav>`, `<main id="main-content">`, `<time>` with `dateTime`, proper `<button type="button">` usage).
@@ -658,8 +659,7 @@ Ranked by priority:
 5. **Medium — Documentation drift:** `docs/MASTER.md`'s feature list does not mention the embed widget at all, despite it being a fully-built, actively-developed feature with its own DB table and dozens of files. Product docs need a Feature 14 entry.
 6. **Medium — `.env.example` is incomplete** relative to `lib/env.ts` (see §10).
 7. **Low — `db:push` and `db:migrate` both available** as competing schema-change workflows (§7.3); document which is authoritative post-first-deploy.
-8. **Low — Two UI-primitive libraries** (`radix-ui` and `@base-ui/react`) present simultaneously — confirm this is intentional, not incremental migration debt left half-finished.
-9. **Process risk, not code:** an external `qa-changes-*` branch workflow has repeatedly overwritten uncommitted work on the embed feature during this review period (observed directly, multiple times). This isn't a code-quality issue, but it is actively costing engineering time and risks silently reverting a shipped fix if not addressed procedurally (commit-early, or coordinate the two workflows).
+8. **Process risk, not code:** an external `qa-changes-*` branch workflow has repeatedly overwritten uncommitted work on the embed feature during this review period (observed directly, multiple times). This isn't a code-quality issue, but it is actively costing engineering time and risks silently reverting a shipped fix if not addressed procedurally (commit-early, or coordinate the two workflows).
 
 ---
 
@@ -721,7 +721,6 @@ Present but worth flagging as **partial**:
 - Extract the repeated embed "self-heal on 401" pattern into a shared hook (§24 #4) — **Medium** effort.
 - Add automated tests for voting, comments, moderation, and — especially — the embed auth flow (§20) — **Large** effort.
 - Add sitemap.xml/robots.txt generation — **Small** effort.
-- Reconcile `radix-ui` vs `@base-ui/react` usage — **Small** effort (audit) potentially **Medium** (migration if one should be removed).
 - Update `docs/MASTER.md` to include the embed widget as a numbered feature — **Small** effort.
 
 ### Nice to Have

@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { ContentContainer } from "@/components/ui/page";
 import { SetPageHeader } from "@/components/workspace/topbar";
 import { useDirtyState } from "@/hooks/use-dirty-state";
+import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 
 interface WorkspaceStatus {
   color: string;
@@ -82,6 +83,7 @@ export function StatusList({
     name: form?.name ?? "",
     color: form?.color ?? "",
   });
+  const { guardNavigation } = useUnsavedChangesGuard(isDirty);
 
   function openCreate() {
     setForm({ ...DEFAULT_FORM });
@@ -104,6 +106,11 @@ export function StatusList({
   function closeForm() {
     setForm(null);
     setError(null);
+    // useDirtyState compares against `form?.field ?? ""` — once `form` goes
+    // back to null those computed values collapse to all-empty, so the
+    // baseline (still holding the pre-close values) must collapse the same
+    // way or isDirty falsely flips true right after a successful save.
+    markClean({ name: "", color: "" });
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -378,7 +385,10 @@ export function StatusList({
 
                   {s.isDefault && (
                     <span className="flex items-center gap-1 rounded-ir-sm border border-ir-border px-1.5 py-0.5 text-2xs font-medium text-ir-muted">
-                      <StarIcon className="size-2.5" />
+                      <StarIcon
+                        className="size-2.5 text-ir-warning"
+                        weight="fill"
+                      />
                       Default
                     </span>
                   )}
@@ -441,47 +451,54 @@ export function StatusList({
                   {canManage && (
                     <div className="flex shrink-0 items-center gap-1">
                       {!s.isDefault && (
-                        <button
+                        <Button
                           aria-label={`Set ${s.name} as default`}
-                          className="cursor-pointer rounded-ir-xs p-1.5 text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                          className="group text-ir-muted hover:text-ir-warning"
                           disabled={isPending}
                           onClick={() => handleSetDefault(s)}
+                          size="icon-xs"
                           title="Set as default"
-                          type="button"
+                          variant="ghost"
                         >
-                          <StarIcon className="size-3.5" />
-                        </button>
+                          <StarIcon className="group-hover:hidden" />
+                          <StarIcon
+                            className="hidden group-hover:block"
+                            weight="fill"
+                          />
+                        </Button>
                       )}
-                      <button
+                      <Button
                         aria-label={`Edit ${s.name}`}
-                        className="cursor-pointer rounded-ir-xs p-1.5 text-ir-primary transition-opacity duration-150 ease-ir-standard hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-                        onClick={() => openEdit(s)}
+                        className="text-ir-primary"
+                        onClick={() => guardNavigation(() => openEdit(s))}
+                        size="icon-xs"
                         title="Edit"
-                        type="button"
+                        variant="ghost"
                       >
-                        <PencilIcon className="size-3.5" />
-                      </button>
+                        <PencilIcon />
+                      </Button>
                       {!s.isSystem && (
-                        <button
+                        <Button
                           aria-label={`Archive ${s.name}`}
-                          className="cursor-pointer rounded-ir-xs p-1.5 text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
                           onClick={() => setArchiveTarget(s)}
+                          size="icon-xs"
                           title="Archive"
-                          type="button"
+                          variant="ghost"
                         >
-                          <ArchiveIcon className="size-3.5" />
-                        </button>
+                          <ArchiveIcon />
+                        </Button>
                       )}
                       {!s.isDefault && !s.isSystem && (
-                        <button
+                        <Button
                           aria-label={`Delete ${s.name}`}
-                          className="cursor-pointer rounded-ir-xs p-1.5 text-ir-danger transition-opacity duration-150 ease-ir-standard hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                          className="text-ir-danger"
                           onClick={() => setDeleteTarget(s)}
+                          size="icon-xs"
                           title="Delete"
-                          type="button"
+                          variant="ghost"
                         >
-                          <TrashIcon className="size-3.5" />
-                        </button>
+                          <TrashIcon />
+                        </Button>
                       )}
                     </div>
                   )}
@@ -518,22 +535,23 @@ export function StatusList({
                   </span>
                   {canManage && (
                     <div className="flex shrink-0 items-center gap-1 sm:ml-auto">
-                      <button
+                      <Button
                         aria-label={`Restore ${s.name}`}
-                        className="cursor-pointer rounded-ir-xs p-1.5 text-xs text-ir-muted transition-colors duration-150 ease-ir-standard hover:text-ir-heading focus-visible:outline-none"
                         onClick={() => setArchiveTarget(s)}
-                        type="button"
+                        size="xs"
+                        variant="ghost"
                       >
                         Restore
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         aria-label={`Delete ${s.name}`}
-                        className="cursor-pointer rounded-ir-xs p-1.5 text-ir-danger transition-opacity duration-150 ease-ir-standard hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                        className="text-ir-danger"
                         onClick={() => setDeleteTarget(s)}
-                        type="button"
+                        size="icon-xs"
+                        variant="ghost"
                       >
-                        <TrashIcon className="size-3.5" />
-                      </button>
+                        <TrashIcon />
+                      </Button>
                     </div>
                   )}
                 </div>

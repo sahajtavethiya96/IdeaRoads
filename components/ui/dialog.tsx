@@ -183,21 +183,22 @@ function DialogContent({
           data-slot="dialog-content"
           transition
           className={cn(
-            "relative grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] gap-6 overflow-y-auto rounded-box border border-base-300 bg-base-100 p-6 text-sm text-base-content shadow-ir-xl duration-100 data-closed:scale-95 data-closed:opacity-0 sm:max-w-md",
+            "relative grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] gap-6 overflow-y-auto rounded-ir-card border border-ir-border bg-ir-surface p-6 text-sm text-ir-body shadow-ir-xl duration-100 data-closed:scale-95 data-closed:opacity-0 sm:max-w-md",
             className
           )}
           {...props}
         >
           {children}
           {showCloseButton && (
-            <button
+            <Button
               aria-label="Close dialog"
-              className="absolute top-4 right-4 flex size-8 shrink-0 items-center justify-center rounded-md border border-base-300 bg-base-100 p-0 leading-none text-base-content/70 shadow-sm transition-all duration-200 hover:bg-base-200 hover:text-base-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="absolute top-4 right-4"
               onClick={() => setOpen(false)}
-              type="button"
+              size="icon-sm"
+              variant="outline"
             >
-              <X className="m-0 size-4 shrink-0 p-0" strokeWidth={2} />
-            </button>
+              <X strokeWidth={2} />
+            </Button>
           )}
         </DialogPanel>
       </div>
@@ -245,7 +246,7 @@ function DialogTitle({ className, ...props }: React.ComponentProps<"h2">) {
     <h2
       data-slot="dialog-title"
       className={cn(
-        "font-heading text-lg leading-none font-semibold tracking-wider text-base-content uppercase",
+        "font-heading text-lg leading-none font-semibold tracking-wider text-ir-heading uppercase",
         className
       )}
       {...props}
@@ -261,7 +262,7 @@ function DialogDescription({
     <p
       data-slot="dialog-description"
       className={cn(
-        "mt-0.5 text-sm leading-relaxed text-base-content/60 *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-primary",
+        "mt-0.5 text-sm leading-relaxed text-ir-muted *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-ir-primary",
         className
       )}
       {...props}

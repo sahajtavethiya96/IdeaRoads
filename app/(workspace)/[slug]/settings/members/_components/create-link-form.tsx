@@ -105,10 +105,13 @@ export function CreateLinkForm({
         )}
         <Button disabled={submitting} type="submit">
           {submitting ? (
-            <span className="flex items-center gap-2">
-              <SpinnerIcon className="size-4 animate-spin" />
+            <>
+              <SpinnerIcon
+                className="size-4 animate-spin"
+                data-icon="inline-start"
+              />
               Generating…
-            </span>
+            </>
           ) : (
             "Generate link"
           )}
@@ -126,15 +129,18 @@ export function CreateLinkForm({
             variant="outline"
           >
             {copied ? (
-              <span className="flex items-center gap-1.5">
-                <CheckIcon className="size-3.5 text-ir-success" />
+              <>
+                <CheckIcon
+                  className="size-3.5 text-ir-success"
+                  data-icon="inline-start"
+                />
                 Copied
-              </span>
+              </>
             ) : (
-              <span className="flex items-center gap-1.5">
-                <CopyIcon className="size-3.5" />
+              <>
+                <CopyIcon className="size-3.5" data-icon="inline-start" />
                 Copy
-              </span>
+              </>
             )}
           </Button>
         </div>

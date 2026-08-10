@@ -53,6 +53,13 @@ export const workspaces = pgTable(
     isSuspended: boolean("is_suspended").notNull().default(false),
     suspendedAt: timestamp("suspended_at", { withTimezone: true }),
     suspendedBy: text("suspended_by"),
+    // Set only for the single workspace created by the first-run `/setup`
+    // wizard (the instance's very first workspace) — cleared once its owner
+    // configures SMTP and clicks Finish/Skip on the integrations step.
+    // Workspaces created through the normal onboarding flow never set this.
+    requiresIntegrationSetup: boolean("requires_integration_setup")
+      .notNull()
+      .default(false),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

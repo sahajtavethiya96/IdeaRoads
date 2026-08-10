@@ -24,6 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDirtyState } from "@/hooks/use-dirty-state";
+import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 
 const initialState: ActionState = {};
 const initialAvatarState: AvatarActionState = {};
@@ -208,6 +209,7 @@ export function AccountIdentityForms({
   const { isDirty: emailDirty, markClean: markEmailClean } = useDirtyState({
     email: emailValue,
   });
+  useUnsavedChangesGuard(nameDirty || emailDirty);
 
   useEffect(() => {
     if (nameState.success && nameState.name !== undefined) {

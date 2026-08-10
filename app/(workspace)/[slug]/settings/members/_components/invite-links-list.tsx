@@ -101,11 +101,14 @@ export function InviteLinksList({
                     variant="ghost"
                   >
                     {revoking === link.id ? (
-                      <SpinnerIcon className="size-4 animate-spin" />
+                      <SpinnerIcon
+                        className="size-4 animate-spin"
+                        data-icon="inline-start"
+                      />
                     ) : (
-                      <XIcon className="size-4" />
+                      <XIcon className="size-4" data-icon="inline-start" />
                     )}
-                    <span className="ml-1.5">Deactivate</span>
+                    <span>Deactivate</span>
                   </Button>
                 )}
               </div>

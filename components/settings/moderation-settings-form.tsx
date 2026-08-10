@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { useDirtyState } from "@/hooks/use-dirty-state";
+import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 
 // Arrays aren't reference-comparable, so dirty-tracking compares a stable,
 // order-independent string form of the keyword list instead.
@@ -59,6 +60,7 @@ export function ModerationSettingsForm({
     commentMod,
     keywords: keywordsKey(keywords),
   });
+  useUnsavedChangesGuard(isDirty);
 
   function addKeyword(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key !== "Enter" && e.key !== ",") {

@@ -37,7 +37,7 @@ export function IntegrationCard({
 
   return (
     <AccordionItem value={value}>
-      <AccordionTrigger className="items-center px-5 hover:no-underline focus-visible:mx-1 focus-visible:w-[calc(100%-0.5rem)]">
+      <AccordionTrigger className="items-center px-5 py-3 hover:no-underline focus-visible:mx-1 focus-visible:w-[calc(100%-0.5rem)]">
         <span className="flex min-w-0 flex-1 items-center justify-between gap-4">
           <span className="flex min-w-0 items-center gap-3">
             <span className="flex size-9 shrink-0 items-center justify-center rounded-ir-md bg-ir-muted-surface text-ir-heading">
@@ -60,7 +60,7 @@ export function IntegrationCard({
           </span>
         </span>
       </AccordionTrigger>
-      <AccordionContent className="px-5 pb-5">{children}</AccordionContent>
+      <AccordionContent className="px-5 pb-4">{children}</AccordionContent>
     </AccordionItem>
   );
 }

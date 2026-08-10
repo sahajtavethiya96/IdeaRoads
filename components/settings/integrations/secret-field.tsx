@@ -63,7 +63,7 @@ export function SecretField({
         </span>
         {hasValue && !cleared && (
           <button
-            className="cursor-pointer text-xs font-medium text-ir-muted hover:text-ir-danger"
+            className="cursor-pointer rounded-ir-xs text-xs font-medium text-ir-muted hover:text-ir-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
             onClick={onClear}
             type="button"
           >

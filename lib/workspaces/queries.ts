@@ -59,6 +59,24 @@ export async function getUserWorkspaces(userId: string) {
     .orderBy(asc(workspaces.name));
 }
 
+// Used by /setup to resume the first-run wizard's integrations step after an
+// interrupted session (tab closed, sign-out) — the owner still has a
+// workspace stuck mid-bootstrap, so route them back to finish it instead of
+// /signin. See workspaces.requiresIntegrationSetup.
+export async function getIncompleteBootstrapWorkspace(userId: string) {
+  const [workspace] = await db
+    .select()
+    .from(workspaces)
+    .where(
+      and(
+        eq(workspaces.ownerId, userId),
+        eq(workspaces.requiresIntegrationSetup, true)
+      )
+    )
+    .limit(1);
+  return workspace ?? null;
+}
+
 export async function getFirstUserWorkspace(userId: string) {
   const [row] = await db
     .select({

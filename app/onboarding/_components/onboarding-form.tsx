@@ -168,7 +168,7 @@ export function OnboardingForm({
   const slugFeedback = (() => {
     if (slugState === "checking") {
       return (
-        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1 text-xs text-base-content/60">
           <Loader2 className="size-3 animate-spin" />
           Checking…
         </span>
@@ -184,7 +184,7 @@ export function OnboardingForm({
     }
     if (slugState === "taken" || slugState === "invalid") {
       return (
-        <span className="flex items-center gap-1 text-xs text-destructive">
+        <span className="flex items-center gap-1 text-xs text-error">
           <XCircle className="size-3" />
           {slugMessage}
         </span>
@@ -192,7 +192,7 @@ export function OnboardingForm({
     }
     if (slug) {
       return (
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-base-content/60">
           {appHost}/{slug}
         </span>
       );
@@ -210,7 +210,7 @@ export function OnboardingForm({
     <main className="grid min-h-screen place-items-center bg-page px-4 py-4">
       <div className="w-full max-w-lg">
         <Link
-          className="mb-5 flex justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="mb-5 flex justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           href="/"
         >
           <Image
@@ -238,14 +238,14 @@ export function OnboardingForm({
           <CardContent>
             <form className="space-y-6" onSubmit={onSubmit}>
               {generalError && (
-                <p className="bg-destructive/10 p-3 text-sm text-destructive">
+                <p className="bg-error/10 p-3 text-sm text-error">
                   {generalError}
                 </p>
               )}
 
               <div className="space-y-1">
                 <label
-                  className="block text-sm font-semibold text-foreground"
+                  className="block text-sm font-semibold text-base-content"
                   htmlFor="workspace-name"
                 >
                   Workspace name
@@ -264,22 +264,20 @@ export function OnboardingForm({
                   type="text"
                   value={name}
                 />
-                {nameError && (
-                  <p className="text-xs text-destructive">{nameError}</p>
-                )}
+                {nameError && <p className="text-xs text-error">{nameError}</p>}
               </div>
 
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <label
-                    className="block text-sm font-semibold text-foreground"
+                    className="block text-sm font-semibold text-base-content"
                     htmlFor="workspace-slug"
                   >
                     Workspace URL
                   </label>
                   {slugLocked && (
                     <button
-                      className="cursor-pointer text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors duration-150"
+                      className="cursor-pointer rounded-ir-xs text-xs text-base-content/60 underline underline-offset-2 transition-colors duration-150 hover:text-base-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
                       onClick={resetSlugToAuto}
                       type="button"
                     >
@@ -302,11 +300,11 @@ export function OnboardingForm({
 
               <div className="space-y-1">
                 <label
-                  className="block text-sm font-semibold text-foreground"
+                  className="block text-sm font-semibold text-base-content"
                   htmlFor="workspace-description"
                 >
                   Description{" "}
-                  <span className="font-normal text-muted-foreground">
+                  <span className="font-normal text-base-content/60">
                     (optional)
                   </span>
                 </label>

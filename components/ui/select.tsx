@@ -1,108 +1,193 @@
 "use client"
 
 import * as React from "react"
-import { Select as SelectPrimitive } from "radix-ui"
+import {
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
+} from "@headlessui/react"
+import {
+  autoUpdate,
+  flip,
+  offset,
+  shift,
+  size as floatingSize,
+  useFloating,
+} from "@floating-ui/react"
+import { CaretUpDownIcon, CheckIcon } from "@phosphor-icons/react"
 
 import { cn } from "@/lib/utils"
-import { CaretDownIcon, CaretUpDownIcon, CheckIcon, CaretUpIcon } from "@phosphor-icons/react"
+
+type SelectItemData = {
+  value: string
+  label: React.ReactNode
+  disabled?: boolean
+}
+
+// The open list used to be the browser's own native <select> popup (see git
+// history) — its item highlight is drawn by the OS/browser and can't be
+// restyled with CSS, so it always showed the platform's default blue
+// selection color no matter what the rest of the app looked like. This is
+// now a real Listbox-backed popup (same floating-ui positioning approach as
+// DropdownMenuContent, see the comment there on why not Headless UI's own
+// `anchor` prop), so every state below is plain, themeable CSS.
+const SelectContext = React.createContext<{
+  value?: string
+  items: SelectItemData[]
+  open: boolean
+  referenceElement: HTMLElement | null
+  setReferenceElement: (element: HTMLElement | null) => void
+} | null>(null)
+
+function useSelectContext(component: string) {
+  const ctx = React.useContext(SelectContext)
+  if (!ctx) {
+    throw new Error(`<${component}> must be used within <Select>`)
+  }
+  return ctx
+}
+
+function collectItems(children: React.ReactNode): SelectItemData[] {
+  const items: SelectItemData[] = []
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) {
+      return
+    }
+    if (child.type === SelectItem) {
+      const props = child.props as {
+        value: string
+        children?: React.ReactNode
+        disabled?: boolean
+      }
+      items.push({
+        value: props.value,
+        label: props.children,
+        disabled: props.disabled,
+      })
+      return
+    }
+    const nested = (child.props as { children?: React.ReactNode })?.children
+    if (nested) {
+      items.push(...collectItems(nested))
+    }
+  })
+  return items
+}
 
 function Select({
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Root>) {
-  return <SelectPrimitive.Root data-slot="select" {...props} />
-}
-
-function SelectGroup({
-  className,
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Group>) {
-  return (
-    <SelectPrimitive.Group
-      data-slot="select-group"
-      className={cn("scroll-my-1.5 p-1.5", className)}
-      {...props}
-    />
-  )
-}
-
-function SelectValue({
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Value>) {
-  return <SelectPrimitive.Value data-slot="select-value" {...props} />
-}
-
-function SelectTrigger({
-  className,
-  size = "default",
+  value,
+  onValueChange,
+  disabled,
   children,
-  showChevron = true,
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Trigger> & {
-  showChevron?: boolean
-  size?: "sm" | "default" | "lg"
+}: {
+  value?: string
+  onValueChange?: (value: string) => void
+  disabled?: boolean
+  children: React.ReactNode
 }) {
+  const items = React.useMemo(() => collectItems(children), [children])
+  const [referenceElement, setReferenceElement] =
+    React.useState<HTMLElement | null>(null)
+
   return (
-    <SelectPrimitive.Trigger
-      data-slot="select-trigger"
-      data-size={size}
-      className={cn(
-        "flex w-fit items-center justify-between gap-1.5 rounded-ir-input border border-ir-border bg-ir-surface px-3 py-2 text-sm whitespace-nowrap text-ir-body shadow-ir-xs transition-[color,border-color,box-shadow] duration-150 ease-ir-standard outline-none hover:border-ir-primary/40 focus-visible:border-ir-primary focus-visible:ring-2 focus-visible:ring-ir-primary/20 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-ir-border aria-invalid:border-ir-danger aria-invalid:focus-visible:ring-ir-danger/20 data-placeholder:text-ir-muted data-[size=default]:h-10 data-[size=lg]:h-12 data-[size=sm]:h-9 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 dark:aria-invalid:border-ir-danger/50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
-        className
-      )}
-      {...props}
+    <Listbox
+      as="div"
+      className="contents"
+      data-slot="select"
+      disabled={disabled}
+      onChange={(next: string) => onValueChange?.(next)}
+      value={value ?? ""}
     >
-      {children}
-      {showChevron && (
-        <SelectPrimitive.Icon asChild>
-          <CaretUpDownIcon className="pointer-events-none size-3.5 text-ir-muted" />
-        </SelectPrimitive.Icon>
+      {({ open }) => (
+        <SelectContext.Provider
+          value={{ value, items, open, referenceElement, setReferenceElement }}
+        >
+          {children}
+        </SelectContext.Provider>
       )}
-    </SelectPrimitive.Trigger>
+    </Listbox>
   )
 }
+
+// Mirrors DropdownMenuContent's PLACEMENT_MAP (components/ui/dropdown-menu.tsx)
+// so every floating-ui-backed overlay in this app resolves side/align the
+// same way.
+const PLACEMENT_MAP = {
+  top: { start: "top-start", end: "top-end", center: "top" },
+  bottom: { start: "bottom-start", end: "bottom-end", center: "bottom" },
+  left: { start: "left-start", end: "left-end", center: "left" },
+  right: { start: "right-start", end: "right-end", center: "right" },
+} as const
 
 function SelectContent({
   className,
   children,
-  position = "popper",
   align = "start",
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Content>) {
+  side = "bottom",
+  sideOffset = 4,
+}: {
+  className?: string
+  children: React.ReactNode
+  align?: "start" | "end" | "center"
+  side?: "top" | "bottom" | "left" | "right"
+  sideOffset?: number
+}) {
+  const { open, referenceElement } = useSelectContext("SelectContent")
+
+  const { refs, floatingStyles } = useFloating({
+    open,
+    placement: PLACEMENT_MAP[side][align],
+    strategy: "fixed",
+    elements: { reference: referenceElement },
+    whileElementsMounted: autoUpdate,
+    middleware: [
+      offset(sideOffset),
+      flip({ padding: 8 }),
+      shift({ padding: 8 }),
+      floatingSize({
+        padding: 8,
+        apply({ availableHeight, elements, rects }) {
+          Object.assign(elements.floating.style, {
+            maxHeight: `${availableHeight}px`,
+            minWidth: `${rects.reference.width}px`,
+          })
+        },
+      }),
+    ],
+  })
+
   return (
-    <SelectPrimitive.Portal>
-      <SelectPrimitive.Content
-        data-slot="select-content"
-        data-align-trigger={position === "item-aligned"}
-        className={cn("relative z-50 max-h-(--radix-select-content-available-height) min-w-36 origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-ir-md border border-ir-border bg-ir-surface p-1.5 text-ir-body shadow-ir-lg duration-100 data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95", position ==="popper"&&"data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1", className )}
-        position={position}
-        align={align}
-        {...props}
-      >
-        <SelectScrollUpButton />
-        <SelectPrimitive.Viewport
-          data-position={position}
-          className={cn(
-            "data-[position=popper]:h-(--radix-select-trigger-height) data-[position=popper]:w-full data-[position=popper]:min-w-(--radix-select-trigger-width)",
-            position === "popper" && ""
-          )}
-        >
-          {children}
-        </SelectPrimitive.Viewport>
-        <SelectScrollDownButton />
-      </SelectPrimitive.Content>
-    </SelectPrimitive.Portal>
+    <ListboxOptions
+      data-slot="select-content"
+      modal={false}
+      portal
+      ref={refs.setFloating}
+      style={floatingStyles}
+      transition
+      className={cn(
+        "z-50 overflow-x-hidden overflow-y-auto rounded-ir-md border border-ir-border bg-ir-surface p-1.5 text-ir-body shadow-ir-lg outline-hidden transition duration-100 ease-out data-closed:scale-95 data-closed:opacity-0",
+        className
+      )}
+    >
+      {children}
+    </ListboxOptions>
   )
+}
+
+function SelectGroup({ children }: { children: React.ReactNode }) {
+  return <div data-slot="select-group">{children}</div>
 }
 
 function SelectLabel({
   className,
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Label>) {
+}: React.ComponentProps<"div">) {
   return (
-    <SelectPrimitive.Label
+    <div
       data-slot="select-label"
       className={cn(
-        "px-3 py-2 text-xs font-semibold tracking-wider text-ir-muted uppercase",
+        "px-3 py-1.5 text-xs font-semibold text-ir-muted",
         className
       )}
       {...props}
@@ -111,80 +196,103 @@ function SelectLabel({
 }
 
 function SelectItem({
-  className,
+  value,
   children,
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Item>) {
+  disabled,
+}: {
+  value: string
+  children: React.ReactNode
+  disabled?: boolean
+}) {
   return (
-    <SelectPrimitive.Item
+    <ListboxOption
       data-slot="select-item"
-      className={cn(
-        "relative flex w-full cursor-default items-center gap-2.5 rounded-ir-sm py-2 pr-8 pl-3 text-sm text-ir-body outline-hidden transition-colors duration-100 select-none not-data-[state=checked]:focus:bg-ir-muted-surface data-[state=checked]:bg-ir-primary-light/20 data-[state=checked]:text-ir-primary data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2 not-last:mb-1",
-        className
-      )}
-      {...props}
+      className="relative flex cursor-pointer items-center gap-2.5 rounded-ir-sm px-3 py-2 text-sm text-ir-body outline-hidden transition-colors duration-100 ease-ir-standard select-none not-data-selected:data-focus:bg-ir-muted-surface data-selected:bg-ir-primary-light/20 data-selected:font-medium data-selected:text-ir-primary data-disabled:pointer-events-none data-disabled:opacity-50 not-last:mb-0.5"
+      disabled={disabled}
+      value={value}
     >
-      <span className="pointer-events-none absolute right-2 flex size-4 items-center justify-center">
-        <SelectPrimitive.ItemIndicator>
-          <CheckIcon className="pointer-events-none" />
-        </SelectPrimitive.ItemIndicator>
-      </span>
-      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
-    </SelectPrimitive.Item>
+      {({ selected }) => (
+        <>
+          <span className="flex-1 truncate">{children}</span>
+          {selected && (
+            <CheckIcon className="size-3.5 shrink-0 text-ir-primary" />
+          )}
+        </>
+      )}
+    </ListboxOption>
   )
 }
 
 function SelectSeparator({
   className,
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Separator>) {
+}: React.ComponentProps<"div">) {
   return (
-    <SelectPrimitive.Separator
+    <div
       data-slot="select-separator"
-      className={cn(
-        "pointer-events-none -mx-1.5 my-1.5 h-px bg-ir-border",
-        className
-      )}
+      className={cn("-mx-1 my-1 h-px bg-ir-border", className)}
       {...props}
     />
   )
 }
 
-function SelectScrollUpButton({
+function SelectValue({
+  placeholder,
   className,
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.ScrollUpButton>) {
+}: React.ComponentProps<"span"> & { placeholder?: string }) {
+  const ctx = useSelectContext("SelectValue")
+  const selected = ctx.items.find((item) => item.value === ctx.value)
   return (
-    <SelectPrimitive.ScrollUpButton
-      data-slot="select-scroll-up-button"
-      className={cn(
-        "z-10 flex cursor-default items-center justify-center bg-ir-surface py-1 text-ir-muted [&_svg:not([class*='size-'])]:size-3.5",
-        className
-      )}
+    <span
+      data-slot="select-value"
+      className={cn(!selected && "text-ir-muted", className)}
       {...props}
     >
-      <CaretUpIcon
-      />
-    </SelectPrimitive.ScrollUpButton>
+      {selected ? selected.label : placeholder}
+    </span>
   )
 }
 
-function SelectScrollDownButton({
+function SelectTrigger({
   className,
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.ScrollDownButton>) {
+  children,
+  size = "default",
+  showChevron = true,
+  id,
+  style,
+  "aria-invalid": ariaInvalid,
+}: {
+  className?: string
+  children?: React.ReactNode
+  size?: "sm" | "default" | "lg"
+  showChevron?: boolean
+  id?: string
+  style?: React.CSSProperties
+  "aria-invalid"?: React.AriaAttributes["aria-invalid"]
+}) {
+  const ctx = useSelectContext("SelectTrigger")
+  const hasValue = ctx.items.some((item) => item.value === ctx.value)
+
   return (
-    <SelectPrimitive.ScrollDownButton
-      data-slot="select-scroll-down-button"
+    <ListboxButton
+      aria-invalid={ariaInvalid}
+      data-placeholder={hasValue ? undefined : ""}
+      data-size={size}
+      data-slot="select-trigger"
+      id={id}
+      ref={ctx.setReferenceElement}
+      style={style}
       className={cn(
-        "z-10 flex cursor-default items-center justify-center bg-ir-surface py-1 text-ir-muted [&_svg:not([class*='size-'])]:size-3.5",
+        "select relative flex w-fit items-center justify-between gap-1.5 rounded-ir-input border border-ir-border bg-ir-surface bg-none px-3 py-2 text-sm whitespace-nowrap text-ir-body shadow-ir-xs transition-[color,border-color,box-shadow] duration-150 ease-ir-standard outline-none hover:border-ir-primary/40 focus-visible:border-ir-primary focus-visible:ring-2 focus-visible:ring-ir-primary/20 data-open:border-ir-primary data-open:ring-2 data-open:ring-ir-primary/20 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-ir-border aria-invalid:border-ir-danger aria-invalid:focus-visible:ring-ir-danger/20 data-placeholder:text-ir-muted data-[size=default]:h-10 data-[size=lg]:h-12 data-[size=sm]:h-9 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 dark:aria-invalid:border-ir-danger/50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
         className
       )}
-      {...props}
     >
-      <CaretDownIcon
-      />
-    </SelectPrimitive.ScrollDownButton>
+      {children}
+      {showChevron && (
+        <CaretUpDownIcon className="pointer-events-none size-3.5 shrink-0 text-ir-muted" />
+      )}
+    </ListboxButton>
   )
 }
 
@@ -194,8 +302,6 @@ export {
   SelectGroup,
   SelectItem,
   SelectLabel,
-  SelectScrollDownButton,
-  SelectScrollUpButton,
   SelectSeparator,
   SelectTrigger,
   SelectValue,

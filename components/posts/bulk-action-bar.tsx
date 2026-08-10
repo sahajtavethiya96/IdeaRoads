@@ -210,14 +210,15 @@ export function BulkActionBar({
               <TrashIcon data-icon="inline-start" />
               Delete
             </Button>
-            <button
+            <Button
               aria-label="Clear selection"
-              className="ml-auto flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-ir-sm text-ir-muted transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface hover:text-ir-heading"
+              className="ml-auto"
               onClick={clearSelection}
-              type="button"
+              size="icon-xs"
+              variant="ghost"
             >
-              <XIcon className="size-4" />
-            </button>
+              <XIcon />
+            </Button>
           </motion.div>
         )}
       </AnimatePresence>

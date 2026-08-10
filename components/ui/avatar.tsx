@@ -1,41 +1,76 @@
 "use client"
 
 import * as React from "react"
-import { Avatar as AvatarPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
+
+const AvatarContext = React.createContext<{
+  imageLoaded: boolean
+  setImageLoaded: (loaded: boolean) => void
+}>({ imageLoaded: false, setImageLoaded: () => {} })
 
 function Avatar({
   className,
   size = "default",
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Root> & {
+}: React.ComponentProps<"div"> & {
   size?: "default" | "sm" | "lg"
 }) {
+  const [imageLoaded, setImageLoaded] = React.useState(false)
   return (
-    <AvatarPrimitive.Root
-      data-slot="avatar"
-      data-size={size}
-      className={cn(
-        "group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-ir-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
-        className
-      )}
-      {...props}
-    />
+    <AvatarContext.Provider value={{ imageLoaded, setImageLoaded }}>
+      <div
+        data-slot="avatar"
+        data-size={size}
+        className={cn(
+          "avatar group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-ir-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
+          className
+        )}
+        {...props}
+      />
+    </AvatarContext.Provider>
   )
 }
 
 function AvatarImage({
   className,
+  onLoad,
+  onError,
+  alt = "",
+  src,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+}: React.ComponentProps<"img">) {
+  const { imageLoaded, setImageLoaded } = React.useContext(AvatarContext)
+  const imgRef = React.useRef<HTMLImageElement>(null)
+
+  React.useEffect(() => {
+    setImageLoaded(false)
+    const img = imgRef.current
+    if (img?.complete && img.naturalWidth > 0) {
+      setImageLoaded(true)
+    }
+    // biome-ignore lint/correctness/useExhaustiveDependencies: reset load state when the source changes
+  }, [src])
+
   return (
-    <AvatarPrimitive.Image
+    <img
+      ref={imgRef}
       data-slot="avatar-image"
+      alt={alt}
+      src={src}
       className={cn(
         "aspect-square size-full rounded-full object-cover",
+        !imageLoaded && "hidden",
         className
       )}
+      onLoad={(event) => {
+        setImageLoaded(true)
+        onLoad?.(event)
+      }}
+      onError={(event) => {
+        setImageLoaded(false)
+        onError?.(event)
+      }}
       {...props}
     />
   )
@@ -44,9 +79,13 @@ function AvatarImage({
 function AvatarFallback({
   className,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+}: React.ComponentProps<"div">) {
+  const { imageLoaded } = React.useContext(AvatarContext)
+  if (imageLoaded) {
+    return null
+  }
   return (
-    <AvatarPrimitive.Fallback
+    <div
       data-slot="avatar-fallback"
       className={cn(
         "flex size-full items-center justify-center rounded-full bg-ir-muted-surface text-sm text-ir-muted group-data-[size=sm]/avatar:text-xs",

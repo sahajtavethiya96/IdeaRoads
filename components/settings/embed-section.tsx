@@ -22,6 +22,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDirtyState } from "@/hooks/use-dirty-state";
+import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import type {
   EmbedButtonType,
   EmbedDeviceVisibility,
@@ -313,6 +314,7 @@ export function EmbedSection({
     theme,
     width,
   });
+  useUnsavedChangesGuard(isDirty);
 
   const widthNum = Number(width) || initialConfig.width;
   const heightNum = Number(height) || initialConfig.height;
