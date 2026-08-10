@@ -85,6 +85,7 @@ function AuthFormInner({
   const { data: session, isPending } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -119,6 +120,7 @@ function AuthFormInner({
   }
 
   async function sendMagicLink() {
+    setEmailError(null);
     setFormError(null);
 
     // The "magic link" button sits outside the form's submit flow, so the
@@ -126,7 +128,7 @@ function AuthFormInner({
     // for it — validate here instead of letting an empty/invalid email
     // reach the API and surface a raw backend error.
     if (!EMAIL_PATTERN.test(email)) {
-      setFormError("Please enter a valid email address.");
+      setEmailError("Please enter a valid email address.");
       return;
     }
 
@@ -145,6 +147,7 @@ function AuthFormInner({
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setEmailError(null);
     setFormError(null);
 
     // Password auth disabled → the form's only job is to request a magic link.
@@ -167,6 +170,7 @@ function AuthFormInner({
   }
 
   async function handleGoogleSignIn() {
+    setEmailError(null);
     setFormError(null);
     setGoogleLoading(true);
     try {
@@ -286,6 +290,11 @@ function AuthFormInner({
                       type="email"
                       value={email}
                     />
+                    {emailError && (
+                      <p className="mt-1.5 text-sm text-ir-danger">
+                        {emailError}
+                      </p>
+                    )}
                   </label>
 
                   {passwordEnabled && (

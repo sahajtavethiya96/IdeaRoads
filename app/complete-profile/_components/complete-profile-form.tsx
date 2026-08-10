@@ -9,6 +9,7 @@ import {
 } from "@/app/actions/profile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import {
   LOGO_PATH,
   MIN_PASSWORD_LENGTH,
@@ -93,7 +94,7 @@ export function CompleteProfileForm({
                 <span className="mb-1.5 block text-sm font-semibold text-ir-heading">
                   Password
                 </span>
-                <Input
+                <PasswordInput
                   autoComplete="new-password"
                   autoFocus={!needsProfile}
                   id="complete-profile-password"
@@ -101,7 +102,6 @@ export function CompleteProfileForm({
                   name="password"
                   placeholder="Create a password"
                   required
-                  type="password"
                 />
                 <span className="mt-1 block text-xs text-ir-muted">
                   At least {MIN_PASSWORD_LENGTH} characters.
@@ -112,14 +112,13 @@ export function CompleteProfileForm({
                 <span className="mb-1.5 block text-sm font-semibold text-ir-heading">
                   Confirm password
                 </span>
-                <Input
+                <PasswordInput
                   autoComplete="new-password"
                   id="complete-profile-confirm"
                   minLength={MIN_PASSWORD_LENGTH}
                   name="confirmPassword"
                   placeholder="Re-enter your password"
                   required
-                  type="password"
                 />
               </label>
             </>
