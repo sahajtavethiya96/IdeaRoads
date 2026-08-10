@@ -1,8 +1,8 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { REACTION_EMOJIS } from "@/config/platform";
 import {
-  changelogComments,
   changelogCommentReactions,
+  changelogComments,
   changelogEntryReactions,
 } from "@/db/schema";
 import { user } from "@/db/schema/auth";

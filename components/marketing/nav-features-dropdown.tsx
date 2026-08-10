@@ -57,11 +57,7 @@ export function NavFeaturesDropdown() {
         </motion.span>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent
-        align="start"
-        className="w-72 p-1.5"
-        sideOffset={8}
-      >
+      <DropdownMenuContent align="start" className="w-72 p-1.5" sideOffset={8}>
         {FEATURE_LINKS.map(({ icon: Icon, label, tagline, href }) => (
           <DropdownMenuItem
             asChild
@@ -73,9 +69,7 @@ export function NavFeaturesDropdown() {
                 <Icon aria-hidden="true" className="size-3.5" />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-ir-heading">
-                  {label}
-                </p>
+                <p className="text-sm font-semibold text-ir-heading">{label}</p>
                 <p className="mt-0.5 text-xs leading-4 font-normal text-ir-muted">
                   {tagline}
                 </p>

@@ -32,9 +32,7 @@ export default async function OnboardingPage({
     // No workspace, but a Brand Admin already invited this address — send
     // them to finish accepting rather than let them create a separate
     // workspace of their own. Mirrors the same guard in /post-auth.
-    const inviteToken = await getPendingInviteTokenForEmail(
-      session.user.email
-    );
+    const inviteToken = await getPendingInviteTokenForEmail(session.user.email);
     if (inviteToken) {
       redirect(`/invite/${inviteToken}`);
     }

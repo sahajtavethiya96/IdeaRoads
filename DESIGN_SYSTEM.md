@@ -8,13 +8,18 @@ All generated UI must follow these rules.
 
 If this file conflicts with CLAUDE.md, DESIGN_SYSTEM.md takes precedence for implementation details.
 
+The app runs on **daisyUI 5** (Tailwind v4, CSS-first config in `app/globals.css`), plus a
+product-specific token layer, **`ir-*`** (defined in `app/design-tokens.css`, documented in
+`DESIGN-TOKENS.md`), that a surface adopts as it gets a design pass. Component *behavior*
+(dialogs, menus, comboboxes, positioning) comes from Headless UI / `@floating-ui/react` / `cmdk`
+— never from a styling library. See `docs/migration/02-daisyui-migration-audit.md` for the
+full audit of what has and hasn't adopted this system yet.
+
 ---
 
 # Design Tokens
 
-Always use design system tokens.
-
-Never hardcode colors.
+Always use design system tokens. Never hardcode colors.
 
 Forbidden:
 
@@ -23,28 +28,33 @@ Forbidden:
 * border-[#...]
 * rgb(...)
 * hsl(...)
+* raw Tailwind palette classes (`bg-amber-50`, `text-gray-900`, `border-red-400`, etc.)
 
-Use approved tokens only.
+Use approved tokens only — either the daisyUI semantic layer or the `ir-*` product layer,
+depending on which one the surface you're touching already uses. Don't mix an `ir-*` background
+with a daisyUI-token border on the same element; match whatever the surrounding component uses.
 
-Examples:
+**daisyUI semantic tokens** (default for anything not yet on the `ir-*` layer):
 
-* bg-background
-* bg-card
-* bg-primary
-* bg-accent
-* text-foreground
-* text-muted-foreground
-* border-border
-* bg-destructive
-* text-destructive
+* bg-base-100 / bg-base-200 / bg-base-300
+* text-base-content / text-base-content/60 (muted)
+* bg-primary / text-primary / text-primary-content
+* border-base-300
+* bg-error / text-error, bg-warning / text-warning, bg-success / text-success
+
+**`ir-*` product tokens** (once a surface has adopted the redesign — see `DESIGN-TOKENS.md`):
+
+* bg-ir-surface / bg-ir-background / bg-ir-muted-surface
+* text-ir-heading / text-ir-body / text-ir-muted
+* bg-ir-primary / text-ir-primary / text-ir-primary-foreground
+* border-ir-border
+* bg-ir-success, bg-ir-warning, bg-ir-danger (+ `-foreground` variants for tinted-surface text)
 
 ---
 
 # Border Radius
 
-Only use approved radius tokens.
-
-Do not use arbitrary values.
+Only use approved radius tokens. Do not use arbitrary values.
 
 Forbidden:
 
@@ -54,11 +64,8 @@ Forbidden:
 
 Use:
 
-* --radius-xs
-* --radius-sm
-* --radius-md
-* --radius-lg
-* --radius-xl
+* **daisyUI**: `rounded-box` (cards/panels), `rounded-field` (inputs/buttons), `rounded-selector` (checkboxes/toggles/badges) — these track the active daisyUI theme's radius variables.
+* **`ir-*` scale** (once a surface adopts it): `rounded-ir-xs` … `rounded-ir-xl`, `rounded-ir-full`, plus the component aliases `rounded-ir-button`, `rounded-ir-input`, `rounded-ir-card`.
 
 ---
 
@@ -81,16 +88,19 @@ Exception:
 
 # Shadows
 
-Do not use shadows unless explicitly required.
+Use the `ir-*` shadow scale for elevation — subtle, single/double-layer shadows, not the
+"oversized shadow" pattern CLAUDE.md's design philosophy warns against.
+
+Use:
+
+* shadow-ir-xs — default resting elevation for cards/panels
+* shadow-ir-sm / shadow-ir-md — hover or raised state
+* shadow-ir-lg / shadow-ir-xl — overlays, popovers, modals
 
 Forbidden:
 
-* shadow-sm
-* shadow-md
-* shadow-lg
-* shadow-xl
-
-Use borders, spacing, and hierarchy instead.
+* Bare Tailwind shadow-sm/md/lg/xl/2xl (bypasses the token scale)
+* Arbitrary shadow values (`shadow-[0_4px_12px_rgba(...)]`)
 
 ---
 
@@ -100,7 +110,8 @@ Use project font variables only.
 
 Examples:
 
-* font-sans
+* font-sans (Inter — current site-wide default)
+* font-ir-sans / font-ir-mono (Geist — opt-in per component as surfaces adopt the `ir-*` layer)
 * font-mono
 
 Do not use:
@@ -140,7 +151,8 @@ Prefer:
 * 10
 * 12
 
-Spacing should feel systematic.
+Spacing should feel systematic. Once a surface adopts the `ir-*` layer, prefer the matching
+`p-ir-*` / `gap-ir-*` / `m-ir-*` scale instead (see `DESIGN-TOKENS.md`).
 
 ---
 
@@ -148,11 +160,17 @@ Spacing should feel systematic.
 
 Interactive elements must support keyboard navigation.
 
-Preferred pattern:
+Preferred pattern (daisyUI layer):
 
 focus-visible:outline-none
 focus-visible:ring-2
-focus-visible:ring-ring
+focus-visible:ring-primary/30
+
+`ir-*` layer equivalent:
+
+focus-visible:outline-none
+focus-visible:ring-2
+focus-visible:ring-ir-primary/40
 
 ---
 
@@ -186,11 +204,12 @@ Use a consistent icon system.
 
 Recommended:
 
-* Lucide React
+* Phosphor Icons (`@phosphor-icons/react`) — the icon set in active use across the app.
 
-Use consistent sizing across similar UI patterns.
+`lucide-react` remains a dependency for a small number of not-yet-migrated call sites; don't add
+new usages of it — new UI should import from `@phosphor-icons/react`.
 
-Avoid arbitrary icon dimensions.
+Use consistent sizing across similar UI patterns. Avoid arbitrary icon dimensions.
 
 ---
 
@@ -214,7 +233,7 @@ must always be provided.
 
 # Loading States
 
-Use skeleton screens whenever possible.
+Use skeleton screens whenever possible (`components/ui/skeleton.tsx`, daisyUI `skeleton` class).
 
 Skeletons should resemble the final layout.
 
@@ -258,7 +277,8 @@ Error messages should:
 
 # Dialogs
 
-Use proper dialog components.
+Use `components/ui/dialog.tsx` / `sheet.tsx` (Headless UI `Dialog` for behavior, daisyUI/Tailwind
+for styling).
 
 Avoid:
 
@@ -276,7 +296,7 @@ Dialogs should include:
 
 # Tooltips
 
-Use the project's approved tooltip component.
+Use `components/ui/tooltip.tsx` — a CSS-only daisyUI `tooltip` implementation, no JS library.
 
 Do not build custom tooltip implementations.
 

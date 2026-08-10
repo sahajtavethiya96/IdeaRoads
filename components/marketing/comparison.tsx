@@ -84,10 +84,14 @@ export function Comparison() {
               <tbody>
                 {ROWS.map(({ feature, ir, canny, check }, index) => {
                   const rowBorder =
-                    index === ROWS.length - 1 ? "" : "border-b border-ir-border";
+                    index === ROWS.length - 1
+                      ? ""
+                      : "border-b border-ir-border";
                   return (
                     <tr key={feature}>
-                      <td className={`px-4 py-3 text-sm font-medium text-ir-heading ${rowBorder}`}>
+                      <td
+                        className={`px-4 py-3 text-sm font-medium text-ir-heading ${rowBorder}`}
+                      >
                         {feature}
                       </td>
                       <td

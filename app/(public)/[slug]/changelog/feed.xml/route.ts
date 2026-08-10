@@ -12,7 +12,7 @@ export async function GET(
   const { slug } = await params;
 
   const workspace = await getWorkspaceBySlug(slug);
-  if (!workspace || !workspace.changelogPublic) {
+  if (!workspace?.changelogPublic) {
     notFound();
   }
 

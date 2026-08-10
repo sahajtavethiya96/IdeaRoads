@@ -1,8 +1,8 @@
 import { and, count, desc, eq, gte, lt, lte } from "drizzle-orm";
 import { boards, comments, posts, votes, workspaceMembers } from "@/db/schema";
 import { db } from "@/lib/db";
-import { categoryTrendKey } from "./constants";
 import type { BreakdownPeriod } from "./constants";
+import { categoryTrendKey } from "./constants";
 
 export type { BreakdownPeriod } from "./constants";
 export { categoryTrendKey, PERIOD_LABELS } from "./constants";

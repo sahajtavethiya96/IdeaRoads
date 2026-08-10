@@ -12,7 +12,10 @@ import { createPortal } from "react-dom";
 interface DraggableCardProps {
   // Second arg lets the card tell a real drag apart from a plain click — see
   // wasDragged below.
-  children: (dragControls: DragControls, wasDragged: () => boolean) => ReactNode;
+  children: (
+    dragControls: DragControls,
+    wasDragged: () => boolean
+  ) => ReactNode;
   dragEnabled: boolean;
   isDragging: boolean;
   itemId: string;

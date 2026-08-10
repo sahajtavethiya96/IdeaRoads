@@ -604,12 +604,12 @@ export function ChangelogEditor({
         <div className="flex flex-col gap-6 rounded-ir-card border border-ir-border bg-ir-surface p-6 shadow-ir-xs sm:p-8">
           {/* Cover image — first, so it can be chosen before the details */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wide text-ir-heading">
+            <span className="text-xs font-semibold uppercase tracking-wide text-ir-heading">
               Cover image
               <span className="ml-1 font-normal normal-case text-ir-muted">
                 (optional)
               </span>
-            </label>
+            </span>
             {coverImageUrl ? (
               <div className="group relative block w-full overflow-hidden rounded-ir-lg border border-ir-border bg-ir-muted-surface">
                 <ImagePreviewThumbnail
@@ -628,6 +628,7 @@ export function ChangelogEditor({
                 </button>
               </div>
             ) : (
+              // biome-ignore lint/a11y/noNoninteractiveElementInteractions: label wraps the hidden file input to power drag-and-drop upload onto the click target
               <label
                 className={`group flex w-full flex-col items-center justify-center gap-3 rounded-ir-input border border-dashed px-4 py-12 text-center transition-all duration-200 ease-ir-standard has-[:focus-visible]:border-ir-primary has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ir-primary/40 ${
                   isUploadingCover
@@ -705,9 +706,9 @@ export function ChangelogEditor({
 
           {/* Content — immediately after the title */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wide text-ir-heading">
+            <span className="text-xs font-semibold uppercase tracking-wide text-ir-heading">
               Content
-            </label>
+            </span>
             <QuillEditor
               minHeight={240}
               onChange={(html) => setBody(html)}
@@ -718,9 +719,9 @@ export function ChangelogEditor({
 
           {/* Label — built-in labels, custom label chips, and an "Add label" modal */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wide text-ir-heading">
+            <span className="text-xs font-semibold uppercase tracking-wide text-ir-heading">
               Label
-            </label>
+            </span>
             <div className="flex flex-wrap items-center gap-2">
               {/* Built-in labels — always available, not editable. */}
               {CHANGELOG_LABEL_VALUES.map((l) => {
@@ -914,12 +915,12 @@ export function ChangelogEditor({
 
           {/* Linked Posts */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wide text-ir-heading">
+            <span className="text-xs font-semibold uppercase tracking-wide text-ir-heading">
               Linked Feedback Posts
               <span className="ml-1 font-normal normal-case text-ir-muted">
                 (optional)
               </span>
-            </label>
+            </span>
             <p className="text-xs text-ir-muted">
               Link feedback posts that shipped in this update. Voters will be
               notified on first publish.

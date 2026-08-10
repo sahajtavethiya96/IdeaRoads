@@ -56,7 +56,7 @@ export async function PortalHeader({
   userName,
   userEmail,
   active,
-  rssHref,
+  rssHref: _rssHref,
   currentPath,
 }: PortalHeaderProps) {
   const profileFallback = (userName || userEmail || "?")

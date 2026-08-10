@@ -1,6 +1,6 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { REACTION_EMOJIS } from "@/config/platform";
-import { comments, commentReactions } from "@/db/schema";
+import { commentReactions, comments } from "@/db/schema";
 import { user } from "@/db/schema/auth";
 import { db } from "@/lib/db";
 

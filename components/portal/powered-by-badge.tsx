@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { PRODUCT_NAME } from "@/config/platform";
 
 export function PoweredByBadge() {

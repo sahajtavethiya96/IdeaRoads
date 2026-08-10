@@ -158,10 +158,10 @@ export function ModerationSettingsForm({
           Flagged words & phrases
         </h2>
         <p className="mt-0.5 text-xs text-ir-muted">
-          Add words commonly used in spam or promotional posts — like
-          "discount code," "buy now," or a link (e.g. "http"). Any new post
-          containing one is held for review instead of publishing
-          immediately (when moderation is Auto or Manual).
+          Add words commonly used in spam or promotional posts — like "discount
+          code," "buy now," or a link (e.g. "http"). Any new post containing one
+          is held for review instead of publishing immediately (when moderation
+          is Auto or Manual).
         </p>
       </div>
       <div className="rounded-ir-card border border-ir-border bg-ir-surface p-4 shadow-ir-xs">

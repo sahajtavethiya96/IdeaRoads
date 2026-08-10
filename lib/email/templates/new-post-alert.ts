@@ -2,7 +2,7 @@ import { PRODUCT_NAME } from "@/config/platform";
 import { truncateHtmlToText } from "@/lib/changelog/html";
 
 export function newPostAlertEmailTemplate({
-  adminName,
+  adminName: _adminName,
   authorName,
   postTitle,
   postBody,

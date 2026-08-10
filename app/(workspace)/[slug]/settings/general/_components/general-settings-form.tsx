@@ -85,6 +85,8 @@ function LogoPreview({ url }: { url: string }) {
     <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-ir-sm border border-ir-border bg-ir-muted-surface">
       {trimmed && !failed ? (
         // eslint-disable-next-line @next/next/no-img-element
+        // biome-ignore lint/performance/noImgElement: user-provided logo URL, not known at build time for next/image
+        // biome-ignore lint/a11y/noNoninteractiveElementInteractions: onError/onLoad track load-failure state, not user interaction
         <img
           alt="Workspace logo preview"
           className="size-full object-cover"

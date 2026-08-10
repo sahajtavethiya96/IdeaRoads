@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MAX_PAGE_SIZE, MIN_PAGE_SIZE } from "@/lib/posts/constants";
 
 interface PostsPaginationBarProps {
   // Filter/sort/search params to preserve on every link — plain data, not a

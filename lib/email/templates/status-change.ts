@@ -15,7 +15,7 @@ function formatStatus(status: string): string {
 
 export function statusChangeEmailTemplate({
   recipientName,
-  recipientEmail,
+  recipientEmail: _recipientEmail,
   postTitle,
   postUrl,
   fromStatus,

@@ -21,7 +21,7 @@ function testDatabaseUrl(): string {
   }
   const match = raw.match(/^\s*DATABASE_URL\s*=\s*(.+)\s*$/m);
   const url = match?.[1]?.trim().replace(/^["']|["']$/g, "");
-  if (!url || !url.includes("idearoads_test")) {
+  if (!url?.includes("idearoads_test")) {
     throw new Error(
       "drizzle-test.config.ts: .env.test DATABASE_URL must target the " +
         `ephemeral test database (…/idearoads_test). Got: ${url ?? "unset"}. ` +

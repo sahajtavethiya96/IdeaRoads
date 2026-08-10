@@ -52,7 +52,7 @@
  *      `data-workspace`-only snippet + unreachable endpoint) -> a
  *      console.error and the "configuration error" notice.
  */
-(async function () {
+(async () => {
   const MESSAGE_SOURCE = "idearoads-widget";
   const script = document.currentScript;
 
@@ -114,7 +114,7 @@
   function numberAttr(name) {
     const v = script.getAttribute(name);
     if (!v) {
-      return undefined;
+      return;
     }
     const n = Number(v);
     return Number.isFinite(n) ? n : undefined;
@@ -160,8 +160,8 @@
   // dedupes the *button*, this extends the same intent to the fetch.
   function fetchWidgetConfig() {
     const cacheKey = origin + "|" + workspace;
-    const cache = (window.__irWidgetConfigFetches =
-      window.__irWidgetConfigFetches || {});
+    window.__irWidgetConfigFetches = window.__irWidgetConfigFetches || {};
+    const cache = window.__irWidgetConfigFetches;
     if (!cache[cacheKey]) {
       cache[cacheKey] = fetch(
         origin + "/api/embed/config?workspace=" + encodeURIComponent(workspace),
@@ -260,17 +260,17 @@
     // not "apply some specific color/theme", so it stays null rather than
     // falling back to a concrete value the way the fields above do.
     theme:
-      legacy.theme !== undefined
-        ? legacy.theme
-        : fetched
+      legacy.theme === undefined
+        ? fetched
           ? fetched.theme
-          : null,
+          : null
+        : legacy.theme,
     accentColor:
-      legacy.accentColor !== undefined
-        ? legacy.accentColor
-        : fetched
+      legacy.accentColor === undefined
+        ? fetched
           ? fetched.accentColor
-          : null,
+          : null
+        : legacy.accentColor,
     width: pick(legacy.width, "width", LOCAL_FALLBACK.width),
     height: pick(legacy.height, "height", LOCAL_FALLBACK.height),
     // Which device categories this widget is allowed to appear on. Checked
