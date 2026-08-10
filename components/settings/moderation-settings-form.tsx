@@ -117,7 +117,7 @@ export function ModerationSettingsForm({
         value={mode}
       >
         {MODES.map((m) => (
-          // biome-ignore lint/a11y/noLabelWithoutControl: RadioGroupItem is a Radix custom control nested inside the label, which already associates it correctly
+          // biome-ignore lint/a11y/noLabelWithoutControl: RadioGroupItem renders a native input nested inside the label, which already associates it correctly — biome can't see through the component boundary
           <label
             className="flex cursor-pointer items-start gap-3 p-4 transition-colors duration-150 ease-ir-standard hover:bg-ir-muted-surface"
             key={m.value}

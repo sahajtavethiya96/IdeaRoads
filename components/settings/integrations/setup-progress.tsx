@@ -45,7 +45,6 @@ export function SetupProgress({ items, onSelect }: SetupProgressProps) {
       <Progress
         aria-label="Integrations configured"
         className="mt-2.5"
-        indicatorClassName="bg-ir-primary"
         value={percent}
       />
 

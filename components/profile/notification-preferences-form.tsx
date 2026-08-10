@@ -44,7 +44,7 @@ function PreferenceRow({
         <p className="mt-0.5 text-xs text-ir-muted">{description}</p>
       </div>
       <div className="flex shrink-0 items-center gap-6">
-        {/* biome-ignore lint/a11y/noLabelWithoutControl: Switch is a Radix custom control nested inside the label, which already associates it correctly */}
+        {/* biome-ignore lint/a11y/noLabelWithoutControl: Switch renders a native input nested inside the label, which already associates it correctly — biome can't see through the component boundary */}
         <label className="flex cursor-pointer flex-col items-center gap-1.5">
           <span className="text-2xs font-semibold tracking-wide text-ir-muted uppercase">
             Email
@@ -55,7 +55,7 @@ function PreferenceRow({
             onCheckedChange={onEmailChange}
           />
         </label>
-        {/* biome-ignore lint/a11y/noLabelWithoutControl: Switch is a Radix custom control nested inside the label, which already associates it correctly */}
+        {/* biome-ignore lint/a11y/noLabelWithoutControl: Switch renders a native input nested inside the label, which already associates it correctly — biome can't see through the component boundary */}
         <label className="flex cursor-pointer flex-col items-center gap-1.5">
           <span className="text-2xs font-semibold tracking-wide text-ir-muted uppercase">
             In-app

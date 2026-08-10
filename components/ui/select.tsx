@@ -120,6 +120,34 @@ const PLACEMENT_MAP = {
   right: { start: "right-start", end: "right-end", center: "right" },
 } as const
 
+// Mirrors DropdownMenuContent's ORIGIN_MAP (components/ui/dropdown-menu.tsx)
+// — without an explicit transform-origin, the scale-in animation defaults to
+// the element's center, which reads as the panel drifting in from an
+// unrelated direction (e.g. from the left) instead of growing out of the
+// trigger it's anchored to.
+const ORIGIN_MAP = {
+  top: {
+    start: "origin-bottom-left",
+    end: "origin-bottom-right",
+    center: "origin-bottom",
+  },
+  bottom: {
+    start: "origin-top-left",
+    end: "origin-top-right",
+    center: "origin-top",
+  },
+  left: {
+    start: "origin-top-right",
+    end: "origin-bottom-right",
+    center: "origin-right",
+  },
+  right: {
+    start: "origin-top-left",
+    end: "origin-bottom-left",
+    center: "origin-left",
+  },
+} as const
+
 function SelectContent({
   className,
   children,
@@ -134,8 +162,9 @@ function SelectContent({
   sideOffset?: number
 }) {
   const { open, referenceElement } = useSelectContext("SelectContent")
+  const origin = ORIGIN_MAP[side][align]
 
-  const { refs, floatingStyles } = useFloating({
+  const { refs, floatingStyles, isPositioned } = useFloating({
     open,
     placement: PLACEMENT_MAP[side][align],
     strategy: "fixed",
@@ -163,10 +192,19 @@ function SelectContent({
       modal={false}
       portal
       ref={refs.setFloating}
-      style={floatingStyles}
+      style={{
+        ...floatingStyles,
+        // Before floating-ui's first position computation resolves, the
+        // panel sits at its unpositioned default (fixed, top:0 left:0 — the
+        // viewport's top-left corner). Without this, that corner briefly
+        // paints and the panel visibly jumps into place from there, reading
+        // as sliding in "from the left" instead of opening at the trigger.
+        visibility: isPositioned ? "visible" : "hidden",
+      }}
       transition
       className={cn(
         "z-50 overflow-x-hidden overflow-y-auto rounded-ir-md border border-ir-border bg-ir-surface p-1.5 text-ir-body shadow-ir-lg outline-hidden transition duration-100 ease-out data-closed:scale-95 data-closed:opacity-0",
+        origin,
         className
       )}
     >

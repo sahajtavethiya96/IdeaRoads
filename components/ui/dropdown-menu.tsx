@@ -193,7 +193,7 @@ function DropdownMenuContent({
   // flip must see the true overflow before shift narrows it away (the bug
   // this replaces had shift before flip, which suppressed flipping; see the
   // comment above DropdownMenuFloatingContext).
-  const { refs, floatingStyles, middlewareData } = useFloating({
+  const { refs, floatingStyles, middlewareData, isPositioned } = useFloating({
     open,
     placement: PLACEMENT_MAP[side][align],
     strategy: "fixed",
@@ -235,7 +235,16 @@ function DropdownMenuContent({
       modal={false}
       portal
       ref={refs.setFloating}
-      style={floatingStyles}
+      style={{
+        ...floatingStyles,
+        // Before floating-ui's first position computation resolves, the
+        // panel sits at its unpositioned default (fixed, top:0 left:0 — the
+        // viewport's top-left corner). Without this, that corner briefly
+        // paints and the panel visibly jumps into place from there, reading
+        // as sliding in from the wrong direction instead of opening at the
+        // trigger. Mirrors the same fix in components/ui/select.tsx.
+        visibility: isPositioned ? "visible" : "hidden",
+      }}
       transition
       className={cn(
         "z-50 min-w-48 overflow-x-hidden overflow-y-auto rounded-ir-md border border-base-300 bg-base-100 p-1.5 text-base-content shadow-ir-lg transition duration-100 ease-out data-closed:scale-95 data-closed:opacity-0",
