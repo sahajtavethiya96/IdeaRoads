@@ -1,47 +1,20 @@
-"use client"
-
 import * as React from "react"
-import { motion, useReducedMotion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
-
-const MotionDiv = motion.create("div")
-
-// motion.create()'s props conflict with the native HTML drag-event handlers
-// (onDrag/onDragStart/etc. have incompatible signatures) — Card never
-// exposes native drag, so those keys are dropped from the prop surface.
-type NativeDivProps = Omit<
-  React.ComponentProps<"div">,
-  | "onDrag"
-  | "onDragEnd"
-  | "onDragEnter"
-  | "onDragExit"
-  | "onDragLeave"
-  | "onDragOver"
-  | "onDragStart"
-  | "onDrop"
-  | "onAnimationStart"
-  | "onAnimationEnd"
-  | "onAnimationIteration"
->
 
 function Card({
   className,
   size = "default",
   ...props
-}: NativeDivProps & { size?: "default" | "sm" }) {
-  const shouldReduceMotion = useReducedMotion()
-
+}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
   return (
-    <MotionDiv
+    <div
       data-slot="card"
       data-size={size}
       className={cn(
         "card group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-box border border-base-300 bg-base-100 py-(--card-spacing) text-sm text-base-content shadow-ir-xs transition-shadow duration-150 ease-ir-standard hover:shadow-ir-sm [--card-spacing:--spacing(6)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(4)] *:[img:first-child]:rounded-t-box *:[img:last-child]:rounded-b-box",
         className
       )}
-      transition={{ duration: 0.15, ease: "easeOut" }}
-      whileHover={shouldReduceMotion ? undefined : { y: -2 }}
       {...props}
     />
   )

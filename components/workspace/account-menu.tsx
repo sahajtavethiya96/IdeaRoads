@@ -49,22 +49,37 @@ function AccountMenuDropdownContent({
   workspaceSlug,
   align = "start",
   side = "top",
+  variant = "topbar",
 }: Omit<AccountMenuProps, "collapsed"> & {
   align?: "start" | "end";
   side?: "top" | "bottom";
+  variant?: "sidebar" | "topbar";
 }) {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
 
+  // The sidebar is a fixed "always dark" surface (bg-sidebar, independent of
+  // the light/dark toggle below) — daisyUI's theme-reactive base-* tokens
+  // don't reliably match its shade, which read as a visibly different box
+  // floating on the sidebar instead of blending into it. The topbar's menu
+  // sits over the theme-following main content, so it keeps the daisyUI
+  // tokens from DropdownMenuContent's own defaults unchanged.
+  const isSidebar = variant === "sidebar";
+
   const itemClass = (href: string) =>
-    pathname.startsWith(href)
-      ? "bg-ir-primary-light/20 text-ir-primary focus:bg-ir-primary-light/20 focus:text-ir-primary"
-      : "";
+    cn(
+      isSidebar && "data-focus:bg-sidebar-accent",
+      pathname.startsWith(href) &&
+        "bg-ir-primary-light/20 text-ir-primary focus:bg-ir-primary-light/20 focus:text-ir-primary"
+    );
 
   return (
     <DropdownMenuContent
       align={align}
-      className="w-64 max-w-[calc(100vw-1rem)]"
+      className={cn(
+        "w-64 max-w-[calc(100vw-1rem)]",
+        isSidebar && "border-sidebar-border bg-sidebar text-sidebar-foreground"
+      )}
       side={side}
       sideOffset={6}
     >
@@ -76,13 +91,16 @@ function AccountMenuDropdownContent({
           imageUrl={userImage}
         />
         <span
-          className="flex-1 truncate text-xs font-medium text-ir-heading"
+          className={cn(
+            "flex-1 truncate text-xs font-medium",
+            isSidebar ? "text-sidebar-foreground" : "text-ir-heading"
+          )}
           title={email}
         >
           {email}
         </span>
       </DropdownMenuLabel>
-      <DropdownMenuSeparator />
+      <DropdownMenuSeparator className={cn(isSidebar && "bg-sidebar-border")} />
 
       {isAdminOrOwner && (
         <>
@@ -115,7 +133,7 @@ function AccountMenuDropdownContent({
               </Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
-          <DropdownMenuSeparator />
+          <DropdownMenuSeparator className={cn(isSidebar && "bg-sidebar-border")} />
         </>
       )}
 
@@ -140,22 +158,36 @@ function AccountMenuDropdownContent({
         </DropdownMenuItem>
       </DropdownMenuGroup>
 
-      <DropdownMenuSeparator />
+      <DropdownMenuSeparator className={cn(isSidebar && "bg-sidebar-border")} />
       <DropdownMenuGroup>
-        <DropdownMenuLabel>Theme</DropdownMenuLabel>
+        <DropdownMenuLabel
+          className={cn(isSidebar && "text-sidebar-foreground/60")}
+        >
+          Theme
+        </DropdownMenuLabel>
         <DropdownMenuRadioGroup onValueChange={setTheme} value={theme}>
-          <DropdownMenuRadioItem value="light">
+          <DropdownMenuRadioItem
+            className={cn(
+              isSidebar && "not-data-[state=checked]:data-focus:bg-sidebar-accent"
+            )}
+            value="light"
+          >
             <Sun />
             Light
           </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="dark">
+          <DropdownMenuRadioItem
+            className={cn(
+              isSidebar && "not-data-[state=checked]:data-focus:bg-sidebar-accent"
+            )}
+            value="dark"
+          >
             <Moon />
             Dark
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuGroup>
 
-      <DropdownMenuSeparator />
+      <DropdownMenuSeparator className={cn(isSidebar && "bg-sidebar-border")} />
       <DropdownMenuItem onClick={() => logoutAction()} variant="destructive">
         <SignOut />
         Log out
@@ -218,6 +250,7 @@ export function AccountMenu({
         email={email}
         isAdminOrOwner={isAdminOrOwner}
         userImage={userImage}
+        variant="sidebar"
         workspaceSlug={workspaceSlug}
       />
     </DropdownMenu>

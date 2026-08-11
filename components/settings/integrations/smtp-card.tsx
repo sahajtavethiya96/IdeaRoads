@@ -143,6 +143,7 @@ function SmtpCardImpl({ status, onDirtyChange }: SmtpCardProps) {
 
         <Field htmlFor="smtp-user" label="Username">
           <Input
+            autoComplete="off"
             id="smtp-user"
             onChange={(e) => setUser(e.target.value)}
             placeholder="user@example.com"

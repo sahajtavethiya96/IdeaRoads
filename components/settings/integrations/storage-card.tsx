@@ -312,6 +312,7 @@ function StorageCardImpl({ status, onDirtyChange }: StorageCardProps) {
               required
             >
               <Input
+                autoComplete="off"
                 id="storage-access-key-id"
                 onChange={(e) => setAccessKeyId(e.target.value)}
                 placeholder="AKIA…"

@@ -83,14 +83,6 @@ function AuthFormInner({
   const searchParams = useSearchParams();
   const isEmbedded = useIsEmbedded();
   const { data: session, isPending } = useSession();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [sent, setSent] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [magicLoading, setMagicLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
 
   const urlErrorCode = searchParams.get("error");
   const urlError = urlErrorCode
@@ -108,6 +100,23 @@ function AuthFormInner({
   // frequently brand new, so "Welcome back" reads as wrong. Greet them as
   // an invitee instead.
   const isInviteFlow = callbackURL.startsWith("/invite/");
+  // /invite/[token] already knows the invited address and, when it has no
+  // session, whether that address has an account yet — it passes both along
+  // so this form can lock the email and skip straight to the
+  // account-creating magic-link path for brand-new invitees instead of
+  // showing a password sign-in that can only fail for them.
+  const inviteEmail = isInviteFlow ? searchParams.get("email") : null;
+  const isNewInvitee = isInviteFlow && searchParams.get("signup") === "1";
+  const emailLocked = !!inviteEmail;
+
+  const [email, setEmail] = useState(() => inviteEmail ?? "");
+  const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [magicLoading, setMagicLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
     if (session) {
@@ -150,8 +159,10 @@ function AuthFormInner({
     setEmailError(null);
     setFormError(null);
 
-    // Password auth disabled → the form's only job is to request a magic link.
-    if (!passwordEnabled) {
+    // Password auth disabled, or this is a brand-new invitee with no
+    // password to sign in with yet → the form's only job is to request a
+    // magic link (which creates their account on first use).
+    if (!passwordEnabled || isNewInvitee) {
       await sendMagicLink();
       return;
     }
@@ -214,9 +225,11 @@ function AuthFormInner({
             {sent
               ? "Your sign-in link is on its way. Click it to continue."
               : isInviteFlow
-                ? passwordEnabled
-                  ? "Sign in or create an account to accept your invitation."
-                  : "Sign in or create a free account to accept your invitation."
+                ? isNewInvitee
+                  ? "Create a free account to accept your invitation."
+                  : passwordEnabled
+                    ? "Sign in or create an account to accept your invitation."
+                    : "Sign in or create a free account to accept your invitation."
                 : passwordEnabled
                   ? "Sign in with your email and password."
                   : "Sign in or create a free account — no password needed."}
@@ -276,9 +289,13 @@ function AuthFormInner({
                     </span>
                     <Input
                       autoComplete="email"
+                      className={
+                        emailLocked ? "bg-ir-primary-light/20" : undefined
+                      }
                       id="email"
                       onChange={(event) => setEmail(event.target.value)}
                       placeholder="you@example.com"
+                      readOnly={emailLocked}
                       required
                       type="email"
                       value={email}
@@ -290,7 +307,7 @@ function AuthFormInner({
                     )}
                   </label>
 
-                  {passwordEnabled && (
+                  {passwordEnabled && !isNewInvitee && (
                     <label className="block" htmlFor="password">
                       <div className="mb-1.5 flex items-center justify-between">
                         <span className="text-sm font-semibold text-ir-heading">
@@ -327,7 +344,7 @@ function AuthFormInner({
                       disabled={submitting || googleLoading || magicLoading}
                       type="submit"
                     >
-                      {passwordEnabled
+                      {passwordEnabled && !isNewInvitee
                         ? submitting
                           ? "Signing in…"
                           : "Sign in"
@@ -335,7 +352,7 @@ function AuthFormInner({
                           ? "Sending…"
                           : "Continue with email"}
                     </Button>
-                    {passwordEnabled ? (
+                    {passwordEnabled && !isNewInvitee ? (
                       <Button
                         className="w-full"
                         disabled={submitting || googleLoading || magicLoading}

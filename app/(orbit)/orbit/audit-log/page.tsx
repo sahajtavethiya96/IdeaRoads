@@ -222,7 +222,7 @@ export default async function OrbitAuditLogPage({ searchParams }: Props) {
                           >
                             {log.action}
                           </span>
-                          <span className="text-2xs uppercase tracking-eyebrow text-ir-muted/60">
+                          <span className="text-2xs uppercase tracking-eyebrow text-ir-muted">
                             {log.entityType}
                           </span>
                         </div>
@@ -231,7 +231,7 @@ export default async function OrbitAuditLogPage({ searchParams }: Props) {
                       {/* Actor */}
                       <td className="max-w-40 px-4 py-3 align-top">
                         <span
-                          className="block truncate text-xs text-ir-muted"
+                          className="block truncate text-xs text-ir-body"
                           title={log.actorEmail ?? log.actorId ?? undefined}
                         >
                           {log.actorName
@@ -243,7 +243,7 @@ export default async function OrbitAuditLogPage({ searchParams }: Props) {
                         </span>
                         {log.actorName && log.actorEmail && (
                           <span
-                            className="block truncate text-2xs text-ir-muted/60"
+                            className="block truncate text-2xs text-ir-muted"
                             title={log.actorEmail}
                           >
                             {log.actorEmail}
@@ -274,7 +274,7 @@ export default async function OrbitAuditLogPage({ searchParams }: Props) {
 
                       {/* Description */}
                       <td className="min-w-50 px-4 py-3 align-top">
-                        <p className="line-clamp-2 text-xs text-ir-muted">
+                        <p className="line-clamp-2 text-xs text-ir-body">
                           {log.description}
                         </p>
                       </td>

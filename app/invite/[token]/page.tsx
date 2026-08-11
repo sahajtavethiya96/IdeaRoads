@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 import { getCurrentSession } from "@/lib/authz";
+import { userExistsByEmail } from "@/lib/users/registration";
 import { getInviteByToken } from "@/lib/workspaces/invites";
 import { InviteAcceptButton } from "./_components/invite-accept-button";
 
@@ -72,6 +73,12 @@ export default async function InvitePage({ params }: Props) {
     invite.inviter?.name || invite.inviter?.email || "Someone";
 
   if (!session) {
+    // A brand-new invitee has no account/password yet — steer them straight
+    // into the account-creating magic-link path on /signin instead of the
+    // password sign-in form, which would just fail for them.
+    const hasAccount = await userExistsByEmail(invite.email);
+    const signinHref = `/signin?next=/invite/${token}&email=${encodeURIComponent(invite.email)}${hasAccount ? "" : "&signup=1"}`;
+
     return (
       <InviteLayout>
         <div className="space-y-1 text-center">
@@ -89,12 +96,13 @@ export default async function InvitePage({ params }: Props) {
         <div className="mt-6">
           <Link
             className="flex w-full items-center justify-center rounded-ir-button bg-ir-primary px-4 py-2.5 text-sm font-semibold text-ir-primary-foreground transition-colors duration-150 hover:bg-ir-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-            href={`/signin?next=/invite/${token}`}
+            href={signinHref}
           >
-            Sign in to accept
+            {hasAccount ? "Sign in to accept" : "Create account to accept"}
           </Link>
           <p className="mt-3 text-center text-xs text-ir-muted">
-            You'll need to sign in with {maskEmail(invite.email)}.
+            You'll need to {hasAccount ? "sign in" : "create your account"} with{" "}
+            {maskEmail(invite.email)}.
           </p>
         </div>
       </InviteLayout>

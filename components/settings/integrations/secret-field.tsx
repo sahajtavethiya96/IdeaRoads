@@ -73,7 +73,7 @@ export function SecretField({
       </span>
       <div className="relative">
         <Input
-          autoComplete="off"
+          autoComplete="new-password"
           className="pr-9"
           disabled={disabled || cleared}
           id={id}

@@ -2,7 +2,10 @@
 
 import { memo, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { updateGoogleOAuthSettingsAction } from "@/app/actions/integration-settings";
+import {
+  testGoogleOAuthConnectionAction,
+  updateGoogleOAuthSettingsAction,
+} from "@/app/actions/integration-settings";
 import { CodeBlock } from "@/components/settings/code-block";
 import { Callout } from "@/components/settings/integrations/callout";
 import { Field, FormGrid } from "@/components/settings/integrations/field";
@@ -27,6 +30,7 @@ function GoogleOAuthCardImpl({
   onDirtyChange,
 }: GoogleOAuthCardProps) {
   const [isSaving, startSave] = useTransition();
+  const [isTesting, startTest] = useTransition();
   const [justSaved, setJustSaved] = useState(false);
 
   const [clientId, setClientId] = useState(status.clientId);
@@ -51,14 +55,16 @@ function GoogleOAuthCardImpl({
     return () => clearTimeout(timer);
   }, [justSaved]);
 
+  function clientSecretValue() {
+    return clientSecretCleared ? "" : clientSecret.trim() || UNCHANGED_SECRET;
+  }
+
   function handleSave() {
     startSave(async () => {
       try {
         const result = await updateGoogleOAuthSettingsAction({
           clientId,
-          clientSecret: clientSecretCleared
-            ? ""
-            : clientSecret.trim() || UNCHANGED_SECRET,
+          clientSecret: clientSecretValue(),
         });
 
         if (!result.success) {
@@ -89,6 +95,27 @@ function GoogleOAuthCardImpl({
     setClientId(baseline.clientId);
     setClientSecret(baseline.clientSecret);
     setClientSecretCleared(baseline.clientSecretCleared);
+  }
+
+  function handleTest() {
+    startTest(async () => {
+      try {
+        const result = await testGoogleOAuthConnectionAction({
+          clientId,
+          clientSecret: clientSecretValue(),
+        });
+
+        if (!result.success) {
+          toast.error(`Connection failed: ${result.error}`);
+          return;
+        }
+        toast.success("Client ID and secret verified with Google");
+      } catch {
+        toast.error(
+          "Couldn't reach the server. Check your connection and try again."
+        );
+      }
+    });
   }
 
   const redirectUri = `${appUrl}/api/auth/callback/google`;
@@ -127,6 +154,7 @@ function GoogleOAuthCardImpl({
       <FormGrid>
         <Field htmlFor="google-client-id" label="Client ID" required>
           <Input
+            autoComplete="off"
             id="google-client-id"
             onChange={(e) => setClientId(e.target.value)}
             placeholder="1234567890-abc.apps.googleusercontent.com"
@@ -153,9 +181,14 @@ function GoogleOAuthCardImpl({
       <SaveBar
         isDirty={isDirty}
         isSaving={isSaving}
+        isTesting={isTesting}
         justSaved={justSaved}
         onDiscard={handleDiscard}
         onSave={handleSave}
+        onTest={handleTest}
+        testDisabled={
+          !(clientId && (status.hasClientSecret || clientSecret.trim()))
+        }
       />
     </div>
   );

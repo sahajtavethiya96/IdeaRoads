@@ -73,7 +73,9 @@ function WebhookCardImpl({ status, onDirtyChange }: WebhookCardProps) {
         <code className="rounded-ir-xs bg-ir-muted-surface px-1 py-0.5">
           /api/webhooks/email
         </code>
-        . Only needed if your email provider sends delivery events.
+        . Only needed if your email provider sends delivery events. Use a long,
+        random value (at least 16 characters) — this isn't checked against a
+        provider, so a weak secret is the only way it can be wrong.
       </p>
 
       <div className="max-w-md">

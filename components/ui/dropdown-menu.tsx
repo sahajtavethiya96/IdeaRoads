@@ -247,12 +247,30 @@ function DropdownMenuContent({
       }}
       transition
       className={cn(
-        "z-50 min-w-48 overflow-x-hidden overflow-y-auto rounded-ir-md border border-base-300 bg-base-100 p-1.5 text-base-content shadow-ir-lg transition duration-100 ease-out data-closed:scale-95 data-closed:opacity-0",
-        origin,
+        "group/dropdown-menu-content z-50 min-w-48 overflow-x-hidden overflow-y-auto rounded-ir-md border border-base-300 bg-base-100 p-1.5 text-base-content shadow-ir-lg",
         className
       )}
     >
-      {children}
+      {/* Positioning (floatingStyles, above) and the enter/exit scale
+          animation (data-closed:scale-95) both express themselves via a CSS
+          `transform` on this element. If they shared one element, floating-ui's
+          inline `translate(x, y)` update from its unpositioned (0, 0) default
+          to the real trigger-relative position would itself get picked up by
+          the `transition` utility's `transform` entry and animate — the panel
+          visibly sliding in from the viewport's top-left corner over the
+          transition duration instead of appearing already in place. Splitting
+          position (this element) from the scale/opacity animation (nested div,
+          driven by this element's own `data-closed` state via `group`) keeps
+          the two transforms independent. Mirrors the same split in
+          components/ui/popover.tsx (see its PopoverContent comment). */}
+      <div
+        className={cn(
+          "transition duration-100 ease-out group-data-closed/dropdown-menu-content:scale-95 group-data-closed/dropdown-menu-content:opacity-0",
+          origin
+        )}
+      >
+        {children}
+      </div>
     </MenuItems>
   )
 }

@@ -21,8 +21,10 @@ interface IntegrationCardProps {
 }
 
 // One row in the integrations accordion — icon, name, description and
-// status collapsed; the actual form only mounts once expanded (Radix
-// unmounts AccordionContent while closed, so idle forms cost nothing).
+// status collapsed. Unlike the old Radix accordion, the daisyUI/<details>
+// version keeps every section's form mounted in the DOM at all times (CSS
+// collapses the closed ones), so all four cards' fields exist from first
+// paint regardless of which section is open.
 export function IntegrationCard({
   value,
   icon: Icon,
