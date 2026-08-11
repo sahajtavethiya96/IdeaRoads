@@ -112,7 +112,7 @@ export default async function OrbitWorkspacesPage({ searchParams }: Props) {
       </div>
 
       <PageBody>
-        <div className="rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+        <div className="overflow-hidden rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
           {workspaces.length === 0 ? (
             <EmptyState
               message={

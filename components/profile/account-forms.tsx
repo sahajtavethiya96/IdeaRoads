@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDirtyState } from "@/hooks/use-dirty-state";
 import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
+import { suggestEmailDomainFix } from "@/lib/email-typo";
 
 const initialState: ActionState = {};
 const initialAvatarState: AvatarActionState = {};
@@ -209,6 +210,9 @@ export function AccountIdentityForms({
   const { isDirty: emailDirty, markClean: markEmailClean } = useDirtyState({
     email: emailValue,
   });
+  const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null);
+  const [emailSuggestionDismissed, setEmailSuggestionDismissed] =
+    useState(false);
   useUnsavedChangesGuard(nameDirty || emailDirty);
 
   useEffect(() => {
@@ -229,6 +233,31 @@ export function AccountIdentityForms({
       markEmailClean({ email: emailValue });
     }
   }, [emailState.success, markEmailClean]);
+
+  function acceptEmailSuggestion() {
+    if (!emailSuggestion) {
+      return;
+    }
+    setEmailValue(emailSuggestion);
+    setEmailSuggestion(null);
+  }
+
+  function dismissEmailSuggestion() {
+    setEmailSuggestionDismissed(true);
+    setEmailSuggestion(null);
+  }
+
+  // An unacknowledged typo suggestion blocks the submit until the user
+  // either accepts the fix or explicitly confirms the domain as typed —
+  // otherwise a mistyped domain (e.g. "gailf.com") would silently send the
+  // confirmation link to an address nobody can ever receive it at.
+  function handleEmailSubmit(e: React.FormEvent<HTMLFormElement>) {
+    const domainFix = suggestEmailDomainFix(emailValue.trim());
+    if (domainFix && !emailSuggestionDismissed) {
+      e.preventDefault();
+      setEmailSuggestion(domainFix);
+    }
+  }
 
   return (
     <div className="divide-y divide-ir-border overflow-hidden rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
@@ -275,16 +304,47 @@ export function AccountIdentityForms({
               link sent to the new address.
             </p>
           </div>
-          <form action={emailAction} className="min-w-0 flex-1 space-y-3">
+          <form
+            action={emailAction}
+            className="min-w-0 flex-1 space-y-3"
+            onSubmit={handleEmailSubmit}
+          >
             <Input
               id="email"
               name="email"
-              onChange={(e) => setEmailValue(e.target.value)}
+              onChange={(e) => {
+                setEmailValue(e.target.value);
+                setEmailSuggestion(null);
+                setEmailSuggestionDismissed(false);
+              }}
               placeholder="Enter your email address..."
               required
               type="email"
               value={emailValue}
             />
+            {emailSuggestion && (
+              <div className="flex items-center gap-3 rounded-ir-sm border border-ir-warning/30 bg-ir-warning/10 px-3 py-2">
+                <p className="min-w-0 flex-1 break-words text-xs text-ir-warning">
+                  Did you mean <strong>{emailSuggestion}</strong>?
+                </p>
+                <div className="flex shrink-0 gap-3">
+                  <button
+                    className="rounded-ir-xs text-xs font-semibold text-ir-warning underline hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                    onClick={acceptEmailSuggestion}
+                    type="button"
+                  >
+                    Use this
+                  </button>
+                  <button
+                    className="rounded-ir-xs text-xs text-ir-muted underline hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                    onClick={dismissEmailSuggestion}
+                    type="button"
+                  >
+                    Keep as typed
+                  </button>
+                </div>
+              </div>
+            )}
             <ActionMessage state={emailState} />
             <Button
               disabled={emailPending || !emailDirty}

@@ -92,10 +92,11 @@ export function NotificationItem({
   return (
     <article
       className={cn(
-        "group relative flex items-center gap-4 rounded-ir-lg border border-ir-border bg-ir-surface px-4 py-2.5 shadow-ir-xs transition-all duration-200 ease-ir-standard",
-        "hover:-translate-y-0.5 hover:border-ir-primary/30 hover:shadow-ir-md",
-        "has-[:focus-visible]:-translate-y-0.5 has-[:focus-visible]:shadow-ir-md has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ir-primary/40 has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-ir-background",
-        !isRead && "bg-ir-primary/5"
+        "group relative flex items-center gap-4 px-5 py-3 transition-colors duration-150 ease-ir-standard",
+        "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-inset has-[:focus-visible]:ring-ir-primary/40",
+        isRead
+          ? "hover:bg-base-200/60"
+          : "bg-ir-primary/5 hover:bg-ir-primary/10"
       )}
     >
       {/* Icon */}

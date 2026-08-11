@@ -307,8 +307,11 @@ export function NotificationList({
           ContentContainer page uses (settings forms, account page, etc.),
           so this page's body reads as a panel on the workspace canvas
           instead of leaving the canvas color exposed directly under the
-          sticky header. */}
-      <div className="mt-4 rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
+          sticky header. The list itself scrolls inside this card (rather
+          than the whole page growing tall) so the Today/This week/Earlier
+          labels can stick to the top of the card as their group scrolls
+          underneath, like a mail client's date dividers. */}
+      <div className="mt-4 max-h-[70vh] overflow-y-auto rounded-ir-card border border-ir-border bg-ir-surface shadow-ir-xs">
         {items.length === 0 ? (
           <NotificationEmptyState />
         ) : visibleGroups.length === 0 ? (
@@ -318,13 +321,13 @@ export function NotificationList({
             </p>
           </div>
         ) : (
-          <div className="p-4">
+          <>
             {visibleGroups.map((group) => (
-              <div className="mt-6 first:mt-0" key={group.label}>
-                <p className="mb-3 px-1 text-xs font-semibold tracking-widest text-base-content/50 uppercase">
+              <div key={group.label}>
+                <p className="sticky top-0 z-20 [will-change:transform] border-b border-ir-border/60 bg-ir-surface px-5 py-2 text-xs font-semibold tracking-widest text-base-content/50 uppercase">
                   {group.label}
                 </p>
-                <div className="flex flex-col gap-2">
+                <div className="divide-y divide-ir-border/60">
                   {group.items.map((notification) => (
                     <NotificationItem
                       key={notification.id}
@@ -338,7 +341,7 @@ export function NotificationList({
             ))}
 
             {hasMore && filter === "all" && (
-              <div className="pt-6 pb-2 text-center">
+              <div className="px-4 pt-2 pb-6 text-center">
                 <Button
                   disabled={isPending}
                   onClick={handleLoadMore}
@@ -350,7 +353,7 @@ export function NotificationList({
                 </Button>
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
 

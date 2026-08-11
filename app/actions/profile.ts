@@ -3,6 +3,7 @@
 import { and, eq, inArray, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { z } from "zod";
 import { PRODUCT_NAME } from "@/config/platform";
 import {
   account,
@@ -335,7 +336,7 @@ export async function changeEmailAction(
     .trim()
     .toLowerCase();
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+  if (!z.email().safeParse(newEmail).success) {
     return { error: "Enter a valid email address." };
   }
 
