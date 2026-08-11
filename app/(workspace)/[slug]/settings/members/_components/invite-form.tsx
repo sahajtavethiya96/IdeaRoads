@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { suggestEmailDomainFix } from "@/lib/email-typo";
 
 interface InviteFormProps {
   canInviteAdmin: boolean;
@@ -36,16 +37,31 @@ export function InviteForm({
   const [submitting, setSubmitting] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
+  const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null);
+  const [emailSuggestionDismissed, setEmailSuggestionDismissed] =
+    useState(false);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setEmailError(null);
     setGeneralError(null);
-    setSubmitting(true);
 
+    const trimmedEmail = email.trim();
+
+    // An unacknowledged typo suggestion blocks the invite until the admin
+    // either accepts the fix or explicitly confirms the domain as typed —
+    // otherwise a mistyped domain (e.g. "gmil.com") would silently invite
+    // an address nobody can ever accept.
+    const domainFix = suggestEmailDomainFix(trimmedEmail);
+    if (domainFix && !emailSuggestionDismissed) {
+      setEmailSuggestion(domainFix);
+      return;
+    }
+
+    setSubmitting(true);
     const result = await inviteMemberAction({
       workspaceId,
-      email: email.trim(),
+      email: trimmedEmail,
       role,
     });
     setSubmitting(false);
@@ -59,11 +75,26 @@ export function InviteForm({
       return;
     }
 
-    toast.success(`Invitation sent to ${email.trim()}`);
+    toast.success(`Invitation sent to ${trimmedEmail}`);
     setEmail("");
     setRole("member");
+    setEmailSuggestion(null);
+    setEmailSuggestionDismissed(false);
     router.refresh();
     onInvited?.();
+  }
+
+  function acceptEmailSuggestion() {
+    if (!emailSuggestion) {
+      return;
+    }
+    setEmail(emailSuggestion);
+    setEmailSuggestion(null);
+  }
+
+  function dismissEmailSuggestion() {
+    setEmailSuggestionDismissed(true);
+    setEmailSuggestion(null);
   }
 
   return (
@@ -84,14 +115,40 @@ export function InviteForm({
             autoComplete="off"
             disabled={submitting}
             onChange={(e) => {
-              setEmail(e.target.value);
+              const value = e.target.value;
+              setEmail(value);
               setEmailError(null);
+              setEmailSuggestion(suggestEmailDomainFix(value));
+              setEmailSuggestionDismissed(false);
             }}
             placeholder="colleague@example.com"
             type="email"
             value={email}
           />
           {emailError && <p className="text-xs text-ir-danger">{emailError}</p>}
+          {emailSuggestion && (
+            <div className="flex items-center gap-3 rounded-ir-sm border border-ir-warning/30 bg-ir-warning/10 px-3 py-2">
+              <p className="min-w-0 flex-1 break-words text-xs text-ir-warning">
+                Did you mean <strong>{emailSuggestion}</strong>?
+              </p>
+              <div className="flex shrink-0 gap-3">
+                <button
+                  className="rounded-ir-xs text-xs font-semibold text-ir-warning underline hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                  onClick={acceptEmailSuggestion}
+                  type="button"
+                >
+                  Use this
+                </button>
+                <button
+                  className="rounded-ir-xs text-xs text-ir-muted underline hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
+                  onClick={dismissEmailSuggestion}
+                  type="button"
+                >
+                  Keep as typed
+                </button>
+              </div>
+            </div>
+          )}
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
           {canInviteAdmin && (

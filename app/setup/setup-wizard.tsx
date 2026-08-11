@@ -1,7 +1,6 @@
 "use client";
 
 import { Eye, EyeOff } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
 import { getIntegrationSettingsStatusAction } from "@/app/actions/integration-settings";
@@ -15,7 +14,8 @@ import { IntegrationsPanel } from "@/components/settings/integrations/integratio
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
-import { LOGO_PATH, PRODUCT_NAME } from "@/config/platform";
+import { Logo } from "@/components/ui/logo";
+import { PRODUCT_NAME } from "@/config/platform";
 import { authClient } from "@/lib/auth-client";
 import { suggestEmailDomainFix } from "@/lib/email-typo";
 import type { IntegrationSettingsStatus } from "@/lib/integration-settings-types";
@@ -214,13 +214,9 @@ export function SetupWizard({
   if (step === "workspace") {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-ir-primary-light/20 px-4 py-10">
-        <Image
-          alt={PRODUCT_NAME}
+        <Logo
           className="mb-8 h-auto w-[140px] sm:w-[160px] md:w-[180px]"
-          height={164}
           priority
-          src={LOGO_PATH}
-          width={500}
         />
         <div className="w-full max-w-md rounded-ir-xl border border-ir-border bg-ir-surface p-8 shadow-ir-lg">
           <StepWorkspace
@@ -241,13 +237,9 @@ export function SetupWizard({
   if (step === "integrations") {
     return (
       <main className="flex min-h-screen flex-col items-center bg-ir-primary-light/20 px-4 py-10">
-        <Image
-          alt={PRODUCT_NAME}
+        <Logo
           className="mb-8 h-auto w-[140px] sm:w-[160px] md:w-[180px]"
-          height={164}
           priority
-          src={LOGO_PATH}
-          width={500}
         />
         <div className="w-full max-w-4xl rounded-ir-xl border border-ir-border bg-ir-surface p-8 shadow-ir-lg">
           <div className="text-center">
@@ -316,13 +308,9 @@ export function SetupWizard({
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-ir-primary-light/20 px-4 py-10">
-      <Image
-        alt={PRODUCT_NAME}
+      <Logo
         className="mb-8 h-auto w-[140px] sm:w-[160px] md:w-[180px]"
-        height={164}
         priority
-        src={LOGO_PATH}
-        width={500}
       />
       <div className="w-full max-w-md rounded-ir-xl border border-ir-border bg-ir-surface p-8 shadow-ir-lg">
         <div className="text-center">
@@ -372,8 +360,8 @@ export function SetupWizard({
               value={email}
             />
             {emailSuggestion && (
-              <div className="mt-1.5 flex items-center justify-between gap-3 rounded-ir-sm border border-ir-warning/30 bg-ir-warning/10 px-3 py-2">
-                <p className="text-xs text-ir-warning">
+              <div className="mt-1.5 flex items-center gap-3 rounded-ir-sm border border-ir-warning/30 bg-ir-warning/10 px-3 py-2">
+                <p className="min-w-0 flex-1 break-words text-xs text-ir-warning">
                   Did you mean <strong>{emailSuggestion}</strong>?
                 </p>
                 <div className="flex shrink-0 gap-3">

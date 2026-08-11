@@ -1,8 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import { NavFeaturesDropdown } from "@/components/marketing/nav-features-dropdown";
 import { Button } from "@/components/ui/button";
-import { LOGO_PATH, PRODUCT_NAME } from "@/config/platform";
+import { Logo } from "@/components/ui/logo";
 
 export function Nav() {
   return (
@@ -12,14 +11,7 @@ export function Nav() {
           className="flex items-center rounded-ir-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
           href="/"
         >
-          <Image
-            alt={PRODUCT_NAME}
-            className="h-10 w-auto"
-            height={164}
-            priority
-            src={LOGO_PATH}
-            width={500}
-          />
+          <Logo className="h-10 w-auto" priority />
         </Link>
 
         <nav

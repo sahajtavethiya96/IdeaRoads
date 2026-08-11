@@ -1,11 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
-import {
-  DOCS_URL,
-  GITHUB_REPO_URL,
-  LOGO_PATH,
-  PRODUCT_NAME,
-} from "@/config/platform";
+import { Logo } from "@/components/ui/logo";
+import { DOCS_URL, GITHUB_REPO_URL } from "@/config/platform";
 
 const LINKS = [
   {
@@ -46,13 +41,7 @@ export function Footer() {
               className="inline-flex rounded-ir-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
               href="/"
             >
-              <Image
-                alt={PRODUCT_NAME}
-                className="h-9 w-auto"
-                height={164}
-                src={LOGO_PATH}
-                width={500}
-              />
+              <Logo className="h-9 w-auto" />
             </Link>
             <p className="mt-3 text-sm text-ir-muted">
               Open-source customer feedback for growing teams.

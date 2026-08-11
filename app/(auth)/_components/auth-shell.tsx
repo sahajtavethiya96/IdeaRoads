@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { LOGO_PATH, PRODUCT_NAME } from "@/config/platform";
+import { Logo } from "@/components/ui/logo";
 
 interface AuthShellProps {
   children: ReactNode;
@@ -24,14 +24,7 @@ export function AuthShell({ children, subtitle, title }: AuthShellProps) {
             className="mb-6 flex justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40 lg:justify-start"
             href="/"
           >
-            <Image
-              alt={PRODUCT_NAME}
-              className="h-9 w-auto"
-              height={164}
-              priority
-              src={LOGO_PATH}
-              width={500}
-            />
+            <Logo className="h-9 w-auto" priority />
           </Link>
 
           <h1 className="text-xl font-bold text-ir-heading sm:text-2xl">

@@ -7,8 +7,8 @@ import { type FormEvent, Suspense, useEffect, useState } from "react";
 import { useIsEmbedded } from "@/components/embed/use-is-embedded";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Logo } from "@/components/ui/logo";
 import { PasswordInput } from "@/components/ui/password-input";
-import { LOGO_PATH, PRODUCT_NAME } from "@/config/platform";
 import { signIn, useSession } from "@/lib/auth-client";
 
 function GoogleIcon({ className }: { className?: string }) {
@@ -200,14 +200,7 @@ function AuthFormInner({
             href="/"
             target={isEmbedded ? "_top" : undefined}
           >
-            <Image
-              alt={PRODUCT_NAME}
-              className="h-9 w-auto"
-              height={164}
-              priority
-              src={LOGO_PATH}
-              width={500}
-            />
+            <Logo className="h-9 w-auto" priority />
           </Link>
 
           <h1 className="text-xl font-bold text-ir-heading sm:text-2xl">

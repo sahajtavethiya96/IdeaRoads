@@ -1,6 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
-import { LOGO_PATH, PRODUCT_NAME } from "@/config/platform";
+import { Logo } from "@/components/ui/logo";
 import { requireSession } from "@/lib/authz";
 import { getPendingEmailChangeByToken } from "@/lib/profile/email-change";
 import { ConfirmEmailButton } from "./_components/confirm-email-button";
@@ -76,14 +75,7 @@ function ConfirmEmailLayout({ children }: { children: React.ReactNode }) {
           className="mb-8 flex justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           href="/"
         >
-          <Image
-            alt={PRODUCT_NAME}
-            className="h-9 w-auto"
-            height={164}
-            priority
-            src={LOGO_PATH}
-            width={500}
-          />
+          <Logo className="h-9 w-auto" priority />
         </Link>
         <div className="border border-base-300 bg-base-100 px-4 py-8 sm:px-8">
           {children}

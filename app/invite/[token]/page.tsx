@@ -1,6 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
-import { LOGO_PATH, PRODUCT_NAME } from "@/config/platform";
+import { Logo } from "@/components/ui/logo";
 import { getCurrentSession } from "@/lib/authz";
 import { getInviteByToken } from "@/lib/workspaces/invites";
 import { InviteAcceptButton } from "./_components/invite-accept-button";
@@ -143,14 +142,7 @@ function InviteLayout({ children }: { children: React.ReactNode }) {
           className="mb-8 flex justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
           href="/"
         >
-          <Image
-            alt={PRODUCT_NAME}
-            className="h-16 w-auto"
-            height={164}
-            priority
-            src={LOGO_PATH}
-            width={500}
-          />
+          <Logo className="h-16 w-auto" priority />
         </Link>
         <div className="rounded-ir-xl border border-ir-border bg-ir-surface px-4 py-8 shadow-ir-lg sm:px-8">
           {children}

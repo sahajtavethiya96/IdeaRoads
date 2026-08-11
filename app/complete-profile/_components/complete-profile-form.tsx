@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect } from "react";
 import {
@@ -9,12 +8,9 @@ import {
 } from "@/app/actions/profile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Logo } from "@/components/ui/logo";
 import { PasswordInput } from "@/components/ui/password-input";
-import {
-  LOGO_PATH,
-  MIN_PASSWORD_LENGTH,
-  PRODUCT_NAME,
-} from "@/config/platform";
+import { MIN_PASSWORD_LENGTH, PRODUCT_NAME } from "@/config/platform";
 
 const initialState: CompleteSetupState = {};
 
@@ -56,14 +52,7 @@ export function CompleteProfileForm({
     <main className="grid min-h-screen place-items-center bg-ir-primary-light/20 px-4 py-6 sm:py-8">
       <div className="w-full max-w-md rounded-ir-xl border border-ir-border bg-ir-surface px-6 py-8 shadow-ir-lg sm:px-10 sm:py-10">
         <div className="flex flex-col items-center text-center">
-          <Image
-            alt={PRODUCT_NAME}
-            className="h-9 w-auto"
-            height={164}
-            priority
-            src={LOGO_PATH}
-            width={500}
-          />
+          <Logo className="h-9 w-auto" priority />
           <h1 className="mt-6 text-xl font-bold text-ir-heading sm:text-2xl">
             Welcome to {PRODUCT_NAME}
           </h1>

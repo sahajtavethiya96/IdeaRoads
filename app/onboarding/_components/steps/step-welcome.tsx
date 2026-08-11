@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import type { FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LOGO_PATH, PRODUCT_NAME } from "@/config/platform";
+import { Logo } from "@/components/ui/logo";
+import { PRODUCT_NAME } from "@/config/platform";
 
 interface StepWelcomeProps {
   error?: string | null;
@@ -30,14 +30,7 @@ export function StepWelcome({
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col items-center text-center">
-      <Image
-        alt={PRODUCT_NAME}
-        className="h-9 w-auto"
-        height={164}
-        priority
-        src={LOGO_PATH}
-        width={500}
-      />
+      <Logo className="h-9 w-auto" priority />
 
       <h1 className="mt-6 text-2xl font-bold text-ir-heading">
         Welcome to {PRODUCT_NAME}!

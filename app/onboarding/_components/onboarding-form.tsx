@@ -1,7 +1,6 @@
 "use client";
 
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -24,8 +23,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Logo } from "@/components/ui/logo";
 import { Textarea } from "@/components/ui/textarea";
-import { LOGO_PATH, PRODUCT_NAME } from "@/config/platform";
 import { slugify } from "@/lib/utils";
 
 interface OnboardingFormProps {
@@ -213,14 +212,7 @@ export function OnboardingForm({
           className="mb-5 flex justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           href="/"
         >
-          <Image
-            alt={PRODUCT_NAME}
-            className="h-16 w-auto"
-            height={164}
-            priority
-            src={LOGO_PATH}
-            width={500}
-          />
+          <Logo className="h-16 w-auto" priority />
         </Link>
 
         <Card>
