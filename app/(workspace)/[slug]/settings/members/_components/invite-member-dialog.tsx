@@ -15,12 +15,16 @@ import { InviteForm } from "./invite-form";
 
 interface InviteMemberDialogProps {
   canInviteAdmin: boolean;
+  isOrbitAdmin: boolean;
+  smtpConfigured: boolean;
   workspaceId: string;
 }
 
 export function InviteMemberDialog({
   workspaceId,
   canInviteAdmin,
+  isOrbitAdmin,
+  smtpConfigured,
 }: InviteMemberDialogProps) {
   const [open, setOpen] = useState(false);
 
@@ -41,7 +45,9 @@ export function InviteMemberDialog({
         </DialogHeader>
         <InviteForm
           canInviteAdmin={canInviteAdmin}
+          isOrbitAdmin={isOrbitAdmin}
           onInvited={() => setOpen(false)}
+          smtpConfigured={smtpConfigured}
           workspaceId={workspaceId}
         />
       </DialogContent>

@@ -54,11 +54,12 @@ export default async function WorkspaceLayout({
     notFound();
   }
 
-  // A workspace created by the one-time /setup wizard isn't usable until its
-  // owner configures SMTP there — required for password resets, invites, and
-  // notifications. Workspaces created through normal onboarding never set
-  // this flag, so they're unaffected. Enforced here (not just at the wizard's
-  // own "Finish setup" button) so a typed URL can't bypass it.
+  // A workspace created by the one-time /setup wizard stays parked on that
+  // wizard until its owner steps through account + workspace creation once —
+  // SMTP is no longer required to clear this flag (Skip/Finish both clear
+  // it; see completeFirstRunSetupAction). Workspaces created through normal
+  // onboarding never set this flag, so they're unaffected. Enforced here
+  // (not just at the wizard's own buttons) so a typed URL can't bypass it.
   if (workspace.requiresIntegrationSetup) {
     redirect("/setup");
   }

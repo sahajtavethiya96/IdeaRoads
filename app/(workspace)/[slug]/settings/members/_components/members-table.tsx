@@ -52,7 +52,9 @@ interface MembersTableProps {
   actorRole: "owner" | "admin" | "member";
   actorUserId: string;
   canInviteAdmin: boolean;
+  isOrbitAdmin: boolean;
   members: Member[];
+  smtpConfigured: boolean;
   workspaceId: string;
 }
 
@@ -87,6 +89,8 @@ export function MembersTable({
   actorRole,
   workspaceId,
   canInviteAdmin,
+  isOrbitAdmin,
+  smtpConfigured,
 }: MembersTableProps) {
   const router = useRouter();
   const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -171,6 +175,8 @@ export function MembersTable({
         </div>
         <InviteMemberDialog
           canInviteAdmin={canInviteAdmin}
+          isOrbitAdmin={isOrbitAdmin}
+          smtpConfigured={smtpConfigured}
           workspaceId={workspaceId}
         />
       </div>

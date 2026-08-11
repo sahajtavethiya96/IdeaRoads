@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ContentContainer } from "@/components/ui/page";
-import { WORKSPACE_MEMBER, WORKSPACE_OWNER } from "@/config/platform";
+import { ADMIN_ROLE, WORKSPACE_MEMBER, WORKSPACE_OWNER } from "@/config/platform";
 import { requireSession } from "@/lib/authz";
+import { isSmtpConfigured } from "@/lib/integration-settings";
 import { adminBaseUrl } from "@/lib/urls";
 import { listActiveInviteLinks } from "@/lib/workspaces/invite-links";
 import { listPendingInvites } from "@/lib/workspaces/invites";
@@ -41,12 +42,15 @@ export default async function MembersPage({ params }: Props) {
   }
 
   const canManageAdmin = actorMember.role === WORKSPACE_OWNER;
+  const isOrbitAdmin = session.user.role === ADMIN_ROLE;
 
-  const [members, pendingInvites, activeLinks] = await Promise.all([
-    listMembers(workspace.id),
-    listPendingInvites(workspace.id),
-    listActiveInviteLinks(workspace.id),
-  ]);
+  const [members, pendingInvites, activeLinks, smtpConfigured] =
+    await Promise.all([
+      listMembers(workspace.id),
+      listPendingInvites(workspace.id),
+      listActiveInviteLinks(workspace.id),
+      isSmtpConfigured(),
+    ]);
 
   const appUrl = adminBaseUrl();
 
@@ -56,7 +60,9 @@ export default async function MembersPage({ params }: Props) {
         actorRole={actorMember.role}
         actorUserId={session.user.id}
         canInviteAdmin={canManageAdmin}
+        isOrbitAdmin={isOrbitAdmin}
         members={members}
+        smtpConfigured={smtpConfigured}
         workspaceId={workspace.id}
       />
 

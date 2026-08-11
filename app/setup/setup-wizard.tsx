@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
 import { getIntegrationSettingsStatusAction } from "@/app/actions/integration-settings";
@@ -46,7 +46,12 @@ export function SetupWizard({
   const [integrationsDirty, setIntegrationsDirty] = useState(false);
   const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] =
     useState(false);
-  const [finishing, setFinishing] = useState(false);
+  const [pendingAction, setPendingAction] = useState<
+    "skip" | "finish" | null
+  >(null);
+  // Which button opened the unsaved-changes dialog — read back once the user
+  // confirms, so the right button shows its loading state afterward.
+  const [leaveAction, setLeaveAction] = useState<"skip" | "finish">("skip");
   const [finishError, setFinishError] = useState<string | null>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only fetch for the resume case, not re-run when the slug prop happens to be re-passed the same value
@@ -191,23 +196,25 @@ export function SetupWizard({
     if (!workspaceSlug) {
       return;
     }
-    setFinishing(true);
     setFinishError(null);
     const result = await completeFirstRunSetupAction(workspaceSlug);
-    setFinishing(false);
 
     if (!result.success) {
+      setPendingAction(null);
       setFinishError(result.error);
       return;
     }
+    // No need to clear pendingAction — the router.push below navigates away.
     router.push(`/${workspaceSlug}`);
   }
 
-  function handleLeaveIntegrationsStep() {
+  function handleLeaveIntegrationsStep(action: "skip" | "finish") {
     if (integrationsDirty) {
+      setLeaveAction(action);
       setShowUnsavedChangesDialog(true);
       return;
     }
+    setPendingAction(action);
     finishSetup();
   }
 
@@ -215,7 +222,7 @@ export function SetupWizard({
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-ir-primary-light/20 px-4 py-10">
         <Logo
-          className="mb-8 h-auto w-[140px] sm:w-[160px] md:w-[180px]"
+          className="mb-8 h-auto w-35 sm:w-40 md:w-45"
           priority
         />
         <div className="w-full max-w-md rounded-ir-xl border border-ir-border bg-ir-surface p-8 shadow-ir-lg">
@@ -238,7 +245,7 @@ export function SetupWizard({
     return (
       <main className="flex min-h-screen flex-col items-center bg-ir-primary-light/20 px-4 py-10">
         <Logo
-          className="mb-8 h-auto w-[140px] sm:w-[160px] md:w-[180px]"
+          className="mb-8 h-auto w-35 sm:w-40 md:w-45"
           priority
         />
         <div className="w-full max-w-4xl rounded-ir-xl border border-ir-border bg-ir-surface p-8 shadow-ir-lg">
@@ -247,8 +254,10 @@ export function SetupWizard({
               Connect your integrations
             </h1>
             <p className="mt-1.5 text-sm text-ir-muted">
-              Email is required to continue. The rest is optional — configure
-              now or skip and set them up any time from Admin → Integrations.
+              All of this is optional — configure now or skip and set it up
+              any time from Admin → Integrations. We recommend setting up
+              email (SMTP) soon, since invites and password resets depend on
+              it.
             </p>
           </div>
 
@@ -272,19 +281,33 @@ export function SetupWizard({
 
           <div className="mt-6 flex justify-end gap-3 border-t border-ir-border pt-6">
             <Button
-              disabled={finishing}
-              onClick={handleLeaveIntegrationsStep}
+              disabled={pendingAction !== null}
+              onClick={() => handleLeaveIntegrationsStep("skip")}
               type="button"
               variant="ghost"
             >
-              Skip for now
+              {pendingAction === "skip" ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 aria-hidden="true" className="size-4 animate-spin" />
+                  Skipping…
+                </span>
+              ) : (
+                "Skip for now"
+              )}
             </Button>
             <Button
-              disabled={finishing}
-              onClick={handleLeaveIntegrationsStep}
+              disabled={pendingAction !== null}
+              onClick={() => handleLeaveIntegrationsStep("finish")}
               type="button"
             >
-              {finishing ? "Finishing…" : "Finish setup"}
+              {pendingAction === "finish" ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 aria-hidden="true" className="size-4 animate-spin" />
+                  Finishing…
+                </span>
+              ) : (
+                "Finish setup"
+              )}
             </Button>
           </div>
         </div>
@@ -295,6 +318,7 @@ export function SetupWizard({
           description="You've entered integration details that haven't been saved. If you continue, those changes will be lost."
           onConfirm={() => {
             setShowUnsavedChangesDialog(false);
+            setPendingAction(leaveAction);
             finishSetup();
           }}
           onOpenChange={setShowUnsavedChangesDialog}
@@ -309,7 +333,7 @@ export function SetupWizard({
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-ir-primary-light/20 px-4 py-10">
       <Logo
-        className="mb-8 h-auto w-[140px] sm:w-[160px] md:w-[180px]"
+        className="mb-8 h-auto w-35 sm:w-40 md:w-45"
         priority
       />
       <div className="w-full max-w-md rounded-ir-xl border border-ir-border bg-ir-surface p-8 shadow-ir-lg">

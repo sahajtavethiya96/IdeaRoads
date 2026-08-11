@@ -1,10 +1,12 @@
 "use client";
 
 import { SpinnerIcon } from "@phosphor-icons/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { inviteMemberAction } from "@/app/actions/members";
+import { Callout } from "@/components/settings/integrations/callout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,17 +20,21 @@ import { suggestEmailDomainFix } from "@/lib/email-typo";
 
 interface InviteFormProps {
   canInviteAdmin: boolean;
+  isOrbitAdmin: boolean;
   onInvited?: () => void;
   // Hide the built-in eyebrow heading when the form is embedded somewhere
   // that already provides its own title (e.g. a dialog's DialogTitle).
   showHeading?: boolean;
+  smtpConfigured: boolean;
   workspaceId: string;
 }
 
 export function InviteForm({
   workspaceId,
   canInviteAdmin,
+  isOrbitAdmin,
   showHeading = true,
+  smtpConfigured,
   onInvited,
 }: InviteFormProps) {
   const router = useRouter();
@@ -104,6 +110,21 @@ export function InviteForm({
           Invite a Team Member
         </h2>
       )}
+      {!smtpConfigured && (
+        <Callout className="mb-4" variant="warning">
+          Email isn&apos;t configured, so invites can&apos;t be delivered yet.
+          {isOrbitAdmin ? (
+            <>
+              {" "}
+              <Link href="/orbit/integrations">
+                Set up SMTP in Integrations →
+              </Link>
+            </>
+          ) : (
+            " Ask your platform administrator to set up SMTP."
+          )}
+        </Callout>
+      )}
       <form className="space-y-4" onSubmit={onSubmit}>
         {generalError && (
           <p className="rounded-ir-sm bg-ir-danger/10 px-3 py-2 text-sm text-ir-danger">
@@ -168,7 +189,7 @@ export function InviteForm({
           )}
           <Button
             className="sm:ml-auto"
-            disabled={submitting || !email.trim()}
+            disabled={submitting || !email.trim() || !smtpConfigured}
             type="submit"
           >
             {submitting ? (

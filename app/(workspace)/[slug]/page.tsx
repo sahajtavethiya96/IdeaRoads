@@ -7,8 +7,9 @@ import { QuickActions } from "@/components/dashboard/quick-actions";
 import { RoadmapPreviewCard } from "@/components/dashboard/roadmap-preview-card";
 import { WorkspaceOverviewCard } from "@/components/dashboard/workspace-overview-card";
 import { PostsTable } from "@/components/posts/posts-table";
+import { Callout } from "@/components/settings/integrations/callout";
 import { SetPageHeader } from "@/components/workspace/topbar";
-import { WORKSPACE_MEMBER } from "@/config/platform";
+import { ADMIN_ROLE, WORKSPACE_MEMBER } from "@/config/platform";
 import { workspaceMembers } from "@/db/schema";
 import { requireSession } from "@/lib/authz";
 import { getWorkspaceBoard } from "@/lib/boards/queries";
@@ -21,6 +22,7 @@ import {
   getRecentActivity,
 } from "@/lib/dashboard/queries";
 import { db } from "@/lib/db";
+import { isSmtpConfigured } from "@/lib/integration-settings";
 import {
   countWorkspacePostsByStatus,
   listWorkspacePosts,
@@ -62,6 +64,13 @@ export default async function WorkspaceDashboardPage({
   }
 
   const isAdminOrOwner = member.role !== WORKSPACE_MEMBER;
+  // SMTP is a single platform-wide setting only an Orbit Admin can fix (from
+  // /orbit/integrations) — a workspace admin/owner who isn't also an Orbit
+  // Admin has no self-service path, so the nudge only shows to those who can
+  // actually act on it.
+  const isOrbitAdmin = session.user.role === ADMIN_ROLE;
+  const showSmtpNudge =
+    isAdminOrOwner && isOrbitAdmin && !(await isSmtpConfigured());
   const activePeriod: BreakdownPeriod =
     period === "7d" || period === "all" ? period : "30d";
   const activeActivityType: ActivityType =
@@ -124,6 +133,19 @@ export default async function WorkspaceDashboardPage({
       />
 
       <div className="space-y-8 px-4 py-8 sm:px-8">
+        {showSmtpNudge && (
+          <Callout variant="warning">
+            <p className="font-medium text-ir-heading">
+              Email isn&apos;t configured
+            </p>
+            <p className="mt-0.5">
+              Password resets and member invites won&apos;t be delivered
+              until SMTP is set up.{" "}
+              <Link href="/orbit/integrations">Configure in Integrations →</Link>
+            </p>
+          </Callout>
+        )}
+
         {/* Workspace Overview */}
         <WorkspaceOverviewCard
           boardIsPublic={board?.isPublic ?? null}
