@@ -8,13 +8,12 @@ const STORAGE_KEY = "ir-smtp-nudge-dismissed-at";
 const SNOOZE_MS = 15 * 60 * 1000; // reappears 15 min after being closed
 
 export function SmtpNudgeBanner() {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const dismissedAt = Number(localStorage.getItem(STORAGE_KEY));
-    if (dismissedAt && Date.now() - dismissedAt < SNOOZE_MS) {
-      setVisible(false);
-    }
+    const snoozed = dismissedAt && Date.now() - dismissedAt < SNOOZE_MS;
+    setVisible(!snoozed);
   }, []);
 
   if (!visible) {
