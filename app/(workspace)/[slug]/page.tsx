@@ -5,9 +5,9 @@ import { notFound } from "next/navigation";
 import { DashboardMetricsSection } from "@/components/dashboard/dashboard-metrics-section";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { RoadmapPreviewCard } from "@/components/dashboard/roadmap-preview-card";
+import { SmtpNudgeBanner } from "@/components/dashboard/smtp-nudge-banner";
 import { WorkspaceOverviewCard } from "@/components/dashboard/workspace-overview-card";
 import { PostsTable } from "@/components/posts/posts-table";
-import { Callout } from "@/components/settings/integrations/callout";
 import { SetPageHeader } from "@/components/workspace/topbar";
 import { ADMIN_ROLE, WORKSPACE_MEMBER } from "@/config/platform";
 import { workspaceMembers } from "@/db/schema";
@@ -133,18 +133,7 @@ export default async function WorkspaceDashboardPage({
       />
 
       <div className="space-y-8 px-4 py-8 sm:px-8">
-        {showSmtpNudge && (
-          <Callout variant="warning">
-            <p className="font-medium text-ir-heading">
-              Email isn&apos;t configured
-            </p>
-            <p className="mt-0.5">
-              Password resets and member invites won&apos;t be delivered
-              until SMTP is set up.{" "}
-              <Link href="/orbit/integrations">Configure in Integrations →</Link>
-            </p>
-          </Callout>
-        )}
+        {showSmtpNudge && <SmtpNudgeBanner />}
 
         {/* Workspace Overview */}
         <WorkspaceOverviewCard

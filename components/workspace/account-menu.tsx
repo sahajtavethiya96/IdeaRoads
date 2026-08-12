@@ -68,7 +68,8 @@ function AccountMenuDropdownContent({
 
   const itemClass = (href: string) =>
     cn(
-      isSidebar && "data-focus:bg-sidebar-accent",
+      isSidebar &&
+        "not-data-[variant=destructive]:data-focus:bg-sidebar-accent",
       pathname.startsWith(href) &&
         "bg-ir-primary-light/20 text-ir-primary focus:bg-ir-primary-light/20 focus:text-ir-primary"
     );
@@ -133,7 +134,9 @@ function AccountMenuDropdownContent({
               </Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
-          <DropdownMenuSeparator className={cn(isSidebar && "bg-sidebar-border")} />
+          <DropdownMenuSeparator
+            className={cn(isSidebar && "bg-sidebar-border")}
+          />
         </>
       )}
 
@@ -168,7 +171,8 @@ function AccountMenuDropdownContent({
         <DropdownMenuRadioGroup onValueChange={setTheme} value={theme}>
           <DropdownMenuRadioItem
             className={cn(
-              isSidebar && "not-data-[state=checked]:data-focus:bg-sidebar-accent"
+              isSidebar &&
+                "not-data-[state=checked]:data-focus:bg-sidebar-accent"
             )}
             value="light"
           >
@@ -177,7 +181,8 @@ function AccountMenuDropdownContent({
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem
             className={cn(
-              isSidebar && "not-data-[state=checked]:data-focus:bg-sidebar-accent"
+              isSidebar &&
+                "not-data-[state=checked]:data-focus:bg-sidebar-accent"
             )}
             value="dark"
           >

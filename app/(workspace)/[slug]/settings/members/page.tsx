@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ContentContainer } from "@/components/ui/page";
-import { ADMIN_ROLE, WORKSPACE_MEMBER, WORKSPACE_OWNER } from "@/config/platform";
+import {
+  ADMIN_ROLE,
+  WORKSPACE_MEMBER,
+  WORKSPACE_OWNER,
+} from "@/config/platform";
 import { requireSession } from "@/lib/authz";
 import { isSmtpConfigured } from "@/lib/integration-settings";
 import { adminBaseUrl } from "@/lib/urls";

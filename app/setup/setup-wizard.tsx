@@ -46,9 +46,9 @@ export function SetupWizard({
   const [integrationsDirty, setIntegrationsDirty] = useState(false);
   const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] =
     useState(false);
-  const [pendingAction, setPendingAction] = useState<
-    "skip" | "finish" | null
-  >(null);
+  const [pendingAction, setPendingAction] = useState<"skip" | "finish" | null>(
+    null
+  );
   // Which button opened the unsaved-changes dialog — read back once the user
   // confirms, so the right button shows its loading state afterward.
   const [leaveAction, setLeaveAction] = useState<"skip" | "finish">("skip");
@@ -221,10 +221,7 @@ export function SetupWizard({
   if (step === "workspace") {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-ir-primary-light/20 px-4 py-10">
-        <Logo
-          className="mb-8 h-auto w-35 sm:w-40 md:w-45"
-          priority
-        />
+        <Logo className="mb-8 h-auto w-35 sm:w-40 md:w-45" priority />
         <div className="w-full max-w-md rounded-ir-xl border border-ir-border bg-ir-surface p-8 shadow-ir-lg">
           <StepWorkspace
             appHost={appHost}
@@ -244,20 +241,16 @@ export function SetupWizard({
   if (step === "integrations") {
     return (
       <main className="flex min-h-screen flex-col items-center bg-ir-primary-light/20 px-4 py-10">
-        <Logo
-          className="mb-8 h-auto w-35 sm:w-40 md:w-45"
-          priority
-        />
+        <Logo className="mb-8 h-auto w-35 sm:w-40 md:w-45" priority />
         <div className="w-full max-w-4xl rounded-ir-xl border border-ir-border bg-ir-surface p-8 shadow-ir-lg">
           <div className="text-center">
             <h1 className="text-xl font-bold text-ir-heading">
               Connect your integrations
             </h1>
             <p className="mt-1.5 text-sm text-ir-muted">
-              All of this is optional — configure now or skip and set it up
-              any time from Admin → Integrations. We recommend setting up
-              email (SMTP) soon, since invites and password resets depend on
-              it.
+              All of this is optional — configure now or skip and set it up any
+              time from Admin → Integrations. We recommend setting up email
+              (SMTP) soon, since invites and password resets depend on it.
             </p>
           </div>
 
@@ -332,10 +325,7 @@ export function SetupWizard({
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-ir-primary-light/20 px-4 py-10">
-      <Logo
-        className="mb-8 h-auto w-35 sm:w-40 md:w-45"
-        priority
-      />
+      <Logo className="mb-8 h-auto w-35 sm:w-40 md:w-45" priority />
       <div className="w-full max-w-md rounded-ir-xl border border-ir-border bg-ir-surface p-8 shadow-ir-lg">
         <div className="text-center">
           <h1 className="text-xl font-bold text-ir-heading">
@@ -363,10 +353,13 @@ export function SetupWizard({
             />
           </label>
 
-          <label className="block" htmlFor="setup-email">
-            <span className="mb-1.5 block text-sm font-semibold text-ir-heading">
+          <div className="block">
+            <label
+              className="mb-1.5 block text-sm font-semibold text-ir-heading"
+              htmlFor="setup-email"
+            >
               Email address
-            </span>
+            </label>
             <Input
               autoComplete="username"
               disabled={creatingAccount}
@@ -406,7 +399,7 @@ export function SetupWizard({
                 </div>
               </div>
             )}
-          </label>
+          </div>
 
           <label className="block" htmlFor="setup-password">
             <span className="mb-1.5 block text-sm font-semibold text-ir-heading">
