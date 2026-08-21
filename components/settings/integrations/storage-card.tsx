@@ -301,7 +301,7 @@ function StorageCardImpl({ status, onDirtyChange }: StorageCardProps) {
               <Input
                 id="storage-bucket"
                 onChange={(e) => setBucket(e.target.value)}
-                placeholder="idearoads-uploads"
+                placeholder="shapio-uploads"
                 value={bucket}
               />
             </Field>
@@ -344,7 +344,7 @@ function StorageCardImpl({ status, onDirtyChange }: StorageCardProps) {
               <Input
                 id="storage-public-url-base"
                 onChange={(e) => setPublicUrlBase(e.target.value)}
-                placeholder="https://idearoads-uploads.s3.us-east-1.amazonaws.com"
+                placeholder="https://shapio-uploads.s3.us-east-1.amazonaws.com"
                 value={publicUrlBase}
               />
             </Field>

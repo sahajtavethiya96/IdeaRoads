@@ -59,14 +59,14 @@ export function Comparison() {
         </h2>
 
         <p className="mt-3 max-w-2xl text-lg text-ir-muted">
-          Canny charges per voter. IdeaRoads doesn't. That's just the start.
+          Canny charges per voter. Shapio doesn't. That's just the start.
         </p>
 
         <div className="mt-12 overflow-x-auto">
           <div className="min-w-120 overflow-hidden rounded-ir-lg border border-ir-border bg-ir-surface shadow-ir-xs">
             <table className="table w-full">
               <caption className="sr-only">
-                Feature comparison of IdeaRoads versus Canny
+                Feature comparison of Shapio versus Canny
               </caption>
               <thead>
                 <tr>
@@ -74,7 +74,7 @@ export function Comparison() {
                     Feature
                   </th>
                   <th className="border-b border-l border-ir-border bg-ir-primary px-4 py-3 text-2xs font-semibold tracking-ui text-ir-primary-foreground uppercase">
-                    IdeaRoads
+                    Shapio
                   </th>
                   <th className="border-b border-l border-ir-border bg-ir-muted-surface px-4 py-3 text-2xs font-semibold tracking-ui text-ir-muted uppercase">
                     Canny

@@ -38,7 +38,7 @@ function BoardMockup() {
         </div>
         <div className="min-w-0 flex-1 border border-ir-border bg-ir-surface px-3 py-0.5 text-center">
           <span className="font-mono text-2xs text-ir-muted">
-            acme.idearoads.com/boards/feature-requests
+            acme.shapio.com/boards/feature-requests
           </span>
         </div>
       </div>
@@ -214,7 +214,7 @@ function EmailMockup() {
             From
           </span>
           <span className="text-2xs text-ir-heading">
-            IdeaRoads · Acme Corp &lt;noreply@acme.com&gt;
+            Shapio · Acme Corp &lt;noreply@acme.com&gt;
           </span>
         </div>
         <div className="flex gap-2">

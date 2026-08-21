@@ -48,7 +48,7 @@ export default async function OnboardingPage({
   // Someone already using the product who's adding an extra workspace (the
   // workspace switcher's "Create workspace", ?new=1) gets the plain
   // single-step form unchanged — a second "Welcome!"/"How would you like to
-  // use IdeaRoads?" would make no sense for them.
+  // use Shapio?" would make no sense for them.
   if (isNew) {
     return <OnboardingForm appHost={appHost} isAdditional />;
   }

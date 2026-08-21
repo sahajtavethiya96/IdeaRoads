@@ -22,7 +22,7 @@ function WorkspaceMockup() {
         </div>
         <div className="min-w-0 flex-1 border border-ir-border bg-ir-background px-3 py-1 text-center">
           <span className="font-mono text-2xs text-ir-muted">
-            app.idearoads.com/workspace
+            app.shapio.com/workspace
           </span>
         </div>
       </div>

@@ -25,8 +25,8 @@ export default async function globalSetup() {
   const user = decodeURIComponent(url.username) || "postgres";
   const password = decodeURIComponent(url.password) || "password";
   const port = Number(url.port) || 54_350;
-  const database = url.pathname.replace(/^\//, "") || "idearoads_test";
-  const dataDir = path.resolve(process.cwd(), ".idearoads-postgres-test");
+  const database = url.pathname.replace(/^\//, "") || "shapio_test";
+  const dataDir = path.resolve(process.cwd(), ".shapio-postgres-test");
 
   // Always start from a clean data directory so test runs never inherit state
   // from a previous run that wasn't shut down cleanly.
@@ -59,7 +59,7 @@ export default async function globalSetup() {
   // would push (with --force) against the DEV database from `.env` and wipe it.
   // We use drizzle-test.config.ts, which reads the URL DIRECTLY from `.env.test`
   // on disk (immune to drizzle-kit's env rewriting) and hard-refuses any
-  // database that isn't the ephemeral …/idearoads_test one.
+  // database that isn't the ephemeral …/shapio_test one.
   await execFileAsync(
     "npx",
     ["drizzle-kit", "push", "--config=drizzle-test.config.ts", "--force"],

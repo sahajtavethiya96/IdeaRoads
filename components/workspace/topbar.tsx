@@ -14,16 +14,8 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { PAGE_PADDING } from "@/components/ui/page";
-import { TopbarAccountMenu } from "@/components/workspace/account-menu";
 import { OpenPortalButton } from "@/components/workspace/open-portal-button";
 import { cn } from "@/lib/utils";
-
-export interface TopbarAccountInfo {
-  email: string;
-  isAdminOrOwner: boolean;
-  userImage: string | null;
-  workspaceSlug: string;
-}
 
 export interface PageHeaderState {
   actions?: ReactNode;
@@ -109,11 +101,10 @@ export function TopbarProvider({
   );
 }
 
-// Rendered once by the workspace layout, above {children}. `account` is
-// omitted in the platform admin layout (/orbit), which has no workspace
-// context for the menu's settings links and already shows the account's
-// avatar + sign-out in AdminSidebar.
-export function Topbar({ account }: { account?: TopbarAccountInfo }) {
+// Rendered once by the workspace layout, above {children}. The account
+// avatar + menu live in the sidebar footer (see AccountMenu in
+// account-menu.tsx) — not duplicated here.
+export function Topbar() {
   const header = useContext(HeaderStateContext);
   const headerActions = useContext(HeaderActionsContext);
   const router = useRouter();
@@ -191,14 +182,6 @@ export function Topbar({ account }: { account?: TopbarAccountInfo }) {
           <div className="contents" ref={setBeforeActionsSlot} />
           <OpenPortalButton override={header.portalHref} />
           <div className="contents" ref={setActionsSlot} />
-          {account && (
-            <TopbarAccountMenu
-              email={account.email}
-              isAdminOrOwner={account.isAdminOrOwner}
-              userImage={account.userImage}
-              workspaceSlug={account.workspaceSlug}
-            />
-          )}
         </div>
       </div>
     </div>

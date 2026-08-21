@@ -94,7 +94,7 @@ export const DEFAULT_FEATURE_FLAGS: Array<{
     key: "show_landing_page",
     // Self-hosted deployments (the default) send logged-out visitors at `/`
     // straight to /signin; this flag serves the marketing landing page there
-    // instead — meant for the hosted IdeaRoads.com instance. Seeded (once,
+    // instead — meant for the hosted Shapio.com instance. Seeded (once,
     // INSERT ON CONFLICT DO NOTHING — see lib/worker/boss.ts) from the legacy
     // NEXT_PUBLIC_SHOW_LANDING_PAGE env var so an existing install that set
     // it keeps the same behavior after upgrading; from then on this flag in

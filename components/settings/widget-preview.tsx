@@ -95,7 +95,7 @@ export function WidgetPreview({
               src={floatingIconUrl}
             />
           ) : (
-            <Image alt="" height={22} src="/logo.png" width={22} />
+            <Image alt="" height={22} src="/logo.svg" width={22} />
           )}
         </div>
       ) : (

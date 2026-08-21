@@ -1,4 +1,4 @@
-# ── IDEA ROADS web app (Next.js) ──────────────────────────────────────────────
+# ── SHAPIO web app (Next.js) ────────────────────────────────────────────────
 # Multi-stage build producing a lean standalone server (see next.config.mjs
 # `output: "standalone"`). The background worker uses Dockerfile.worker instead.
 
@@ -47,8 +47,8 @@ ENV HOSTNAME=0.0.0.0
 
 # uid/gid 1001 is deliberate and must not change: existing `uploads` volumes are
 # owned by it, so a redeploy keeps write access.
-RUN groupadd --system --gid 1001 idearoads \
-  && useradd --system --uid 1001 --gid idearoads idearoads
+RUN groupadd --system --gid 1001 shapio \
+  && useradd --system --uid 1001 --gid shapio shapio
 
 # Standalone output: server + minimal node_modules, plus static assets & public/.
 COPY --from=builder /app/public ./public
@@ -58,12 +58,12 @@ COPY --from=builder /app/.next/static ./.next/static
 # Local-storage uploads live here (lib/storage/local.ts defaults to
 # <cwd>/public/uploads); mount a volume to persist across redeploys. Not needed
 # when STORAGE_S3_* is configured.
-RUN mkdir -p /app/public/uploads && chown -R idearoads:idearoads /app/public/uploads
+RUN mkdir -p /app/public/uploads && chown -R shapio:shapio /app/public/uploads
 # The runtime user needs write access to .next (image-optimization cache lives
 # at .next/cache) — everything copied above defaults to root ownership.
-RUN chown -R idearoads:idearoads /app/.next
+RUN chown -R shapio:shapio /app/.next
 
-USER idearoads
+USER shapio
 EXPOSE 3000
 
 CMD ["node", "server.js"]

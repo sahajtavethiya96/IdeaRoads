@@ -41,7 +41,7 @@ const MAJOR_FEATURES = [
     title: "Changelog",
     tagline: "Every voter hears from you automatically.",
     description:
-      "Write a release note, link the posts you shipped, and IdeaRoads emails every voter automatically. The loop closes without any manual work.",
+      "Write a release note, link the posts you shipped, and Shapio emails every voter automatically. The loop closes without any manual work.",
     included: [
       "Release notes with linked posts",
       "Automatic voter notifications",

@@ -384,7 +384,7 @@ async function checkGoogleOAuthCredentials(
         client_id: clientId,
         client_secret: clientSecret,
         grant_type: "authorization_code",
-        code: "idearoads-credential-probe",
+        code: "shapio-credential-probe",
         redirect_uri: `${adminBaseUrl()}/api/auth/callback/google`,
       }),
     });

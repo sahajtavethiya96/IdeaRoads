@@ -530,7 +530,7 @@ export function EmbedSection({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="logo">IdeaRoads logo</SelectItem>
+                          <SelectItem value="logo">Shapio logo</SelectItem>
                           <SelectItem value="custom">Custom icon</SelectItem>
                         </SelectContent>
                       </Select>

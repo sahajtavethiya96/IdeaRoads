@@ -14,8 +14,8 @@ import { generatePostSlug } from "@/lib/posts/queries";
 const WELCOME_POST = {
   title: "Welcome to your feedback board 👋",
   body: "This is an example piece of feedback — this is what a real customer's feature request or bug report will look like here. Feel free to delete it once you're ready to launch.",
-  authorEmail: "hello@idearoads.app",
-  authorName: "IdeaRoads",
+  authorEmail: "hello@shapio.app",
+  authorName: "Shapio",
   upvotes: 3,
 };
 

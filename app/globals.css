@@ -12,6 +12,20 @@
     dark;
 }
 
+/* daisyUI's stock light/dark themes ship a purple/violet --color-primary
+   (oklch(45% 0.24 277.023) et al.) — visible on every unconverted page still
+   using semantic daisyUI classes (bg-primary, btn-primary, progress-primary,
+   checkbox-primary, ...) instead of the ir- token set above. Overriding the
+   two primary variables here re-points every one of those classes at the
+   real Shapio/IdeaRoads brand blue without waiting on the full ir- token
+   migration. Same selector specificity as daisyUI's own theme rules, so this
+   must stay after the @plugin block to win on source order. */
+[data-theme="light"],
+[data-theme="dark"] {
+  --color-primary: var(--ir-primary);
+  --color-primary-content: var(--ir-primary-foreground);
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /* Local replacements for the subset of the (now-removed) shadcn package's

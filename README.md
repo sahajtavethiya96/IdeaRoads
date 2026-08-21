@@ -1,8 +1,28 @@
 # IdeaRoads
 
+[![CI](https://github.com/sahajtavethiya96/IdeaRoads/actions/workflows/ci.yml/badge.svg)](https://github.com/sahajtavethiya96/IdeaRoads/actions/workflows/ci.yml)
+[![Docker build](https://github.com/sahajtavethiya96/IdeaRoads/actions/workflows/docker-build.yml/badge.svg)](https://github.com/sahajtavethiya96/IdeaRoads/actions/workflows/docker-build.yml)
+[![Release](https://github.com/sahajtavethiya96/IdeaRoads/actions/workflows/release.yml/badge.svg)](https://github.com/sahajtavethiya96/IdeaRoads/actions/workflows/release.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 IdeaRoads is an open-source, self-hostable user feedback and feature voting platform. Teams use it to collect product feedback, let users vote on feature requests, track work on a public roadmap, and publish a changelog — all under their own domain.
 
 Inspired by Canny and Fider. MIT licensed. No paid services or cloud vendor lock-in.
+
+---
+
+## Contents
+
+- [Tech Stack](#tech-stack)
+- [Quick Start](#quick-start)
+- [Running it with Docker](#running-it-with-docker)
+- [Health checks](#health-checks)
+- [What's Implemented](#whats-implemented)
+- [What's Documented but Not Yet Built](#whats-documented-but-not-yet-built)
+- [Project Structure](#project-structure)
+- [Commands](#commands)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
@@ -17,11 +37,13 @@ Inspired by Canny and Fider. MIT licensed. No paid services or cloud vendor lock
 | Background Jobs | pg-boss (same PostgreSQL DB, no Redis)    |
 | Email           | Nodemailer + SMTP + React Email templates |
 | Linting         | Biome (replaces ESLint + Prettier)        |
-| Deployment      | Docker Compose                            |
+| Deployment      | Docker Compose, or manual/Node            |
 
 ---
 
 ## Quick Start
+
+For local development, without Docker:
 
 ```bash
 pnpm install
@@ -32,6 +54,8 @@ pnpm dev            # starts Next.js + background worker concurrently
 ```
 
 Open `http://localhost:3000` and sign in with a magic link.
+
+Deploying this somewhere real? See [Running it with Docker](#running-it-with-docker) below.
 
 ### Two-host mode (Workspace vs Public Portal)
 
@@ -73,6 +97,104 @@ effect.
 
 ---
 
+## Running it with Docker
+
+**You need:** Docker and Docker Compose v2 (`docker compose version`), and
+nothing else — no local Node.js or PostgreSQL install.
+
+```bash
+git clone <this-repo-url> idearoads && cd idearoads
+cp .env.example .env
+# set DATABASE_URL (matching the bundled Postgres below is fine), APP_SECRET
+# (32+ chars — openssl rand -base64 36), and NEXT_PUBLIC_APP_URL
+docker compose up -d
+```
+
+This builds [`Dockerfile`](./Dockerfile) (app) and
+[`Dockerfile.worker`](./Dockerfile.worker) (used for both the one-shot
+`migrate` step and the `worker` service) from source, then starts
+PostgreSQL, applies migrations, and leaves `app` and `worker` running. The
+app publishes on `http://localhost:3000` — change the host port with
+`APP_PORT=8080` in `.env` if 3000 is already taken.
+
+Already have a Postgres database (managed service, or your own instance)?
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.external-db.yml up -d
+```
+
+Point `DATABASE_URL` at your own database in `.env` first — see the comments
+in [`docker-compose.external-db.yml`](./docker-compose.external-db.yml) if
+your database runs on the Docker host itself rather than a remote server.
+
+### Prebuilt images
+
+Every push to `main` that passes CI also builds and publishes versioned,
+multi-arch (amd64 + arm64) images via [`.github/workflows/release.yml`](./.github/workflows/release.yml) —
+useful if you're pointing a platform (Coolify, Dokploy, Kubernetes, ECS,
+etc.) directly at an image instead of building from this repo:
+
+```bash
+docker pull ghcr.io/sahajtavethiya96/idearoads:latest          # app
+docker pull ghcr.io/sahajtavethiya96/idearoads-worker:latest   # worker
+```
+
+Available tags: `latest`, the `major`/`minor`/`patch` ladder for each
+tagged release (e.g. `0`, `0.1`, `0.1.0`), `main` (rebuilt on every push,
+expect rough edges), and a fixed `sha-<short>` per build. Pin a version in
+production rather than tracking `latest`. The Compose files above always
+build from source; using a prebuilt image directly means running
+`docker run`/your platform's config against these image names yourself with
+the same env vars as `.env.example`.
+
+> **First release only:** a new GitHub Packages entry defaults to
+> **private**, even in a public repository. Repository → Packages →
+> `idearoads` / `idearoads-worker` → Package settings → Change visibility →
+> Public — otherwise `docker pull` fails for anyone not signed in. CI's
+> `verify-public` job in `release.yml` checks this automatically and fails
+> loudly until it's done.
+
+### Where your data lives
+
+| Volume | Mounted at | Holds |
+|--------|-----------|-------|
+| `idearoads_pgdata` | `/var/lib/postgresql/data` | Everything: workspaces, posts, votes, accounts, sessions |
+| `idearoads_uploads` | `/app/public/uploads` | Uploaded files, on the default local storage setting only |
+
+Volume names are pinned literally (not derived from the Compose project
+name) so a redeploy always reattaches to the same volume instead of
+silently creating a new empty one. They survive `down`, `pull`, and
+`up -d` — only `docker compose down -v` destroys them.
+
+### Updating
+
+```bash
+git pull
+docker compose up -d --build
+```
+
+The `migrate` service re-applies before `app`/`worker` start; it's safe to
+run repeatedly. Check [CHANGELOG.md](./CHANGELOG.md) for anything needing
+manual work before updating a production instance.
+
+---
+
+## Health checks
+
+`GET /api/health` needs no authentication and checks real database
+connectivity (not just "the process is up"):
+
+```bash
+curl http://localhost:3000/api/health
+# {"ok":true,"db":"connected"}       -> 200
+# {"ok":false,"db":"disconnected"}   -> 503
+```
+
+The `app` service's Docker `HEALTHCHECK` uses this, so `docker compose ps`
+reports real health with no extra configuration.
+
+---
+
 ## What's Implemented
 
 ### Authentication
@@ -103,7 +225,7 @@ Superadmin-only panel — returns 404 for everyone else.
 Runs as a separate process alongside Next.js. Uses pg-boss (no Redis required).
 
 | Job                    | Trigger                 | Description                                     |
-| ---------------------- | ----------------------- | ----------------------------------------------- |
+| ---------------------- | ----------------------- | ------------------------------------------------ |
 | `email.send`           | `enqueueEmail()` called | Process `email_outbox` row → Nodemailer SMTP    |
 | `email.outbox-reap`    | Cron every 15 min       | Re-queue emails stuck in `queued` state         |
 | `email.events-prune`   | Cron 3 AM daily         | Delete email events older than retention period |
@@ -124,7 +246,7 @@ Fire-and-forget audit trail on user creation, magic link send, logout, data expo
 The full product specification lives in [`/docs`](./docs). Features are documented in build order:
 
 | #   | Feature                         |
-| --- | ------------------------------- |
+| --- | -------------------------------- |
 | 02  | Workspaces                      |
 | 03  | Team Members & Invites          |
 | 04  | Feedback Boards                 |
@@ -178,7 +300,7 @@ docs/
 ## Commands
 
 | Command            | Description                              |
-| ------------------ | ---------------------------------------- |
+| ------------------- | ----------------------------------------- |
 | `pnpm dev`         | Start Next.js + worker in watch mode     |
 | `pnpm dev:next`    | Start Next.js only                       |
 | `pnpm worker`      | Start worker only (watch mode)           |
@@ -186,6 +308,7 @@ docs/
 | `pnpm typecheck`   | Run TypeScript type checker              |
 | `pnpm lint`        | Lint with Biome                          |
 | `pnpm lint:fix`    | Lint and auto-fix                        |
+| `pnpm test`        | Run tests (Vitest)                       |
 | `pnpm db:local`    | Start embedded PostgreSQL (dev)          |
 | `pnpm db:migrate`  | Run pending migrations                   |
 | `pnpm db:generate` | Generate migration files from schema     |
@@ -194,3 +317,21 @@ docs/
 | `pnpm make:admin`  | Promote user to superadmin               |
 
 See [`docs/MASTER.md`](./docs/MASTER.md) for the full environment variable reference.
+
+---
+
+## Contributing
+
+Read [CLAUDE.md](./CLAUDE.md) first — it documents the design rules, component conventions, and hard rules every change is expected to follow. For anything beyond a small fix, open an issue first to discuss the approach.
+
+Before opening a PR, run:
+
+```bash
+pnpm typecheck
+pnpm lint
+pnpm test
+```
+
+## License
+
+MIT — see [LICENSE](./LICENSE) for details.

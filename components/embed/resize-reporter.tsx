@@ -15,7 +15,7 @@ export function EmbedResizeReporter() {
     function postHeight() {
       window.parent.postMessage(
         {
-          source: "idearoads-widget",
+          source: "shapio-widget",
           type: "resize",
           height: document.body.scrollHeight,
         },

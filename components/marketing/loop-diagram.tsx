@@ -65,7 +65,7 @@ export function LoopDiagram() {
         </p>
 
         <h2 className="mt-4 max-w-2xl font-bold text-3xl text-base-content sm:text-4xl">
-          Any tool can collect feedback. Only IdeaRoads closes the loop.
+          Any tool can collect feedback. Only Shapio closes the loop.
         </h2>
 
         <div className="mt-12">

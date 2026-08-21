@@ -1,7 +1,8 @@
 /* ==========================================================================
-   IdeaRoads Design System — Design Tokens (Phase 1)
+   Shapio Design System — Design Tokens (Phase 1)
    ==========================================================================
-   Centralized, namespaced ("ir-" = IdeaRoads) token layer for the UI/UX
+   Centralized, namespaced ("ir-" — legacy internal namespace, predates the
+   Shapio rename; left as-is, not part of this rename) token layer for the UI/UX
    redesign — genuinely product-specific, independent of daisyUI's own theme
    vocabulary (globals.css). The app's legacy shadcn token set has since been
    removed; unconverted pages now use daisyUI's semantic classes directly

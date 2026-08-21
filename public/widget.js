@@ -1,5 +1,5 @@
 /*!
- * IdeaRoads embeddable widget.
+ * Shapio embeddable widget.
  *
  * Install once — everything else (button type, position, colors, icon, size,
  * theme, device visibility) is configured from Settings → Embed and fetched
@@ -53,7 +53,7 @@
  *      console.error and the "configuration error" notice.
  */
 (async () => {
-  const MESSAGE_SOURCE = "idearoads-widget";
+  const MESSAGE_SOURCE = "shapio-widget";
   const script = document.currentScript;
 
   if (!script) {
@@ -64,7 +64,7 @@
 
   const workspace = script.getAttribute("data-workspace");
   if (!workspace) {
-    console.error("[IdeaRoads widget] data-workspace attribute is required");
+    console.error("[Shapio widget] data-workspace attribute is required");
     renderConfigError(
       script,
       "Feedback widget: missing data-workspace — re-copy the install snippet."
@@ -176,7 +176,7 @@
   const fetched = await fetchWidgetConfig();
   if (!fetched) {
     console.warn(
-      "[IdeaRoads widget] could not load configuration from the server — falling back to install-time attributes, if any."
+      "[Shapio widget] could not load configuration from the server — falling back to install-time attributes, if any."
     );
   }
 
@@ -205,7 +205,7 @@
 
   if (!iframeUrl) {
     console.error(
-      "[IdeaRoads widget] could not determine which board to embed — the configuration endpoint was unreachable and no legacy data-board attribute is present."
+      "[Shapio widget] could not determine which board to embed — the configuration endpoint was unreachable and no legacy data-board attribute is present."
     );
     renderConfigError(
       script,
@@ -400,7 +400,7 @@
     const iframe = document.createElement("iframe");
     iframe.src = iframeSrc;
     iframe.title = "Feedback";
-    iframe.setAttribute("data-idearoads-widget", "");
+    iframe.setAttribute("data-shapio-widget", "");
     iframe.setAttribute("loading", "lazy");
     iframe.style.cssText =
       "display:block;width:100%;height:100%;border:none;" +

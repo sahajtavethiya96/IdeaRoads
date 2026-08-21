@@ -21,8 +21,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # non-root user on a fresh host (EACCES). Everything needed is already baked in
 # node_modules at build time, so we run the bundled `tsx` binary directly.
 # uid/gid 1001 is deliberate and must not change (see Dockerfile).
-RUN groupadd --system --gid 1001 idearoads \
-  && useradd --system --uid 1001 --gid idearoads idearoads
+RUN groupadd --system --gid 1001 shapio \
+  && useradd --system --uid 1001 --gid shapio shapio
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json tsconfig.json ./
@@ -31,7 +31,7 @@ COPY db ./db
 COPY lib ./lib
 COPY scripts ./scripts
 
-USER idearoads
+USER shapio
 
 # Default command: run the worker. The compose `migrate` service overrides this
 # to run scripts/migrate.ts. Both invoke tsx directly (no pnpm/corepack).

@@ -6,7 +6,7 @@ interface FeedbackWidgetLauncherProps {
   appUrl: string;
 }
 
-const LAUNCHER_SCRIPT_ID = "idearoads-feedback-widget-launcher-script";
+const LAUNCHER_SCRIPT_ID = "shapio-feedback-widget-launcher-script";
 
 // Floating bottom-right launcher button that opens the same feedback board
 // embedded inline via FeedbackWidgetSection. Rendered on every public

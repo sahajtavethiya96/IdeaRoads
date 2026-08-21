@@ -55,10 +55,10 @@ export function EmbedDocs({ appUrl }: EmbedDocsProps) {
           <AccordionTrigger>Install once, manage forever</AccordionTrigger>
           <AccordionContent className="space-y-3">
             <p className="text-ir-muted">
-              <InlineCode>widget.js</InlineCode> is hosted by IdeaRoads once
-              it's installed, there's nothing to download, host, or update
-              yourself. Future widget improvements are delivered automatically
-              the next time it loads.
+              <InlineCode>widget.js</InlineCode> is hosted by Shapio once it's
+              installed, there's nothing to download, host, or update yourself.
+              Future widget improvements are delivered automatically the next
+              time it loads.
             </p>
             <ol className="list-decimal space-y-1.5 pl-4 text-ir-muted">
               <li>Copy the embed script from Settings → Embed above.</li>
@@ -142,9 +142,9 @@ import { useEffect } from "react";
 
 export function FeedbackWidget() {
   useEffect(() => {
-    if (document.getElementById("idearoads-widget-script")) return;
+    if (document.getElementById("shapio-widget-script")) return;
     const script = document.createElement("script");
-    script.id = "idearoads-widget-script";
+    script.id = "shapio-widget-script";
     script.src = "${appUrl}/widget.js";
     script.dataset.workspace = "acme";
     document.body.appendChild(script);

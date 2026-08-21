@@ -17,18 +17,20 @@ export function Logo({ className, priority }: LogoProps) {
       <Image
         alt={PRODUCT_NAME}
         className={cn("dark:hidden", className)}
-        height={164}
+        height={169}
         priority={priority}
         src={LOGO_PATH}
-        width={500}
+        unoptimized
+        width={480}
       />
       <Image
         alt={PRODUCT_NAME}
         className={cn("hidden dark:block", className)}
-        height={164}
+        height={169}
         priority={priority}
         src={LOGO_PATH_DARK}
-        width={500}
+        unoptimized
+        width={480}
       />
     </>
   );

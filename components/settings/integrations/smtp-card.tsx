@@ -175,7 +175,7 @@ function SmtpCardImpl({ status, onDirtyChange }: SmtpCardProps) {
           <Input
             id="smtp-from"
             onChange={(e) => setFrom(e.target.value)}
-            placeholder={'"IdeaRoads" <noreply@example.com>'}
+            placeholder={'"Shapio" <noreply@example.com>'}
             value={from}
           />
         </Field>

@@ -76,7 +76,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-10 border-t border-ir-border pt-6">
           <p className="text-xs text-ir-muted">
-            © 2026 IdeaRoads. Open source for Product teams.
+            © 2026 Shapio. Open source for Product teams.
           </p>
         </div>
       </div>

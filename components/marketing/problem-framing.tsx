@@ -31,8 +31,8 @@ export function ProblemFraming() {
 
         <p className="mt-3 max-w-2xl text-lg text-ir-muted">
           Most product teams collect feedback in five different places, make
-          roadmap decisions by instinct, and ship features into silence.
-          IdeaRoads fixes all three.
+          roadmap decisions by instinct, and ship features into silence. Shapio
+          fixes all three.
         </p>
 
         <div className="mt-12 grid gap-px overflow-hidden rounded-ir-lg bg-ir-border sm:grid-cols-3">

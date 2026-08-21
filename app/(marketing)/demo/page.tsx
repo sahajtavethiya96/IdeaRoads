@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "Demo",
   description:
-    "See IdeaRoads in action. Explore the public feedback board, admin workspace, and automated notifications — no account required.",
+    "See Shapio in action. Explore the public feedback board, admin workspace, and automated notifications — no account required.",
 };
 
 /* ─── Public board mockup ──────────────────────────────────────────── */
@@ -137,7 +137,7 @@ function AdminWorkspaceMockup() {
         </div>
         <div className="min-w-0 flex-1 border border-ir-border bg-ir-background px-3 py-1 text-center">
           <span className="font-mono text-2xs text-ir-muted">
-            app.idearoads.com/workspace
+            app.shapio.com/workspace
           </span>
         </div>
       </div>
@@ -197,7 +197,7 @@ function EmailMockup() {
             From
           </span>
           <span className="text-2xs text-ir-heading">
-            IdeaRoads · Acme Corp &lt;noreply@acme.com&gt;
+            Shapio · Acme Corp &lt;noreply@acme.com&gt;
           </span>
         </div>
         <div className="flex gap-3">
@@ -280,7 +280,7 @@ export default function DemoPage() {
             Live Demo
           </p>
           <h1 className="mt-4 font-black text-5xl tracking-normal text-ir-heading sm:text-6xl">
-            See IdeaRoads
+            See Shapio
             <br className="hidden sm:block" /> in action.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-ir-muted">

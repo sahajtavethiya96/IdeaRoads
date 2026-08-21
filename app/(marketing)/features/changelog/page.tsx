@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "Changelog",
   description:
-    "Ship with a story. Write a release note, link the posts you shipped, and IdeaRoads automatically notifies every voter.",
+    "Ship with a story. Write a release note, link the posts you shipped, and Shapio automatically notifies every voter.",
 };
 
 const BENEFITS = [
@@ -53,7 +53,7 @@ function ChangelogMockup() {
         </div>
         <div className="min-w-0 flex-1 border border-ir-border bg-ir-background px-3 py-0.5 text-center">
           <span className="font-mono text-2xs text-ir-muted">
-            acme.idearoads.com/changelog
+            acme.shapio.com/changelog
           </span>
         </div>
       </div>
@@ -134,8 +134,8 @@ export default function ChangelogPage() {
             <br className="hidden sm:block" /> Every voter hears from you.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-ir-muted">
-            Write a release note, link the posts you shipped, and IdeaRoads
-            emails every voter automatically. No manual outreach. No one left
+            Write a release note, link the posts you shipped, and Shapio emails
+            every voter automatically. No manual outreach. No one left
             wondering.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">

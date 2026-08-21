@@ -120,14 +120,7 @@ export default async function WorkspaceLayout({
               }}
               key={workspace.id}
             >
-              <Topbar
-                account={{
-                  email,
-                  isAdminOrOwner,
-                  userImage: session.user.image ?? null,
-                  workspaceSlug: workspace.slug,
-                }}
-              />
+              <Topbar />
               {children}
             </TopbarProvider>
           </PortalHrefProvider>

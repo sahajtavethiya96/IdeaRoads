@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "How IdeaRoads collects, uses, and protects your data.",
+  description: "How Shapio collects, uses, and protects your data.",
 };
 
 const SECTIONS = [
@@ -13,11 +13,11 @@ const SECTIONS = [
   },
   {
     heading: "How We Use Your Information",
-    body: "We use the information we collect to operate and improve IdeaRoads, send you product updates and notifications you have opted into, respond to support requests, and ensure platform security.",
+    body: "We use the information we collect to operate and improve Shapio, send you product updates and notifications you have opted into, respond to support requests, and ensure platform security.",
   },
   {
     heading: "Data Storage",
-    body: "If you are using a self-hosted instance of IdeaRoads, your data is stored on infrastructure you control. For managed instances, data is stored on servers located within your selected region.",
+    body: "If you are using a self-hosted instance of Shapio, your data is stored on infrastructure you control. For managed instances, data is stored on servers located within your selected region.",
   },
   {
     heading: "Email Notifications",
@@ -25,11 +25,11 @@ const SECTIONS = [
   },
   {
     heading: "Third-Party Services",
-    body: "IdeaRoads may integrate with third-party services (such as Slack or Zapier) at your direction. We only share data with third parties when you have explicitly configured an integration.",
+    body: "Shapio may integrate with third-party services (such as Slack or Zapier) at your direction. We only share data with third parties when you have explicitly configured an integration.",
   },
   {
     heading: "Contact",
-    body: "If you have questions about this Privacy Policy or your data, contact us at privacy@idearoads.com.",
+    body: "If you have questions about this Privacy Policy or your data, contact us at privacy@shapio.com.",
   },
 ] as const;
 
@@ -61,7 +61,7 @@ export default function PrivacyPage() {
             className="rounded-ir-sm text-sm font-semibold text-ir-heading transition-colors duration-150 ease-ir-standard hover:text-ir-primary"
             href="/"
           >
-            ← Back to IdeaRoads
+            ← Back to Shapio
           </Link>
         </div>
       </div>

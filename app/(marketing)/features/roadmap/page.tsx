@@ -82,7 +82,7 @@ function RoadmapMockup() {
         </div>
         <div className="min-w-0 flex-1 border border-ir-border bg-ir-background px-3 py-0.5 text-center">
           <span className="font-mono text-2xs text-ir-muted">
-            acme.idearoads.com/roadmap
+            acme.shapio.com/roadmap
           </span>
         </div>
       </div>

@@ -21,10 +21,10 @@ function testDatabaseUrl(): string {
   }
   const match = raw.match(/^\s*DATABASE_URL\s*=\s*(.+)\s*$/m);
   const url = match?.[1]?.trim().replace(/^["']|["']$/g, "");
-  if (!url?.includes("idearoads_test")) {
+  if (!url?.includes("shapio_test")) {
     throw new Error(
       "drizzle-test.config.ts: .env.test DATABASE_URL must target the " +
-        `ephemeral test database (…/idearoads_test). Got: ${url ?? "unset"}. ` +
+        `ephemeral test database (…/shapio_test). Got: ${url ?? "unset"}. ` +
         "Refusing to run a --force schema push against a non-test database."
     );
   }

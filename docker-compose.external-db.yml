@@ -1,4 +1,4 @@
-# ── IDEA ROADS — external PostgreSQL overlay ──────────────────────────────────
+# ── SHAPIO — external PostgreSQL overlay ──────────────────────────────────────
 # Use your own PostgreSQL (company cluster, RDS, Neon, Supabase, Railway,
 # Render, DigitalOcean, …) instead of the bundled `postgres` container.
 #
@@ -45,7 +45,7 @@ services:
 
 # If your database runs on the Docker *host* (not a remote server), containers
 # cannot reach it via `localhost`. Uncomment the block below and use
-# `DATABASE_URL=postgresql://user:pass@host.docker.internal:5432/idearoads`.
+# `DATABASE_URL=postgresql://user:pass@host.docker.internal:5432/shapio`.
 #
 #   app:
 #     extra_hosts: ["host.docker.internal:host-gateway"]

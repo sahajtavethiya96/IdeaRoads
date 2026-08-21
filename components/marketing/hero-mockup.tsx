@@ -70,7 +70,7 @@ export function HeroMockup() {
         </div>
         <div className="min-w-0 flex-1 rounded-ir-sm border border-ir-border bg-ir-surface px-3 py-1 text-center">
           <span className="font-mono text-2xs text-ir-muted">
-            acme.idearoads.com/boards/feature-requests
+            acme.shapio.com/boards/feature-requests
           </span>
         </div>
       </div>

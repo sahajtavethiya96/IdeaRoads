@@ -3,13 +3,13 @@ services:
     image: postgres:16
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-idearoads}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-idearoads}
-      POSTGRES_DB: ${POSTGRES_DB:-idearoads}
+      POSTGRES_USER: ${POSTGRES_USER:-shapio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shapio}
+      POSTGRES_DB: ${POSTGRES_DB:-shapio}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-idearoads} -d ${POSTGRES_DB:-idearoads}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-shapio} -d ${POSTGRES_DB:-shapio}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -32,8 +32,12 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     env_file: .env
-    expose:
-      - "3000"
+    # Published to the host so a fresh `docker compose up -d` is reachable at
+    # localhost:3000 with no extra steps. Behind a reverse proxy (Dokploy,
+    # Traefik, Caddy) that reaches the app over the Docker network instead,
+    # drop this and use `expose: ["3000"]` to avoid the redundant host bind.
+    ports:
+      - "${APP_PORT:-3000}:3000"
     volumes:
       - uploads:/app/public/uploads
     depends_on:

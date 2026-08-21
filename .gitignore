@@ -4,7 +4,7 @@ public/uploads
 Kanbanica-main
 
 # Next.js
-.idearoads-postgres
+.shapio-postgres
 .next/
 out/
 
@@ -23,7 +23,7 @@ dist/
 .pnpm-store/
 
 # Ephemeral test database (spun up by the vitest global setup)
-.idearoads-postgres-test/
+.shapio-postgres-test/
 
 # Drizzle
 drizzle/meta/

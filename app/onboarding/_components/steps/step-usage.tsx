@@ -41,7 +41,7 @@ export function StepUsage({ onChoose, onBack }: StepUsageProps) {
   return (
     <div className="mx-auto w-full max-w-2xl text-center">
       <h1 className="text-2xl font-bold text-ir-heading">
-        How would you like to use IdeaRoads?
+        How would you like to use Shapio?
       </h1>
       <p className="mt-1.5 text-sm text-ir-muted">
         You can always turn on the other option later — this just tailors where

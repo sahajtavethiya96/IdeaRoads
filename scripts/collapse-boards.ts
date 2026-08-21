@@ -5,7 +5,7 @@ if (existsSync(".env")) {
   process.loadEnvFile();
 }
 
-// One-off migration: IdeaRoads now supports exactly one board per workspace.
+// One-off migration: Shapio now supports exactly one board per workspace.
 // For any workspace that still has more than one (from before this change),
 // keep the oldest board and delete the rest. Deleting a board cascades to its
 // posts, which cascades to their votes and comments — so this also removes

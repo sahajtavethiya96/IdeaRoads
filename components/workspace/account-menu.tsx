@@ -39,9 +39,7 @@ interface AccountMenuProps {
   workspaceSlug: string;
 }
 
-// Shared dropdown body for both the sidebar's full account bar and the
-// topbar's icon-only trigger (see TopbarAccountMenu below) — same account,
-// same menu, just two different places to open it from.
+// Dropdown body for the sidebar's account bar.
 function AccountMenuDropdownContent({
   email,
   isAdminOrOwner,
@@ -256,45 +254,6 @@ export function AccountMenu({
         isAdminOrOwner={isAdminOrOwner}
         userImage={userImage}
         variant="sidebar"
-        workspaceSlug={workspaceSlug}
-      />
-    </DropdownMenu>
-  );
-}
-
-// Icon-only trigger for the Topbar (top-right, every workspace page) — same
-// account and menu as the sidebar's AccountMenu, so signing out or jumping to
-// Account settings works identically from either entry point.
-export function TopbarAccountMenu({
-  email,
-  isAdminOrOwner,
-  userImage,
-  workspaceSlug,
-}: Omit<AccountMenuProps, "collapsed">) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          aria-label="Account menu"
-          className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-all duration-150 ease-ir-standard hover:ring-2 hover:ring-ir-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ir-primary/40"
-          title={email}
-          type="button"
-        >
-          <SquareAvatar
-            alt={email}
-            className="size-9 rounded-full ring-1 ring-ir-border"
-            fallback={email.charAt(0).toUpperCase()}
-            imageUrl={userImage}
-          />
-        </button>
-      </DropdownMenuTrigger>
-
-      <AccountMenuDropdownContent
-        align="end"
-        email={email}
-        isAdminOrOwner={isAdminOrOwner}
-        side="bottom"
-        userImage={userImage}
         workspaceSlug={workspaceSlug}
       />
     </DropdownMenu>

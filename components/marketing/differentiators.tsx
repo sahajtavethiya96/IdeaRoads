@@ -14,7 +14,7 @@ const PILLARS = [
   {
     icon: Users,
     title: "Your users never cost you a seat.",
-    body: "The people using your feedback boards are always free. Canny charges per voter. IdeaRoads doesn't, and never will.",
+    body: "The people using your feedback boards are always free. Canny charges per voter. Shapio doesn't, and never will.",
   },
 ] as const;
 

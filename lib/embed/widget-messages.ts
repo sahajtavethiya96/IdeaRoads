@@ -4,7 +4,7 @@
 // Next.js build) so both sides agree on what they're listening for.
 //
 // Must match MESSAGE_SOURCE in public/widget.js exactly.
-export const WIDGET_MESSAGE_SOURCE = "idearoads-widget";
+export const WIDGET_MESSAGE_SOURCE = "shapio-widget";
 
 export type WidgetToHostMessage = {
   source: typeof WIDGET_MESSAGE_SOURCE;

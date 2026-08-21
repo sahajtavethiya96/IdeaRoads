@@ -410,7 +410,7 @@ function AuthFormInner({
             Ship what your users actually want.
           </h2>
           <Image
-            alt="A feature roadmap with upvoted ideas, trending feedback, and a voting box — capturing how IdeaRoads turns user feedback into a shared product roadmap"
+            alt="A feature roadmap with upvoted ideas, trending feedback, and a voting box — capturing how Shapio turns user feedback into a shared product roadmap"
             className="h-auto w-full"
             height={1123}
             src="/auth-illustration.png"

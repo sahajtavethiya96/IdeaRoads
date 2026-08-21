@@ -43,7 +43,7 @@ export function FeedbackWidgetSection({ appUrl }: FeedbackWidgetSectionProps) {
         data-theme="light"
         data-width="380"
         data-workspace="deep-sir"
-        id="idearoads-feedback-widget-script"
+        id="shapio-feedback-widget-script"
         src={`${appUrl}/widget.js`}
         strategy="afterInteractive"
       />

@@ -1,6 +1,6 @@
 {
-  "id": "62109cbb-02f0-4465-a3d0-83b13559b237",
-  "prevId": "96f8b2ab-55ab-4f2e-bab0-f64cb1449709",
+  "id": "5d822ec6-9415-4275-80d4-cbf3a233b664",
+  "prevId": "62109cbb-02f0-4465-a3d0-83b13559b237",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -64,6 +64,12 @@
         },
         "id_token": {
           "name": "id_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "password": {
+          "name": "password",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -1153,6 +1159,13 @@
           "primaryKey": false,
           "notNull": false
         },
+        "requires_integration_setup": {
+          "name": "requires_integration_setup",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -1957,6 +1970,13 @@
         },
         "is_archived": {
           "name": "is_archived",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_system": {
+          "name": "is_system",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -3142,6 +3162,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "merged_from_post_id": {
+          "name": "merged_from_post_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -3251,6 +3277,19 @@
           "tableTo": "user",
           "columnsFrom": [
             "author_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "comments_merged_from_post_id_posts_id_fk": {
+          "name": "comments_merged_from_post_id_posts_id_fk",
+          "tableFrom": "comments",
+          "tableTo": "posts",
+          "columnsFrom": [
+            "merged_from_post_id"
           ],
           "columnsTo": [
             "id"
@@ -4589,19 +4628,12 @@
           "primaryKey": false,
           "notNull": false
         },
-        "mode": {
-          "name": "mode",
+        "button_type": {
+          "name": "button_type",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": "'inline'"
-        },
-        "position": {
-          "name": "position",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'bottom-right'"
+          "default": "'floating'"
         },
         "theme": {
           "name": "theme",
@@ -4630,6 +4662,96 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'#111111'"
+        },
+        "floating_position": {
+          "name": "floating_position",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'bottom-right'"
+        },
+        "floating_icon_type": {
+          "name": "floating_icon_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'logo'"
+        },
+        "floating_icon_url": {
+          "name": "floating_icon_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sticky_button_text": {
+          "name": "sticky_button_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Leave Feedback'"
+        },
+        "sticky_button_color": {
+          "name": "sticky_button_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'#111111'"
+        },
+        "sticky_text_color": {
+          "name": "sticky_text_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'#ffffff'"
+        },
+        "sticky_position": {
+          "name": "sticky_position",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'right-middle'"
+        },
+        "device_visibility": {
+          "name": "device_visibility",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{\"desktop\":true,\"mobile\":true,\"tablet\":true}'::jsonb"
+        },
+        "show_roadmap": {
+          "name": "show_roadmap",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "show_changelog": {
+          "name": "show_changelog",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "show_submit_form_immediately": {
+          "name": "show_submit_form_immediately",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'auto'"
+        },
+        "show_similar_posts": {
+          "name": "show_similar_posts",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "show_view_other_feedback_button": {
+          "name": "show_view_other_feedback_button",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
         },
         "updated_at": {
           "name": "updated_at",
@@ -4769,6 +4891,80 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.portal_verifications": {
+      "name": "portal_verifications",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "code_hash": {
+          "name": "code_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "attempt_count": {
+          "name": "attempt_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "last_sent_at": {
+          "name": "last_sent_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "portal_verifications_email_unq": {
+          "name": "portal_verifications_email_unq",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.feature_flags": {
       "name": "feature_flags",
       "schema": "",
@@ -4863,6 +5059,123 @@
         },
         "maintenance_message": {
           "name": "maintenance_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.integration_settings": {
+      "name": "integration_settings",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "default": 1
+        },
+        "smtp_host": {
+          "name": "smtp_host",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "smtp_port": {
+          "name": "smtp_port",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "smtp_user": {
+          "name": "smtp_user",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "smtp_pass_encrypted": {
+          "name": "smtp_pass_encrypted",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_from": {
+          "name": "email_from",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "google_client_id": {
+          "name": "google_client_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "google_client_secret_encrypted": {
+          "name": "google_client_secret_encrypted",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_webhook_secret_encrypted": {
+          "name": "email_webhook_secret_encrypted",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_s3_region": {
+          "name": "storage_s3_region",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_s3_bucket": {
+          "name": "storage_s3_bucket",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_s3_access_key_id": {
+          "name": "storage_s3_access_key_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_s3_secret_access_key_encrypted": {
+          "name": "storage_s3_secret_access_key_encrypted",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_s3_endpoint": {
+          "name": "storage_s3_endpoint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_public_url_base": {
+          "name": "storage_public_url_base",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_local_dir": {
+          "name": "storage_local_dir",
           "type": "text",
           "primaryKey": false,
           "notNull": false

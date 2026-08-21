@@ -30,7 +30,7 @@ export default function EmbedAuthCompletePage() {
       if (!cancelled && data?.session.token) {
         window.opener?.postMessage(
           {
-            source: "idearoads-widget",
+            source: "shapio-widget",
             type: "embed-auth-token",
             token: data.session.token,
           },
